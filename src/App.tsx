@@ -23,8 +23,11 @@ import Ledger from './components/Ledger';
 import InvestmentTracker from './components/InvestmentTracker';
 import ReportGenerator from './components/ReportGenerator';
 import TransferModal from './components/TransferModal';
+import TransactionModal from './components/TransactionModal';
+import FloatingActionButton from './components/FloatingActionButton';
 
 import { Member, Account } from './types';
+import { cacheService } from './services/cacheService';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -34,6 +37,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'investments' | 'reports'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [members, setMembers] = useState<Member[]>([]);
@@ -48,15 +52,36 @@ export default function App() {
       if (!membersRes.ok || !accountsRes.ok) {
         throw new Error(`Server error: ${membersRes.status} ${accountsRes.status}`);
       }
-      setMembers(await membersRes.json());
-      setAccounts(await accountsRes.json());
+      const membersData = await membersRes.json();
+      const accountsData = await accountsRes.json();
+      
+      setMembers(membersData);
+      setAccounts(accountsData);
+      
+      // Update cache in background
+      cacheService.setMembers(membersData);
+      cacheService.setAccounts(accountsData);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    // Load from cache first for instant UI
+    const loadCache = async () => {
+      const [cachedMembers, cachedAccounts] = await Promise.all([
+        cacheService.getMembers(),
+        cacheService.getAccounts()
+      ]);
+      
+      if (cachedMembers) setMembers(cachedMembers);
+      if (cachedAccounts) setAccounts(cachedAccounts);
+      
+      // Then fetch fresh data
+      fetchData();
+    };
+    
+    loadCache();
   }, []);
 
   const navItems = [
@@ -70,9 +95,19 @@ export default function App() {
   const renderContent = () => {
     if (selectedAccountId) {
       const account = accounts.find(a => a.id === selectedAccountId);
+      if (!account) {
+        return (
+          <div className="p-8 text-center">
+            <p className="text-slate-500">Account not found or loading...</p>
+            <button onClick={() => setSelectedAccountId(null)} className="mt-4 text-primary font-bold">
+              Go Back
+            </button>
+          </div>
+        );
+      }
       return (
         <Ledger 
-          account={account!} 
+          account={account} 
           onBack={() => setSelectedAccountId(null)} 
           onUpdate={fetchData}
         />
@@ -206,6 +241,20 @@ export default function App() {
           onUpdate={fetchData}
         />
       )}
+
+      {isTransactionModalOpen && (
+        <TransactionModal 
+          accounts={accounts}
+          onClose={() => setIsTransactionModalOpen(false)}
+          onUpdate={fetchData}
+          initialAccountId={selectedAccountId || undefined}
+        />
+      )}
+
+      <FloatingActionButton 
+        onNewTransaction={() => setIsTransactionModalOpen(true)}
+        onNewTransfer={() => setIsTransferModalOpen(true)}
+      />
     </div>
   );
 }

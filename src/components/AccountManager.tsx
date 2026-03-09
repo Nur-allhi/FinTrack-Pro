@@ -206,7 +206,7 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{acc.type.replace('_', ' ')}</p>
             <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-500">{acc.member_name || 'General Account'}</span>
-              <span className="text-lg font-bold text-primary financial-number">৳{acc.initial_balance.toLocaleString()}</span>
+              <span className="text-lg font-bold text-primary financial-number">৳{acc.current_balance.toLocaleString()}</span>
             </div>
           </div>
         ))}

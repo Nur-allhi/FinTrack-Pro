@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { categorizeTransaction } from '../services/geminiService';
+import { cacheService } from '../services/cacheService';
 
 interface LedgerProps {
   account: Account;
@@ -35,21 +36,51 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
   });
   const [aiLoading, setAiLoading] = useState(false);
 
-  const fetchTransactions = async () => {
-    setLoading(true);
+  const fetchTransactions = async (showLoading = true) => {
+    if (!account?.id) {
+      console.warn("fetchTransactions skipped: No account ID");
+      setLoading(false);
+      return;
+    }
+    if (showLoading) setLoading(true);
     try {
       const res = await fetch(`/api/transactions/${account.id}`);
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      setTransactions(await res.json());
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server error: ${res.status} - ${errorText}`);
+      }
+      const data = await res.json();
+      setTransactions(data);
+      // Update cache
+      cacheService.setTransactions(account.id.toString(), data);
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        console.warn("Network error detected. The server might be restarting.");
+      }
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTransactions();
+    const loadCacheAndFetch = async () => {
+      if (!account?.id) return;
+      
+      // Load from cache first
+      const cachedData = await cacheService.getTransactions(account.id.toString());
+      if (cachedData) {
+        setTransactions(cachedData);
+        setLoading(false);
+        // Fetch fresh in background
+        fetchTransactions(false);
+      } else {
+        // No cache, show loading and fetch
+        fetchTransactions(true);
+      }
+    };
+    
+    loadCacheAndFetch();
   }, [account.id]);
 
   const handleAddOrUpdateTransaction = async (e: React.FormEvent) => {
@@ -117,10 +148,13 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
     setIsAdding(true);
   };
 
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this transaction?")) return;
     try {
-      await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Failed to delete");
+      setDeletingId(null);
       fetchTransactions();
       onUpdate();
     } catch (error) {
@@ -130,11 +164,13 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
 
   // Calculate running balance
   const sortedTxs = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
-  let currentBalance = account.initial_balance;
+  let currentBalance = Number(account.initial_balance);
   const txsWithBalance = sortedTxs.map(tx => {
-    currentBalance += tx.amount;
+    currentBalance += Number(tx.amount);
     return { ...tx, runningBalance: currentBalance };
   }).reverse();
+
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   return (
     <div className="space-y-6">
@@ -146,13 +182,6 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
         <div className="flex items-center gap-3">
           <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
             <Download className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all font-semibold"
-          >
-            <Plus className="w-5 h-5" />
-            Add Transaction
           </button>
         </div>
       </div>
@@ -225,7 +254,8 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 text-slate-400 text-xs font-bold uppercase tracking-wider">
@@ -239,57 +269,236 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {txsWithBalance.map((tx) => (
-                <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4 text-sm text-slate-500 font-medium">{format(new Date(tx.date), 'dd MMM yyyy')}</td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-bold text-slate-800">{tx.particulars}</p>
-                    {tx.summary && <p className="text-xs text-slate-400 italic mt-0.5">{tx.summary}</p>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-500 rounded-full uppercase tracking-wider">
-                      {tx.category || 'Uncategorized'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-rose-500 financial-number">
-                    {tx.amount < 0 ? `৳${Math.abs(tx.amount).toLocaleString()}` : '-'}
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-emerald-500 financial-number">
-                    {tx.amount > 0 ? `৳${tx.amount.toLocaleString()}` : '-'}
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-slate-900 financial-number">
-                    ৳{tx.runningBalance.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                      <button 
-                        onClick={() => startEdit(tx)}
-                        className="p-2 text-slate-300 hover:text-primary transition-all"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(tx.id)}
-                        className="p-2 text-slate-300 hover:text-rose-500 transition-all"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {txsWithBalance.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-medium">
-                    No transactions found for this account.
-                  </td>
-                </tr>
-              )}
+              {txsWithBalance.map((tx, index) => {
+                const prevTx = txsWithBalance[index - 1];
+                const isNewDate = !prevTx || prevTx.date !== tx.date;
+                const isExpanded = expandedId === tx.id;
+                
+                return (
+                  <React.Fragment key={tx.id}>
+                    {isNewDate && (
+                      <tr className="bg-slate-50/80">
+                        <td colSpan={7} className="px-6 py-2">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            {format(new Date(tx.date), 'EEEE, dd MMMM yyyy')}
+                          </p>
+                        </td>
+                      </tr>
+                    )}
+                    <tr 
+                      onClick={() => setExpandedId(isExpanded ? null : tx.id)}
+                      className={`cursor-pointer transition-colors group ${isExpanded ? 'bg-primary/5' : 'hover:bg-slate-50/50'}`}
+                    >
+                      <td className="px-6 py-4 text-sm text-slate-400 font-medium">
+                        <div className="w-20" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-slate-800">{tx.particulars}</p>
+                        {tx.summary && !isExpanded && <p className="text-xs text-slate-400 italic mt-0.5 truncate max-w-[200px]">{tx.summary}</p>}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-500 rounded-full uppercase tracking-wider">
+                          {tx.category || 'Uncategorized'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right text-sm font-bold text-rose-500 financial-number">
+                        {tx.amount < 0 ? `৳${Math.abs(tx.amount).toLocaleString()}` : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-right text-sm font-bold text-emerald-500 financial-number">
+                        {tx.amount > 0 ? `৳${tx.amount.toLocaleString()}` : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-right text-sm font-bold text-slate-900 financial-number">
+                        ৳{tx.runningBalance.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <ChevronDown className={`w-4 h-4 text-slate-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-primary/5">
+                        <td colSpan={7} className="px-6 py-4 border-t border-primary/10">
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-3">
+                              {tx.summary && (
+                                <div>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">AI Summary</p>
+                                  <p className="text-sm text-slate-600 italic leading-relaxed max-w-2xl">{tx.summary}</p>
+                                </div>
+                              )}
+                              <div className="flex gap-6">
+                                <div>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Category</p>
+                                  <p className="text-sm font-bold text-slate-700">{tx.category || 'Uncategorized'}</p>
+                                </div>
+                                {(tx as any).linked_account_name && (
+                                  <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                                      {tx.amount < 0 ? 'Transferred To' : 'Transferred From'}
+                                    </p>
+                                    <p className="text-sm font-bold text-primary">{(tx as any).linked_account_name}</p>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Transaction ID</p>
+                                  <p className="text-sm font-mono text-slate-500">#{tx.id}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {deletingId === tx.id ? (
+                                <div className="flex items-center gap-2">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(tx.id); }}
+                                    className="px-4 py-2 bg-rose-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm"
+                                  >
+                                    Confirm Delete
+                                  </button>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setDeletingId(null); }}
+                                    className="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs uppercase tracking-wider"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); startEdit(tx); }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-primary hover:text-white hover:border-primary transition-all"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                    Edit
+                                  </button>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
+        {/* Mobile List View */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {txsWithBalance.map((tx, index) => {
+            const prevTx = txsWithBalance[index - 1];
+            const isNewDate = !prevTx || prevTx.date !== tx.date;
+            const isExpanded = expandedId === tx.id;
+
+            return (
+              <React.Fragment key={tx.id}>
+                {isNewDate && (
+                  <div className="bg-slate-50 px-5 py-2 border-y border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                      {format(new Date(tx.date), 'EEEE, dd MMMM yyyy')}
+                    </p>
+                  </div>
+                )}
+                <div 
+                  onClick={() => setExpandedId(isExpanded ? null : tx.id)}
+                  className={`p-5 space-y-4 transition-colors cursor-pointer ${isExpanded ? 'bg-primary/5' : 'bg-white'}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1.5">
+                      <p className="text-sm font-bold text-slate-800 leading-tight">{tx.particulars}</p>
+                      <span className="inline-block text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full uppercase tracking-wider">
+                        {tx.category || 'Uncategorized'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-base font-bold financial-number ${tx.amount < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {tx.amount < 0 ? '-' : '+'}৳{Math.abs(tx.amount).toLocaleString()}
+                      </p>
+                      <p className="text-[10px] font-medium text-slate-400 mt-1">
+                        Bal: <span className="text-slate-900 font-bold">৳{tx.runningBalance.toLocaleString()}</span>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {isExpanded && (
+                    <div className="pt-4 space-y-4 border-t border-primary/10 animate-in fade-in slide-in-from-top-2 duration-200">
+                      {tx.summary && (
+                        <div className="bg-white/50 p-3 rounded-xl border border-primary/5">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">AI Summary</p>
+                          <p className="text-xs text-slate-600 italic leading-relaxed">{tx.summary}</p>
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/50 p-3 rounded-xl border border-primary/5">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Category</p>
+                          <p className="text-xs font-bold text-slate-700">{tx.category || 'Uncategorized'}</p>
+                        </div>
+                        {(tx as any).linked_account_name && (
+                          <div className="bg-white/50 p-3 rounded-xl border border-primary/5">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                              {tx.amount < 0 ? 'To Account' : 'From Account'}
+                            </p>
+                            <p className="text-xs font-bold text-primary">{(tx as any).linked_account_name}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between gap-2">
+                        {deletingId === tx.id ? (
+                          <div className="flex items-center gap-2 w-full">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDelete(tx.id); }}
+                              className="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm"
+                            >
+                              Confirm Delete
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setDeletingId(null); }}
+                              className="flex-1 py-3 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs uppercase tracking-wider"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); startEdit(tx); }}
+                              className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm active:bg-slate-50"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                              Edit
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }}
+                              className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm active:bg-rose-50 active:text-rose-500"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+
+        {txsWithBalance.length === 0 && (
+          <div className="px-6 py-12 text-center text-slate-400 font-medium">
+            No transactions found for this account.
+          </div>
+        )}
       </div>
     </div>
   );

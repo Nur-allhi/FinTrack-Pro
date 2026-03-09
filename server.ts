@@ -19,6 +19,15 @@ if (!fs.existsSync(dbDir)) {
 
 const db = new Database(dbPath);
 
+// Global Error Handlers
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 // Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
@@ -153,11 +162,11 @@ async function startServer() {
         if (txError) throw txError;
 
         const formatted = accounts.map(a => {
-          const txSum = transactions.filter(t => t.account_id === a.id).reduce((sum, t) => sum + t.amount, 0);
+          const txSum = transactions.filter(t => t.account_id === a.id).reduce((sum, t) => sum + Number(t.amount), 0);
           return {
             ...a,
             member_name: a.members?.name,
-            current_balance: a.initial_balance + txSum
+            current_balance: Number(a.initial_balance) + txSum
           };
         });
         return res.json(formatted);
@@ -236,17 +245,57 @@ async function startServer() {
 
   // Transactions
   app.get("/api/transactions/:accountId", async (req, res) => {
+    console.log(`GET /api/transactions/${req.params.accountId}`);
     try {
       if (supabase) {
-        const { data, error } = await supabase.from("transactions").select("*").eq("account_id", req.params.accountId).order("date", { ascending: false }).order("id", { ascending: false });
-        if (error) throw error;
-        return res.json(data);
+        // Step 1: Fetch main transactions
+        const { data: transactions, error: txError } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("account_id", req.params.accountId)
+          .order("date", { ascending: false })
+          .order("id", { ascending: false });
+          
+        if (txError) throw txError;
+        if (!transactions || transactions.length === 0) return res.json([]);
+
+        // Step 2: Fetch linked account names for transfers
+        const linkedIds = transactions
+          .filter(tx => tx.linked_transaction_id)
+          .map(tx => tx.linked_transaction_id);
+
+        if (linkedIds.length > 0) {
+          const { data: linkedTxs, error: linkedError } = await supabase
+            .from("transactions")
+            .select("id, account_id, accounts(name)")
+            .in("id", linkedIds);
+
+          if (!linkedError && linkedTxs) {
+            const linkedMap = new Map(linkedTxs.map(lt => [lt.id, lt.accounts?.[0]?.name]));
+            const formatted = transactions.map(tx => ({
+              ...tx,
+              linked_account_name: tx.linked_transaction_id ? linkedMap.get(tx.linked_transaction_id) : undefined
+            }));
+            return res.json(formatted);
+          }
+        }
+        
+        return res.json(transactions);
       }
-      const transactions = db.prepare("SELECT * FROM transactions WHERE account_id = ? ORDER BY date DESC, id DESC").all(req.params.accountId);
-      res.json(transactions);
+      
+      const transactions = db.prepare(`
+        SELECT t.*, la.name as linked_account_name
+        FROM transactions t
+        LEFT JOIN transactions lt ON t.linked_transaction_id = lt.id
+        LEFT JOIN accounts la ON lt.account_id = la.id
+        WHERE t.account_id = ?
+        ORDER BY t.date DESC, t.id DESC
+      `).all(req.params.accountId);
+      
+      res.json(transactions || []);
     } catch (err) {
-      console.error("GET /api/transactions error:", err);
-      res.status(500).json({ error: err.message });
+      console.error("GET /api/transactions error:", err.message || err);
+      res.status(500).json({ error: err.message || "Internal Server Error" });
     }
   });
 
@@ -280,6 +329,9 @@ async function startServer() {
       const { date, particulars, category, amount, summary } = req.body;
       
       if (supabase) {
+        const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", req.params.id).single();
+        if (fetchError) throw fetchError;
+
         const update: any = {};
         if (date !== undefined) update.date = date;
         if (particulars !== undefined) update.particulars = particulars;
@@ -289,18 +341,52 @@ async function startServer() {
         
         const { error } = await supabase.from("transactions").update(update).eq("id", req.params.id);
         if (error) throw error;
+
+        if (transaction && transaction.linked_transaction_id) {
+          const linkedUpdate: any = { ...update };
+          if (amount !== undefined && transaction.type === 'transfer') {
+            linkedUpdate.amount = -amount;
+          }
+          // For transfers, we usually want to keep the "Transfer from/to" prefix if it was there
+          // but if the user edited particulars manually, we'll just sync them for now
+          await supabase.from("transactions").update(linkedUpdate).eq("id", transaction.linked_transaction_id);
+        }
+
         return res.json({ success: true });
       }
 
-      db.prepare(`
-        UPDATE transactions SET 
-          date = COALESCE(?, date), 
-          particulars = COALESCE(?, particulars), 
-          category = COALESCE(?, category),
-          amount = COALESCE(?, amount),
-          summary = COALESCE(?, summary)
-        WHERE id = ?
-      `).run(date, particulars, category, amount, summary, req.params.id);
+      const transaction = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
+      if (!transaction) return res.status(404).json({ error: "Transaction not found" });
+
+      const updateTx = db.transaction(() => {
+        db.prepare(`
+          UPDATE transactions SET 
+            date = COALESCE(?, date), 
+            particulars = COALESCE(?, particulars), 
+            category = COALESCE(?, category),
+            amount = COALESCE(?, amount),
+            summary = COALESCE(?, summary)
+          WHERE id = ?
+        `).run(date, particulars, category, amount, summary, req.params.id);
+
+        if (transaction.linked_transaction_id) {
+          let linkedAmount = undefined;
+          if (amount !== undefined && transaction.type === 'transfer') {
+            linkedAmount = -amount;
+          }
+          db.prepare(`
+            UPDATE transactions SET 
+              date = COALESCE(?, date), 
+              particulars = COALESCE(?, particulars), 
+              category = COALESCE(?, category),
+              amount = COALESCE(?, amount),
+              summary = COALESCE(?, summary)
+            WHERE id = ?
+          `).run(date, particulars, category, linkedAmount, summary, transaction.linked_transaction_id);
+        }
+      });
+
+      updateTx();
       res.json({ success: true });
     } catch (err) {
       console.error("PATCH /api/transactions error:", err);
@@ -313,7 +399,10 @@ async function startServer() {
     try {
       if (supabase) {
         const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", req.params.id).single();
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+          if (fetchError.code === 'PGRST116') return res.json({ success: true }); // Already deleted
+          throw fetchError;
+        }
 
         if (transaction && transaction.linked_transaction_id) {
           await supabase.from("transactions").delete().eq("id", transaction.linked_transaction_id);
@@ -324,10 +413,16 @@ async function startServer() {
       }
 
       const transaction = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
-      if (transaction && transaction.linked_transaction_id) {
+      if (!transaction) return res.json({ success: true });
+
+      const deleteTx = db.transaction(() => {
+        if (transaction.linked_transaction_id) {
           db.prepare("DELETE FROM transactions WHERE id = ?").run(transaction.linked_transaction_id);
-      }
-      db.prepare("DELETE FROM transactions WHERE id = ?").run(req.params.id);
+        }
+        db.prepare("DELETE FROM transactions WHERE id = ?").run(req.params.id);
+      });
+
+      deleteTx();
       res.json({ success: true });
     } catch (err) {
       console.error("DELETE /api/transactions error:", err);
@@ -339,21 +434,30 @@ async function startServer() {
   app.post("/api/transfers", async (req, res) => {
     console.log("POST /api/transfers body:", req.body);
     try {
-      const { from_account_id, to_account_id, date, amount, particulars } = req.body;
-      if (!from_account_id || !to_account_id || !amount) {
-        return res.status(400).json({ error: "Missing required fields" });
+      const { from_account_id, to_account_id, date, particulars } = req.body;
+      const amount = Number(req.body.amount);
+      if (!from_account_id || !to_account_id || isNaN(amount)) {
+        return res.status(400).json({ error: "Missing required fields or invalid amount" });
       }
       
       if (supabase) {
-        // Supabase doesn't support transactions in the same way, we'll do sequential inserts
-        // In a real app, you'd use a RPC function for atomicity
+        // Fetch account names for better particulars
+        const { data: fromAcc } = await supabase.from("accounts").select("name, members(name)").eq("id", from_account_id).single();
+        const { data: toAcc } = await supabase.from("accounts").select("name, members(name)").eq("id", to_account_id).single();
+
+        const fromMember = fromAcc?.members?.[0]?.name ? ` (${fromAcc.members[0].name})` : '';
+        const toMember = toAcc?.members?.[0]?.name ? ` (${toAcc.members[0].name})` : '';
+
+        const debitParticulars = `Transfer to: ${toAcc?.name}${toMember}${particulars ? ` - ${particulars}` : ''}`;
+        const creditParticulars = `Transfer from: ${fromAcc?.name}${fromMember}${particulars ? ` - ${particulars}` : ''}`;
+
         const { data: debit, error: dError } = await supabase.from("transactions").insert([{
-          account_id: from_account_id, date, particulars: `Transfer to: ${particulars}`, category: 'Transfer', amount: -amount, type: 'transfer'
+          account_id: from_account_id, date, particulars: debitParticulars, category: 'Transfer', amount: -amount, type: 'transfer'
         }]).select().single();
         if (dError) throw dError;
 
         const { data: credit, error: cError } = await supabase.from("transactions").insert([{
-          account_id: to_account_id, date, particulars: `Transfer from: ${particulars}`, category: 'Transfer', amount: amount, type: 'transfer', linked_transaction_id: debit.id
+          account_id: to_account_id, date, particulars: creditParticulars, category: 'Transfer', amount: amount, type: 'transfer', linked_transaction_id: debit.id
         }]).select().single();
         if (cError) throw cError;
 
@@ -362,13 +466,22 @@ async function startServer() {
         return res.json({ debitId: debit.id, creditId: credit.id });
       }
 
+      const fromAcc = db.prepare("SELECT a.*, m.name as member_name FROM accounts a LEFT JOIN members m ON a.member_id = m.id WHERE a.id = ?").get(from_account_id);
+      const toAcc = db.prepare("SELECT a.*, m.name as member_name FROM accounts a LEFT JOIN members m ON a.member_id = m.id WHERE a.id = ?").get(to_account_id);
+
+      const fromMember = fromAcc?.member_name ? ` (${fromAcc.member_name})` : '';
+      const toMember = toAcc?.member_name ? ` (${toAcc.member_name})` : '';
+
+      const debitParticulars = `Transfer to: ${toAcc?.name}${toMember}${particulars ? ` - ${particulars}` : ''}`;
+      const creditParticulars = `Transfer from: ${fromAcc?.name}${fromMember}${particulars ? ` - ${particulars}` : ''}`;
+
       const transfer = db.transaction(() => {
           // Debit from source
-          const debitInfo = db.prepare("INSERT INTO transactions (account_id, date, particulars, category, amount, type) VALUES (?, ?, ?, ?, ?, ?)").run(from_account_id, date, `Transfer to: ${particulars}`, 'Transfer', -amount, 'transfer');
+          const debitInfo = db.prepare("INSERT INTO transactions (account_id, date, particulars, category, amount, type) VALUES (?, ?, ?, ?, ?, ?)").run(from_account_id, date, debitParticulars, 'Transfer', -amount, 'transfer');
           const debitId = debitInfo.lastInsertRowid;
 
           // Credit to destination
-          const creditInfo = db.prepare("INSERT INTO transactions (account_id, date, particulars, category, amount, type, linked_transaction_id) VALUES (?, ?, ?, ?, ?, ?, ?)").run(to_account_id, date, `Transfer from: ${particulars}`, 'Transfer', amount, 'transfer', debitId);
+          const creditInfo = db.prepare("INSERT INTO transactions (account_id, date, particulars, category, amount, type, linked_transaction_id) VALUES (?, ?, ?, ?, ?, ?, ?)").run(to_account_id, date, creditParticulars, 'Transfer', amount, 'transfer', debitId);
           const creditId = creditInfo.lastInsertRowid;
 
           // Link debit to credit

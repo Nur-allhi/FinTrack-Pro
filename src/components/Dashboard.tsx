@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Account, Member } from '../types';
 import { 
   Wallet, 
@@ -9,7 +9,9 @@ import {
   Home,
   ChevronRight,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Filter,
+  Users
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -29,8 +31,16 @@ const typeIcons: Record<string, any> = {
 };
 
 export default function Dashboard({ accounts, members, onSelectAccount, onOpenTransfer }: DashboardProps) {
+  const [filterMemberId, setFilterMemberId] = useState<number | 'all' | 'general'>('all');
+  
   const activeAccounts = accounts.filter(a => !a.archived);
   
+  const filteredAccounts = activeAccounts.filter(acc => {
+    if (filterMemberId === 'all') return true;
+    if (filterMemberId === 'general') return !acc.member_id;
+    return acc.member_id === filterMemberId;
+  });
+
   const groupedByMember = members.map(member => ({
     member,
     accounts: activeAccounts.filter(a => a.member_id === member.id)
@@ -38,10 +48,47 @@ export default function Dashboard({ accounts, members, onSelectAccount, onOpenTr
 
   const unassignedAccounts = activeAccounts.filter(a => !a.member_id);
 
-  const totalBalance = activeAccounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0);
+  const totalBalance = filteredAccounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0);
 
   return (
     <div className="space-y-8">
+      {/* Dashboard Customizer / Filter */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-xl">
+            <Filter className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">Dashboard View</h3>
+            <p className="text-xs text-slate-500">Customize what you see</p>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilterMemberId('all')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterMemberId === 'all' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+          >
+            COMBINED
+          </button>
+          <button
+            onClick={() => setFilterMemberId('general')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterMemberId === 'general' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+          >
+            GENERAL
+          </button>
+          {members.map(member => (
+            <button
+              key={member.id}
+              onClick={() => setFilterMemberId(member.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterMemberId === member.id ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+            >
+              {member.name.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
@@ -51,7 +98,9 @@ export default function Dashboard({ accounts, members, onSelectAccount, onOpenTr
             </div>
             <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-full">+2.4%</span>
           </div>
-          <p className="text-sm font-medium text-slate-500 mb-1">Total Net Worth</p>
+          <p className="text-sm font-medium text-slate-500 mb-1">
+            {filterMemberId === 'all' ? 'Total Net Worth' : 'Member Net Worth'}
+          </p>
           <h3 className="text-2xl font-bold text-slate-900 financial-number">৳{totalBalance.toLocaleString()}</h3>
         </div>
 
@@ -61,8 +110,8 @@ export default function Dashboard({ accounts, members, onSelectAccount, onOpenTr
               <ArrowUpRight className="text-emerald-600 w-6 h-6" />
             </div>
           </div>
-          <p className="text-sm font-medium text-slate-500 mb-1">Total Assets</p>
-          <h3 className="text-2xl font-bold text-slate-900 financial-number">৳{(totalBalance * 1.1).toLocaleString()}</h3>
+          <p className="text-sm font-medium text-slate-500 mb-1">Current Assets</p>
+          <h3 className="text-2xl font-bold text-slate-900 financial-number">৳{totalBalance.toLocaleString()}</h3>
         </div>
 
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
@@ -71,37 +120,60 @@ export default function Dashboard({ accounts, members, onSelectAccount, onOpenTr
               <ArrowDownRight className="text-rose-600 w-6 h-6" />
             </div>
           </div>
-          <p className="text-sm font-medium text-slate-500 mb-1">Total Liabilities</p>
-          <h3 className="text-2xl font-bold text-slate-900 financial-number">৳{(totalBalance * 0.1).toLocaleString()}</h3>
+          <p className="text-sm font-medium text-slate-500 mb-1">Liabilities</p>
+          <h3 className="text-2xl font-bold text-slate-900 financial-number">৳0</h3>
         </div>
       </div>
 
-      {/* Accounts by Member */}
+      {/* Accounts List */}
       <div className="space-y-6">
-        {groupedByMember.map(({ member, accounts }) => (
-          <div key={member.id} className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-primary rounded-full" />
-              <h4 className="text-lg font-bold text-slate-800">{member.name}'s Accounts</h4>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {accounts.map(account => (
-                <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} />
-              ))}
-            </div>
-          </div>
-        ))}
+        {filterMemberId === 'all' ? (
+          <>
+            {groupedByMember.map(({ member, accounts }) => (
+              <div key={member.id} className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-primary rounded-full" />
+                  <h4 className="text-lg font-bold text-slate-800">{member.name}'s Accounts</h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {accounts.map(account => (
+                    <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} />
+                  ))}
+                </div>
+              </div>
+            ))}
 
-        {unassignedAccounts.length > 0 && (
+            {unassignedAccounts.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-slate-400 rounded-full" />
+                  <h4 className="text-lg font-bold text-slate-800">General Accounts</h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {unassignedAccounts.map(account => (
+                    <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-slate-400 rounded-full" />
-              <h4 className="text-lg font-bold text-slate-800">General Accounts</h4>
+              <div className="w-1 h-6 bg-primary rounded-full" />
+              <h4 className="text-lg font-bold text-slate-800">
+                {filterMemberId === 'general' ? 'General Accounts' : `${members.find(m => m.id === filterMemberId)?.name}'s Accounts`}
+              </h4>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {unassignedAccounts.map(account => (
+              {filteredAccounts.map(account => (
                 <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} />
               ))}
+              {filteredAccounts.length === 0 && (
+                <div className="col-span-full py-12 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+                  <p className="text-slate-400 font-medium">No accounts found for this selection.</p>
+                </div>
+              )}
             </div>
           </div>
         )}

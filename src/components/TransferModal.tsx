@@ -88,7 +88,9 @@ export default function TransferModal({ accounts, onClose, onUpdate }: TransferM
                   >
                     <option value="">Select Source</option>
                     {accounts.filter(a => !a.archived).map(a => (
-                      <option key={a.id} value={a.id}>{a.name} (৳{a.current_balance.toLocaleString()})</option>
+                      <option key={a.id} value={a.id}>
+                        {a.name} {a.member_name ? `(${a.member_name})` : ''} (৳{a.current_balance.toLocaleString()})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -109,12 +111,14 @@ export default function TransferModal({ accounts, onClose, onUpdate }: TransferM
                   >
                     <option value="">Select Destination</option>
                     {accounts.filter(a => !a.archived).map(a => (
-                      <option key={a.id} value={a.id}>{a.name} (৳{a.current_balance.toLocaleString()})</option>
+                      <option key={a.id} value={a.id}>
+                        {a.name} {a.member_name ? `(${a.member_name})` : ''} (৳{a.current_balance.toLocaleString()})
+                      </option>
                     ))}
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Amount (৳)</label>
                     <input 
