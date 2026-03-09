@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-primary: #1A5FCC;
+  --color-background: #EDF2FA;
+  --color-accent: #7DD8E6;
+}
+
+body {
+  @apply bg-background text-slate-900 font-sans;
+}
+
+.financial-number {
+  @apply font-mono;
+}
