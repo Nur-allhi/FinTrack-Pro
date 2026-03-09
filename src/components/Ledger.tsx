@@ -9,7 +9,8 @@ import {
   Trash2, 
   Sparkles,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  Edit2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { categorizeTransaction } from '../services/geminiService';
@@ -24,6 +25,7 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [newTx, setNewTx] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
     particulars: '',
@@ -50,14 +52,14 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
     fetchTransactions();
   }, [account.id]);
 
-  const handleAddTransaction = async (e: React.FormEvent) => {
+  const handleAddOrUpdateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(newTx.amount) * (newTx.isCredit ? 1 : -1);
     
     let category = newTx.category;
-    let summary = null;
+    let summary = editingTx?.summary || null;
 
-    if (!category) {
+    if (!category && !editingTx) {
       setAiLoading(true);
       const aiResult = await categorizeTransaction(newTx.particulars);
       category = aiResult.category;
@@ -66,8 +68,11 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
     }
 
     try {
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
+      const method = editingTx ? 'PATCH' : 'POST';
+      const url = editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions';
+      
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           account_id: account.id,
@@ -85,6 +90,7 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
       }
 
       setIsAdding(false);
+      setEditingTx(null);
       setNewTx({
         date: format(new Date(), 'yyyy-MM-dd'),
         particulars: '',
@@ -97,6 +103,18 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const startEdit = (tx: Transaction) => {
+    setEditingTx(tx);
+    setNewTx({
+      date: tx.date,
+      particulars: tx.particulars,
+      amount: Math.abs(tx.amount).toString(),
+      isCredit: tx.amount > 0,
+      category: tx.category || ''
+    });
+    setIsAdding(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -153,7 +171,7 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
 
         {isAdding && (
           <div className="p-6 bg-primary/5 border-b border-primary/10">
-            <form onSubmit={handleAddTransaction} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <form onSubmit={handleAddOrUpdateTransaction} className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <input 
                 type="date" 
                 required
@@ -197,7 +215,7 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => setIsAdding(false)}
+                  onClick={() => { setIsAdding(false); setEditingTx(null); }}
                   className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl"
                 >
                   Cancel
@@ -243,12 +261,22 @@ export default function Ledger({ account, onBack, onUpdate }: LedgerProps) {
                     ৳{tx.runningBalance.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => handleDelete(tx.id)}
-                      className="p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <button 
+                        onClick={() => startEdit(tx)}
+                        className="p-2 text-slate-300 hover:text-primary transition-all"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(tx.id)}
+                        className="p-2 text-slate-300 hover:text-rose-500 transition-all"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

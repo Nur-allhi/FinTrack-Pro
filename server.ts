@@ -201,20 +201,32 @@ async function startServer() {
   app.patch("/api/accounts/:id", async (req, res) => {
     console.log("PATCH /api/accounts id:", req.params.id, "body:", req.body);
     try {
-      const { name, color, archived } = req.body;
+      const { name, color, archived, type, member_id, initial_balance } = req.body;
       
       if (supabase) {
         const update: any = {};
         if (name !== undefined) update.name = name;
         if (color !== undefined) update.color = color;
         if (archived !== undefined) update.archived = archived;
+        if (type !== undefined) update.type = type;
+        if (member_id !== undefined) update.member_id = member_id;
+        if (initial_balance !== undefined) update.initial_balance = initial_balance;
         
         const { error } = await supabase.from("accounts").update(update).eq("id", req.params.id);
         if (error) throw error;
         return res.json({ success: true });
       }
 
-      db.prepare("UPDATE accounts SET name = COALESCE(?, name), color = COALESCE(?, color), archived = COALESCE(?, archived) WHERE id = ?").run(name, color, archived, req.params.id);
+      db.prepare(`
+        UPDATE accounts SET 
+          name = COALESCE(?, name), 
+          color = COALESCE(?, color), 
+          archived = COALESCE(?, archived),
+          type = COALESCE(?, type),
+          member_id = COALESCE(?, member_id),
+          initial_balance = COALESCE(?, initial_balance)
+        WHERE id = ?
+      `).run(name, color, archived, type, member_id, initial_balance, req.params.id);
       res.json({ success: true });
     } catch (err) {
       console.error("PATCH /api/accounts error:", err);
@@ -258,6 +270,40 @@ async function startServer() {
       res.json({ id: info.lastInsertRowid, ...req.body });
     } catch (err) {
       console.error("POST /api/transactions error:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.patch("/api/transactions/:id", async (req, res) => {
+    console.log("PATCH /api/transactions id:", req.params.id, "body:", req.body);
+    try {
+      const { date, particulars, category, amount, summary } = req.body;
+      
+      if (supabase) {
+        const update: any = {};
+        if (date !== undefined) update.date = date;
+        if (particulars !== undefined) update.particulars = particulars;
+        if (category !== undefined) update.category = category;
+        if (amount !== undefined) update.amount = amount;
+        if (summary !== undefined) update.summary = summary;
+        
+        const { error } = await supabase.from("transactions").update(update).eq("id", req.params.id);
+        if (error) throw error;
+        return res.json({ success: true });
+      }
+
+      db.prepare(`
+        UPDATE transactions SET 
+          date = COALESCE(?, date), 
+          particulars = COALESCE(?, particulars), 
+          category = COALESCE(?, category),
+          amount = COALESCE(?, amount),
+          summary = COALESCE(?, summary)
+        WHERE id = ?
+      `).run(date, particulars, category, amount, summary, req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("PATCH /api/transactions error:", err);
       res.status(500).json({ error: err.message });
     }
   });

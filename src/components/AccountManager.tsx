@@ -15,6 +15,7 @@ const colors = [
 
 export default function AccountManager({ accounts, members, onUpdate }: AccountManagerProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [newAcc, setNewAcc] = useState({
     name: '',
     type: 'cash' as Account['type'],
@@ -23,11 +24,14 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
     initial_balance: ''
   });
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch('/api/accounts', {
-        method: 'POST',
+      const method = editingAccount ? 'PATCH' : 'POST';
+      const url = editingAccount ? `/api/accounts/${editingAccount.id}` : '/api/accounts';
+      
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newAcc,
@@ -35,12 +39,28 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
           initial_balance: parseFloat(newAcc.initial_balance || '0')
         })
       });
-      setIsAdding(false);
-      setNewAcc({ name: '', type: 'cash', member_id: '', color: colors[0], initial_balance: '' });
-      onUpdate();
+
+      if (res.ok) {
+        setIsAdding(false);
+        setEditingAccount(null);
+        setNewAcc({ name: '', type: 'cash', member_id: '', color: colors[0], initial_balance: '' });
+        onUpdate();
+      }
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const startEdit = (acc: Account) => {
+    setEditingAccount(acc);
+    setNewAcc({
+      name: acc.name,
+      type: acc.type,
+      member_id: acc.member_id || '',
+      color: acc.color,
+      initial_balance: acc.initial_balance.toString()
+    });
+    setIsAdding(true);
   };
 
   const toggleArchive = async (id: number, current: number) => {
@@ -72,12 +92,12 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
       {isAdding && (
         <div className="bg-white p-6 rounded-3xl border border-primary/20 shadow-xl shadow-primary/5">
           <div className="flex items-center justify-between mb-6">
-            <h4 className="text-lg font-bold text-slate-800">Create New Account</h4>
-            <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600">
+            <h4 className="text-lg font-bold text-slate-800">{editingAccount ? 'Edit Account' : 'Create New Account'}</h4>
+            <button onClick={() => { setIsAdding(false); setEditingAccount(null); }} className="text-slate-400 hover:text-slate-600">
               <X className="w-6 h-6" />
             </button>
           </div>
-          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleCreateOrUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Account Name</label>
               <input 
@@ -144,7 +164,7 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
             <div className="md:col-span-2 flex justify-end gap-3 pt-4">
               <button 
                 type="button" 
-                onClick={() => setIsAdding(false)}
+                onClick={() => { setIsAdding(false); setEditingAccount(null); }}
                 className="px-6 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-colors"
               >
                 Cancel
@@ -153,7 +173,7 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
                 type="submit"
                 className="px-8 py-3 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
               >
-                Create Account
+                {editingAccount ? 'Update Account' : 'Create Account'}
               </button>
             </div>
           </form>
@@ -166,6 +186,13 @@ export default function AccountManager({ accounts, members, onUpdate }: AccountM
             <div className="flex items-start justify-between mb-4">
               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: acc.color }} />
               <div className="flex gap-1">
+                <button 
+                  onClick={() => startEdit(acc)}
+                  className="p-2 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"
+                  title="Edit"
+                >
+                  <Palette className="w-4 h-4" />
+                </button>
                 <button 
                   onClick={() => toggleArchive(acc.id, acc.archived)}
                   className="p-2 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"
