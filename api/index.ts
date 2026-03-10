@@ -9,7 +9,8 @@ import { createClient } from "@supabase/supabase-js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = process.env.DATABASE_URL || "data.db";
+// Use Vercel's temporary directory for the database
+const dbPath = process.env.VERCEL ? `/tmp/data.db` : (process.env.DATABASE_URL || "data.db");
 const dbDir = path.dirname(path.resolve(dbPath));
 
 // Ensure directory exists for SQLite
@@ -89,10 +90,8 @@ db.exec(`
   );
 `);
 
-async function startServer() {
-  const app = express();
-  app.use(express.json());
-  const PORT = 3000;
+const app = express();
+app.use(express.json());
 
   // --- API Routes ---
 
@@ -536,7 +535,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/investments", async (req, res) => {
+  app.post("//api/investments", async (req, res) => {
     console.log("POST /api/investments body:", req.body);
     try {
       const { account_id, principal, date } = req.body;
@@ -574,23 +573,12 @@ async function startServer() {
     }
   });
 
-  // --- Vite Middleware ---
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    app.use(express.static(path.join(__dirname, "dist")));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "dist", "index.html"));
-    });
-  }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}
+// Serve static files from the 'dist' directory, which is Vercel's build output directory
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
-startServer();
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'dist', "index.html"));
+});
+
+export default app;

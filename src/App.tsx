@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -16,19 +16,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import Dashboard from './components/Dashboard';
-import MemberManager from './components/MemberManager';
-import AccountManager from './components/AccountManager';
-import Ledger from './components/Ledger';
-import InvestmentTracker from './components/InvestmentTracker';
-import ReportGenerator from './components/ReportGenerator';
-import Settings from './components/Settings';
-import TransferModal from './components/TransferModal';
-import TransactionModal from './components/TransactionModal';
-import FloatingActionButton from './components/FloatingActionButton';
-
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
+
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const MemberManager = lazy(() => import('./components/MemberManager'));
+const AccountManager = lazy(() => import('./components/AccountManager'));
+const Ledger = lazy(() => import('./components/Ledger'));
+const InvestmentTracker = lazy(() => import('./components/InvestmentTracker'));
+const ReportGenerator = lazy(() => import('./components/ReportGenerator'));
+const Settings = lazy(() => import('./components/Settings'));
+const TransferModal = lazy(() => import('./components/TransferModal'));
+const TransactionModal = lazy(() => import('./components/TransactionModal'));
+const FloatingActionButton = lazy(() => import('./components/FloatingActionButton'));
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -306,35 +306,39 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              {renderContent()}
+              <Suspense fallback={<div>Loading...</div>}>
+                {renderContent()}
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>
       </main>
 
-      {isTransferModalOpen && (
-        <TransferModal 
-          accounts={accounts} 
-          onClose={() => setIsTransferModalOpen(false)} 
-          onUpdate={fetchData}
-          currency={settings.currency}
-        />
-      )}
+      <Suspense fallback={null}>
+        {isTransferModalOpen && (
+          <TransferModal 
+            accounts={accounts} 
+            onClose={() => setIsTransferModalOpen(false)} 
+            onUpdate={fetchData}
+            currency={settings.currency}
+          />
+        )}
 
-      {isTransactionModalOpen && (
-        <TransactionModal 
-          accounts={accounts}
-          onClose={() => setIsTransactionModalOpen(false)}
-          onUpdate={fetchData}
-          initialAccountId={selectedAccountId || undefined}
-          currency={settings.currency}
-        />
-      )}
+        {isTransactionModalOpen && (
+          <TransactionModal 
+            accounts={accounts}
+            onClose={() => setIsTransactionModalOpen(false)}
+            onUpdate={fetchData}
+            initialAccountId={selectedAccountId || undefined}
+            currency={settings.currency}
+          />
+        )}
 
-      <FloatingActionButton 
-        onNewTransaction={() => setIsTransactionModalOpen(true)}
-        onNewTransfer={() => setIsTransferModalOpen(true)}
-      />
+        <FloatingActionButton 
+          onNewTransaction={() => setIsTransactionModalOpen(true)}
+          onNewTransfer={() => setIsTransferModalOpen(true)}
+        />
+      </Suspense>
     </div>
   );
 }
