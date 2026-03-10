@@ -105,7 +105,7 @@ app.use(express.json());
       }
       const members = db.prepare("SELECT * FROM members").all();
       res.json(members);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GET /api/members error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -125,7 +125,7 @@ app.use(express.json());
 
       const info = db.prepare("INSERT INTO members (name, relationship) VALUES (?, ?)").run(name, relationship);
       res.json({ id: info.lastInsertRowid, name, relationship });
-    } catch (err) {
+    } catch (err: any) {
       console.error("POST /api/members error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -141,7 +141,7 @@ app.use(express.json());
       }
       db.prepare("DELETE FROM members WHERE id = ?").run(req.params.id);
       res.json({ success: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error("DELETE /api/members error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -178,7 +178,7 @@ app.use(express.json());
         LEFT JOIN members m ON a.member_id = m.id
       `).all();
       res.json(accounts);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GET /api/accounts error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -200,7 +200,7 @@ app.use(express.json());
 
       const info = db.prepare("INSERT INTO accounts (name, type, member_id, color, initial_balance) VALUES (?, ?, ?, ?, ?)").run(name, type, member_id, color, initial_balance || 0);
       res.json({ id: info.lastInsertRowid, name, type, member_id, color, initial_balance });
-    } catch (err) {
+    } catch (err: any) {
       console.error("POST /api/accounts error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -236,7 +236,7 @@ app.use(express.json());
         WHERE id = ?
       `).run(name, color, archived, type, member_id, initial_balance, req.params.id);
       res.json({ success: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error("PATCH /api/accounts error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -292,7 +292,7 @@ app.use(express.json());
       `).all(req.params.accountId);
       
       res.json(transactions || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GET /api/transactions error:", err.message || err);
       res.status(500).json({ error: err.message || "Internal Server Error" });
     }
@@ -316,7 +316,7 @@ app.use(express.json());
 
       const info = db.prepare("INSERT INTO transactions (account_id, date, particulars, category, amount, type, linked_transaction_id, summary) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(account_id, date, particulars, category, amount, type || 'normal', linked_transaction_id, summary);
       res.json({ id: info.lastInsertRowid, ...req.body });
-    } catch (err) {
+    } catch (err: any) {
       console.error("POST /api/transactions error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -387,7 +387,7 @@ app.use(express.json());
 
       updateTx();
       res.json({ success: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error("PATCH /api/transactions error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -423,7 +423,7 @@ app.use(express.json());
 
       deleteTx();
       res.json({ success: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error("DELETE /api/transactions error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -490,7 +490,7 @@ app.use(express.json());
       });
 
       res.json(transfer());
-    } catch (err) {
+    } catch (err: any) {
       console.error("POST /api/transfers error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -514,7 +514,7 @@ app.use(express.json());
           JOIN accounts a ON i.account_id = a.id
       `).all();
       res.json(investments);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GET /api/investments error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -529,7 +529,7 @@ app.use(express.json());
       }
       const returns = db.prepare("SELECT * FROM investment_returns WHERE investment_id = ? ORDER BY date DESC").all(req.params.id);
       res.json(returns);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GET /api/investments/:id/returns error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -548,7 +548,7 @@ app.use(express.json());
 
       const info = db.prepare("INSERT INTO investments (account_id, principal, date) VALUES (?, ?, ?)").run(account_id, principal, date);
       res.json({ id: info.lastInsertRowid, ...req.body });
-    } catch (err) {
+    } catch (err: any) {
       console.error("POST /api/investments error:", err);
       res.status(500).json({ error: err.message });
     }
@@ -567,18 +567,11 @@ app.use(express.json());
 
       const info = db.prepare("INSERT INTO investment_returns (investment_id, date, amount, percentage) VALUES (?, ?, ?, ?)").run(req.params.id, date, amount, percentage);
       res.json({ id: info.lastInsertRowid, ...req.body });
-    } catch (err) {
+    } catch (err: any) {
       console.error("POST /api/investments/:id/returns error:", err);
       res.status(500).json({ error: err.message });
     }
   });
 
-
-// Serve static files from the 'dist' directory, which is Vercel's build output directory
-app.use(express.static(path.join(__dirname, '..', 'dist')));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'dist', "index.html"));
-});
 
 export default app;
