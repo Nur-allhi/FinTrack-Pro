@@ -1,9 +1,21 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not defined. Please set it in your environment variables.");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+};
 
 export const categorizeTransaction = async (particulars: string) => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Suggest a single financial category and a very short summary (max 5 words) for this transaction: "${particulars}". Support both English and Bengali.`,
@@ -28,6 +40,7 @@ export const categorizeTransaction = async (particulars: string) => {
 
 export const getFinancialInsights = async (data: any) => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Analyze this financial data and provide 3-5 key insights, highlighting patterns, anomalies, and suggestions. Data: ${JSON.stringify(data)}`,
