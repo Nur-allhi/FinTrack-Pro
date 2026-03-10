@@ -77,5 +77,16 @@ export const cacheService = {
     await db.clear('members');
     await db.clear('accounts');
     await db.clear('transactions');
+    await db.clear('metadata');
+  },
+
+  async setSettings(settings: any) {
+    const db = await getDB();
+    await db.put('metadata', settings, 'app_settings');
+  },
+
+  async getSettings() {
+    const db = await getDB();
+    return db.get('metadata', 'app_settings');
   }
 };

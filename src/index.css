@@ -10,8 +10,16 @@
   --color-accent: #7DD8E6;
 }
 
+@variant dark (&:where(.dark, .dark *));
+
+.dark {
+  --color-background: #0F172A;
+  --color-primary: #3B82F6;
+  --color-accent: #60A5FA;
+}
+
 body {
-  @apply bg-background text-slate-900 font-sans;
+  @apply bg-background text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300;
 }
 
 .financial-number {

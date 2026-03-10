@@ -23,11 +23,11 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer }
                 onNewTransfer();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-3 px-4 py-3 bg-white text-slate-700 rounded-2xl shadow-xl border border-slate-100 hover:bg-slate-50 transition-all group"
+              className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all group"
             >
               <span className="text-sm font-bold">Inter-Account Transfer</span>
-              <div className="p-2 bg-accent/10 rounded-xl group-hover:bg-accent/20 transition-colors">
-                <ArrowLeftRight className="w-5 h-5 text-primary" />
+              <div className="p-2 bg-accent/10 dark:bg-accent/20 rounded-xl group-hover:bg-accent/20 dark:group-hover:bg-accent/30 transition-colors">
+                <ArrowLeftRight className="w-5 h-5 text-primary dark:text-blue-400" />
               </div>
             </motion.button>
 
@@ -40,11 +40,11 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer }
                 onNewTransaction();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-3 px-4 py-3 bg-white text-slate-700 rounded-2xl shadow-xl border border-slate-100 hover:bg-slate-50 transition-all group"
+              className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all group"
             >
               <span className="text-sm font-bold">New Transaction</span>
-              <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                <FileEdit className="w-5 h-5 text-primary" />
+              <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-xl group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors">
+                <FileEdit className="w-5 h-5 text-primary dark:text-blue-400" />
               </div>
             </motion.button>
           </div>
@@ -54,7 +54,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer }
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-          isOpen ? 'bg-slate-800 rotate-45' : 'bg-primary hover:scale-110 active:scale-95'
+          isOpen ? 'bg-slate-800 dark:bg-slate-700 rotate-45' : 'bg-primary hover:scale-110 active:scale-95'
         }`}
       >
         {isOpen ? (

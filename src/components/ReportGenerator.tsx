@@ -19,9 +19,10 @@ import 'jspdf-autotable';
 interface ReportGeneratorProps {
   accounts: Account[];
   members: Member[];
+  currency: string;
 }
 
-export default function ReportGenerator({ accounts, members }: ReportGeneratorProps) {
+export default function ReportGenerator({ accounts, members, currency }: ReportGeneratorProps) {
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<string[]>([]);
   const [reportData, setReportData] = useState<Transaction[]>([]);
@@ -103,8 +104,8 @@ export default function ReportGenerator({ accounts, members }: ReportGeneratorPr
         t.date,
         t.particulars,
         t.category || '-',
-        t.amount < 0 ? `৳${Math.abs(t.amount).toLocaleString()}` : '-',
-        t.amount > 0 ? `৳${t.amount.toLocaleString()}` : '-'
+        t.amount < 0 ? `${currency}${Math.abs(t.amount).toLocaleString()}` : '-',
+        t.amount > 0 ? `${currency}${t.amount.toLocaleString()}` : '-'
       ]),
       headStyles: { fillColor: [26, 95, 204] },
       alternateRowStyles: { fillColor: [245, 248, 255] }
@@ -115,48 +116,53 @@ export default function ReportGenerator({ accounts, members }: ReportGeneratorPr
 
   return (
     <div className="space-y-8">
-      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 bg-primary/10 rounded-2xl">
             <FileText className="text-primary w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Report Generator</h3>
-            <p className="text-slate-500 font-medium">Generate detailed financial reports with AI-powered insights.</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Report Generator</h3>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Generate detailed financial reports with AI-powered insights.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Start Date</label>
+            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Start Date</label>
             <input 
               type="date" 
               value={filters.startDate}
               onChange={e => setFilters({...filters, startDate: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">End Date</label>
+            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">End Date</label>
             <input 
               type="date" 
               value={filters.endDate}
               onChange={e => setFilters({...filters, endDate: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account (Optional)</label>
-            <select 
-              value={filters.accountId}
-              onChange={e => setFilters({...filters, accountId: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
-            >
-              <option value="">All Accounts</option>
-              {accounts.map(a => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
+            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Account (Optional)</label>
+            <div className="relative">
+              <select 
+                value={filters.accountId}
+                onChange={e => setFilters({...filters, accountId: e.target.value})}
+                className="w-full pl-4 pr-10 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none appearance-none font-bold text-slate-700 dark:text-slate-200"
+              >
+                <option value="">All Accounts</option>
+                {accounts.map(a => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <ChevronRight className="w-4 h-4 text-slate-400 rotate-90" />
+              </div>
+            </div>
           </div>
           <div className="flex items-end">
             <button 
@@ -174,31 +180,31 @@ export default function ReportGenerator({ accounts, members }: ReportGeneratorPr
       {reportData.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-lg font-bold text-slate-800">AI Financial Insights</h4>
-                <div className="p-2 bg-primary/5 rounded-xl">
+                <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">AI Financial Insights</h4>
+                <div className="p-2 bg-primary/5 dark:bg-primary/10 rounded-xl">
                   <Sparkles className="w-5 h-5 text-primary" />
                 </div>
               </div>
               <div className="space-y-4">
                 {insights.map((insight, i) => (
-                  <div key={i} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <div key={i} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="w-6 h-6 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                       <span className="text-xs font-bold text-primary">{i + 1}</span>
                     </div>
-                    <p className="text-sm text-slate-600 font-medium leading-relaxed">{insight}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{insight}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                <h4 className="text-lg font-bold text-slate-800">Transaction Summary</h4>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">Transaction Summary</h4>
                 <button 
                   onClick={exportPDF}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-bold text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-all font-bold text-sm"
                 >
                   <Download className="w-4 h-4" />
                   Export PDF
@@ -207,29 +213,29 @@ export default function ReportGenerator({ accounts, members }: ReportGeneratorPr
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                    <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">
                       <th className="px-6 py-4">Date</th>
                       <th className="px-6 py-4">Particulars</th>
                       <th className="px-6 py-4 text-right">Debit</th>
                       <th className="px-6 py-4 text-right">Credit</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                     {reportData.slice(0, 10).map(t => (
-                      <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4 text-xs text-slate-500 font-medium">{t.date}</td>
-                        <td className="px-6 py-4 text-xs font-bold text-slate-800">{t.particulars}</td>
+                      <tr key={t.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 font-medium">{t.date}</td>
+                        <td className="px-6 py-4 text-xs font-bold text-slate-800 dark:text-slate-200">{t.particulars}</td>
                         <td className="px-6 py-4 text-right text-xs font-bold text-rose-500 financial-number">
-                          {t.amount < 0 ? `৳${Math.abs(t.amount).toLocaleString()}` : '-'}
+                          {t.amount < 0 ? `${currency}${Math.abs(t.amount).toLocaleString()}` : '-'}
                         </td>
                         <td className="px-6 py-4 text-right text-xs font-bold text-emerald-500 financial-number">
-                          {t.amount > 0 ? `৳${t.amount.toLocaleString()}` : '-'}
+                          {t.amount > 0 ? `${currency}${t.amount.toLocaleString()}` : '-'}
                         </td>
                       </tr>
                     ))}
                     {reportData.length > 10 && (
                       <tr>
-                        <td colSpan={4} className="px-6 py-4 text-center text-xs text-slate-400 font-medium bg-slate-50/30">
+                        <td colSpan={4} className="px-6 py-4 text-center text-xs text-slate-400 dark:text-slate-500 font-medium bg-slate-50/30 dark:bg-slate-800/30">
                           + {reportData.length - 10} more transactions in full report
                         </td>
                       </tr>
@@ -241,28 +247,28 @@ export default function ReportGenerator({ accounts, members }: ReportGeneratorPr
           </div>
 
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-              <h4 className="text-lg font-bold text-slate-800 mb-6">Summary Metrics</h4>
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6">Summary Metrics</h4>
               <div className="space-y-6">
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total Income</p>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Total Income</p>
                   <p className="text-2xl font-bold text-emerald-500 financial-number">
-                    ৳{reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0).toLocaleString()}
+                    {currency}{reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0).toLocaleString()}
                   </p>
                 </div>
-                <div className="pt-6 border-t border-slate-50">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total Expenses</p>
+                <div className="pt-6 border-t border-slate-50 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Total Expenses</p>
                   <p className="text-2xl font-bold text-rose-500 financial-number">
-                    ৳{Math.abs(reportData.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0)).toLocaleString()}
+                    {currency}{Math.abs(reportData.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0)).toLocaleString()}
                   </p>
                 </div>
-                <div className="pt-6 border-t border-slate-50">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Net Cash Flow</p>
+                <div className="pt-6 border-t border-slate-50 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Net Cash Flow</p>
                   <p className={cn(
                     "text-2xl font-bold financial-number",
                     reportData.reduce((s, t) => s + t.amount, 0) >= 0 ? "text-primary" : "text-rose-600"
                   )}>
-                    ৳{reportData.reduce((s, t) => s + t.amount, 0).toLocaleString()}
+                    {currency}{reportData.reduce((s, t) => s + t.amount, 0).toLocaleString()}
                   </p>
                 </div>
               </div>
