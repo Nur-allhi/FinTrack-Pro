@@ -164,7 +164,7 @@ app.use(express.json());
           const txSum = transactions.filter(t => t.account_id === a.id).reduce((sum, t) => sum + Number(t.amount), 0);
           return {
             ...a,
-            member_name: a.members?.name,
+            member_name: (a as any).members?.name,
             current_balance: Number(a.initial_balance) + txSum
           };
         });
@@ -270,7 +270,7 @@ app.use(express.json());
             .in("id", linkedIds);
 
           if (!linkedError && linkedTxs) {
-            const linkedMap = new Map(linkedTxs.map(lt => [lt.id, lt.accounts?.[0]?.name]));
+            const linkedMap = new Map(linkedTxs.map((lt: any) => [lt.id, lt.accounts?.[0]?.name]));
             const formatted = transactions.map(tx => ({
               ...tx,
               linked_account_name: tx.linked_transaction_id ? linkedMap.get(tx.linked_transaction_id) : undefined
@@ -354,7 +354,7 @@ app.use(express.json());
         return res.json({ success: true });
       }
 
-      const transaction = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
+      const transaction: any = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
       if (!transaction) return res.status(404).json({ error: "Transaction not found" });
 
       const updateTx = db.transaction(() => {
@@ -411,7 +411,7 @@ app.use(express.json());
         return res.json({ success: true });
       }
 
-      const transaction = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
+      const transaction: any = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
       if (!transaction) return res.json({ success: true });
 
       const deleteTx = db.transaction(() => {
@@ -441,8 +441,8 @@ app.use(express.json());
       
       if (supabase) {
         // Fetch account names for better particulars
-        const { data: fromAcc } = await supabase.from("accounts").select("name, members(name)").eq("id", from_account_id).single();
-        const { data: toAcc } = await supabase.from("accounts").select("name, members(name)").eq("id", to_account_id).single();
+        const { data: fromAcc }: any = await supabase.from("accounts").select("name, members(name)").eq("id", from_account_id).single();
+        const { data: toAcc }: any = await supabase.from("accounts").select("name, members(name)").eq("id", to_account_id).single();
 
         const fromMember = fromAcc?.members?.[0]?.name ? ` (${fromAcc.members[0].name})` : '';
         const toMember = toAcc?.members?.[0]?.name ? ` (${toAcc.members[0].name})` : '';
@@ -465,8 +465,8 @@ app.use(express.json());
         return res.json({ debitId: debit.id, creditId: credit.id });
       }
 
-      const fromAcc = db.prepare("SELECT a.*, m.name as member_name FROM accounts a LEFT JOIN members m ON a.member_id = m.id WHERE a.id = ?").get(from_account_id);
-      const toAcc = db.prepare("SELECT a.*, m.name as member_name FROM accounts a LEFT JOIN members m ON a.member_id = m.id WHERE a.id = ?").get(to_account_id);
+      const fromAcc: any = db.prepare("SELECT a.*, m.name as member_name FROM accounts a LEFT JOIN members m ON a.member_id = m.id WHERE a.id = ?").get(from_account_id);
+      const toAcc: any = db.prepare("SELECT a.*, m.name as member_name FROM accounts a LEFT JOIN members m ON a.member_id = m.id WHERE a.id = ?").get(to_account_id);
 
       const fromMember = fromAcc?.member_name ? ` (${fromAcc.member_name})` : '';
       const toMember = toAcc?.member_name ? ` (${toAcc.member_name})` : '';
@@ -502,7 +502,7 @@ app.use(express.json());
       if (supabase) {
         const { data, error } = await supabase.from("investments").select("*, accounts(name)");
         if (error) throw error;
-        const formatted = data.map(i => ({
+        const formatted = data.map((i: any) => ({
           ...i,
           account_name: i.accounts?.name
         }));
