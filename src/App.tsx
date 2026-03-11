@@ -283,18 +283,7 @@ export default function App() {
             </h2>
           </div>
           
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsTransferModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-accent/10 dark:bg-accent/5 text-primary border border-accent/20 dark:border-accent/10 rounded-lg hover:bg-accent/20 dark:hover:bg-accent/10 transition-colors font-medium text-sm"
-            >
-              <ArrowLeftRight className="w-4 h-4" />
-              <span className="hidden sm:inline">Transfer</span>
-            </button>
-            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-xs">
-              JD
-            </div>
-          </div>
+          
         </header>
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
