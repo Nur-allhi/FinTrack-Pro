@@ -31,7 +31,8 @@ export const categorizeTransaction = async (particulars: string) => {
         },
       },
     });
-    return JSON.parse(response.text);
+    const text = response.text || '{}';
+    return JSON.parse(text);
   } catch (error) {
     console.error("AI Categorization failed:", error);
     return { category: "Uncategorized", summary: particulars };
@@ -58,7 +59,8 @@ export const getFinancialInsights = async (data: any) => {
         },
       },
     });
-    return JSON.parse(response.text).insights;
+    const text = response.text || '{"insights": []}';
+    return JSON.parse(text).insights;
   } catch (error) {
     console.error("AI Insights failed:", error);
     return ["Unable to generate insights at this time."];

@@ -1,0 +1,5 @@
+src/components/Settings.tsx(34,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'AppSettings'.
+src/services/geminiService.ts(34,23): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/services/geminiService.ts(61,23): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

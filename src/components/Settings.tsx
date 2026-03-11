@@ -29,10 +29,13 @@ interface SettingsProps {
 
 export default function Settings({ settings, onUpdateSettings, onExportData, onClearCache }: SettingsProps) {
   const toggleSetting = (key: keyof AppSettings) => {
-    onUpdateSettings({
-      ...settings,
-      [key]: !settings[key as any]
-    });
+    const value = settings[key];
+    if (typeof value === 'boolean') {
+      onUpdateSettings({
+        ...settings,
+        [key]: !value
+      });
+    }
   };
 
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

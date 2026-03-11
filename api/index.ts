@@ -93,6 +93,15 @@ db.exec(`
 const app = express();
 app.use(express.json());
 
+// Serve static files in non-production
+if (process.env.NODE_ENV !== 'production') {
+  app.use(express.static(path.resolve(__dirname, '../dist')));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.resolve(__dirname, '../dist/index.html'));
+  });
+}
+
   // --- API Routes ---
 
   // Members
@@ -575,3 +584,10 @@ app.use(express.json());
 
 
 export default app;
+
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
