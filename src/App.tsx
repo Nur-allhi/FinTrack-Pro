@@ -10,7 +10,9 @@ import {
   Menu,
   X,
   ChevronRight,
-  Plus
+  Plus,
+  Lock,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
@@ -29,6 +31,7 @@ const Settings = lazy(() => import('./components/Settings'));
 const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const FloatingActionButton = lazy(() => import('./components/FloatingActionButton'));
+const Login = lazy(() => import('./components/Login'));
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,6 +44,27 @@ export default function App() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  const handleLogin = (token: string, rememberMe: boolean) => {
+    if (rememberMe) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      sessionStorage.setItem('auth_token', token);
+    }
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_token');
+    setIsAuthenticated(false);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    setIsAuthenticated(!!token);
+  }, []);
 
   const [settings, setSettings] = useState({
     showNetWorth: true,
@@ -215,6 +239,20 @@ export default function App() {
     }
   };
 
+  if (isAuthenticated === null) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Suspense fallback={null}>
+        <Login onLogin={handleLogin} />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {/* Sidebar / Mobile Nav */}
@@ -264,6 +302,13 @@ export default function App() {
                 {settings.currency}{accounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0).toLocaleString()}
               </p>
             </div>
+            <button 
+              onClick={handleLogout}
+              className="w-full mt-4 flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all duration-200 font-bold"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
       </aside>

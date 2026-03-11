@@ -104,6 +104,18 @@ if (process.env.NODE_ENV !== 'production') {
 
   // --- API Routes ---
 
+  app.post("/api/login", (req, res) => {
+    const { username, password } = req.body;
+    const validUsername = process.env.AUTH_USERNAME || 'admin';
+    const validPassword = process.env.AUTH_PASSWORD || 'password123';
+
+    if (username === validUsername && password === validPassword) {
+      res.json({ success: true, token: 'dev-session-token-' + Date.now() });
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+  });
+
   // Members
   app.get("/api/members", async (req, res) => {
     try {
