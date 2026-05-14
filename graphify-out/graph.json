@@ -1,0 +1,5171 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "vite.config.ts",
+      "file_type": "code",
+      "source_file": "vite.config.ts",
+      "source_location": "L1",
+      "id": "vite_config_ts",
+      "community": 26,
+      "norm_label": "vite.config.ts"
+    },
+    {
+      "label": "env",
+      "file_type": "code",
+      "source_file": "vite.config.ts",
+      "source_location": "L8",
+      "id": "fintrack_pro_vite_config_env",
+      "community": 26,
+      "norm_label": "env"
+    },
+    {
+      "label": "App.tsx",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L1",
+      "id": "src_app_tsx",
+      "community": 19,
+      "norm_label": "app.tsx"
+    },
+    {
+      "label": "Dashboard",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L22",
+      "id": "src_app_dashboard",
+      "community": 19,
+      "norm_label": "dashboard"
+    },
+    {
+      "label": "MemberManager",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L23",
+      "id": "src_app_membermanager",
+      "community": 19,
+      "norm_label": "membermanager"
+    },
+    {
+      "label": "AccountManager",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L24",
+      "id": "src_app_accountmanager",
+      "community": 19,
+      "norm_label": "accountmanager"
+    },
+    {
+      "label": "Ledger",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L25",
+      "id": "src_app_ledger",
+      "community": 19,
+      "norm_label": "ledger"
+    },
+    {
+      "label": "InvestmentTracker",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L26",
+      "id": "src_app_investmenttracker",
+      "community": 19,
+      "norm_label": "investmenttracker"
+    },
+    {
+      "label": "ReportGenerator",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L27",
+      "id": "src_app_reportgenerator",
+      "community": 19,
+      "norm_label": "reportgenerator"
+    },
+    {
+      "label": "Settings",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L28",
+      "id": "src_app_settings",
+      "community": 19,
+      "norm_label": "settings"
+    },
+    {
+      "label": "TransferModal",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L29",
+      "id": "src_app_transfermodal",
+      "community": 19,
+      "norm_label": "transfermodal"
+    },
+    {
+      "label": "TransactionModal",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L30",
+      "id": "src_app_transactionmodal",
+      "community": 19,
+      "norm_label": "transactionmodal"
+    },
+    {
+      "label": "FloatingActionButton",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L31",
+      "id": "src_app_floatingactionbutton",
+      "community": 19,
+      "norm_label": "floatingactionbutton"
+    },
+    {
+      "label": "Login",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L32",
+      "id": "src_app_login",
+      "community": 19,
+      "norm_label": "login"
+    },
+    {
+      "label": "App()",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L34",
+      "id": "src_app_app",
+      "community": 19,
+      "norm_label": "app()"
+    },
+    {
+      "label": "types.ts",
+      "file_type": "code",
+      "source_file": "src/types.ts",
+      "source_location": "L1",
+      "id": "src_types_ts",
+      "community": 18,
+      "norm_label": "types.ts"
+    },
+    {
+      "label": "Member",
+      "file_type": "code",
+      "source_file": "src/types.ts",
+      "source_location": "L1",
+      "id": "src_types_member",
+      "community": 18,
+      "norm_label": "member"
+    },
+    {
+      "label": "Account",
+      "file_type": "code",
+      "source_file": "src/types.ts",
+      "source_location": "L7",
+      "id": "src_types_account",
+      "community": 18,
+      "norm_label": "account"
+    },
+    {
+      "label": "Transaction",
+      "file_type": "code",
+      "source_file": "src/types.ts",
+      "source_location": "L19",
+      "id": "src_types_transaction",
+      "community": 1,
+      "norm_label": "transaction"
+    },
+    {
+      "label": "Investment",
+      "file_type": "code",
+      "source_file": "src/types.ts",
+      "source_location": "L31",
+      "id": "src_types_investment",
+      "community": 18,
+      "norm_label": "investment"
+    },
+    {
+      "label": "InvestmentReturn",
+      "file_type": "code",
+      "source_file": "src/types.ts",
+      "source_location": "L39",
+      "id": "src_types_investmentreturn",
+      "community": 18,
+      "norm_label": "investmentreturn"
+    },
+    {
+      "label": "main.tsx",
+      "file_type": "code",
+      "source_file": "src/main.tsx",
+      "source_location": "L1",
+      "id": "src_main_tsx",
+      "community": 19,
+      "norm_label": "main.tsx"
+    },
+    {
+      "label": "cn.ts",
+      "file_type": "code",
+      "source_file": "src/utils/cn.ts",
+      "source_location": "L1",
+      "id": "src_utils_cn_ts",
+      "community": 1,
+      "norm_label": "cn.ts"
+    },
+    {
+      "label": "cn()",
+      "file_type": "code",
+      "source_file": "src/utils/cn.ts",
+      "source_location": "L4",
+      "id": "utils_cn_cn",
+      "community": 1,
+      "norm_label": "cn()"
+    },
+    {
+      "label": "TransactionCard.tsx",
+      "file_type": "code",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L1",
+      "id": "src_components_transactioncard_tsx",
+      "community": 1,
+      "norm_label": "transactioncard.tsx"
+    },
+    {
+      "label": "TransactionCardProps",
+      "file_type": "code",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L8",
+      "id": "components_transactioncard_transactioncardprops",
+      "community": 1,
+      "norm_label": "transactioncardprops"
+    },
+    {
+      "label": "TransactionCard()",
+      "file_type": "code",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L20",
+      "id": "components_transactioncard_transactioncard",
+      "community": 1,
+      "norm_label": "transactioncard()"
+    },
+    {
+      "label": "Ledger.tsx",
+      "file_type": "code",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L1",
+      "id": "src_components_ledger_tsx",
+      "community": 1,
+      "norm_label": "ledger.tsx"
+    },
+    {
+      "label": "LedgerProps",
+      "file_type": "code",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L19",
+      "id": "components_ledger_ledgerprops",
+      "community": 1,
+      "norm_label": "ledgerprops"
+    },
+    {
+      "label": "Ledger()",
+      "file_type": "code",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L27",
+      "id": "components_ledger_ledger",
+      "community": 1,
+      "norm_label": "ledger()"
+    },
+    {
+      "label": "TransferModal.tsx",
+      "file_type": "code",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L1",
+      "id": "src_components_transfermodal_tsx",
+      "community": 18,
+      "norm_label": "transfermodal.tsx"
+    },
+    {
+      "label": "TransferModalProps",
+      "file_type": "code",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L7",
+      "id": "components_transfermodal_transfermodalprops",
+      "community": 18,
+      "norm_label": "transfermodalprops"
+    },
+    {
+      "label": "TransferModal()",
+      "file_type": "code",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L14",
+      "id": "components_transfermodal_transfermodal",
+      "community": 18,
+      "norm_label": "transfermodal()"
+    },
+    {
+      "label": "Dashboard.tsx",
+      "file_type": "code",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L1",
+      "id": "src_components_dashboard_tsx",
+      "community": 18,
+      "norm_label": "dashboard.tsx"
+    },
+    {
+      "label": "DashboardProps",
+      "file_type": "code",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L17",
+      "id": "components_dashboard_dashboardprops",
+      "community": 18,
+      "norm_label": "dashboardprops"
+    },
+    {
+      "label": "typeIcons",
+      "file_type": "code",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L32",
+      "id": "components_dashboard_typeicons",
+      "community": 18,
+      "norm_label": "typeicons"
+    },
+    {
+      "label": "Dashboard()",
+      "file_type": "code",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L41",
+      "id": "components_dashboard_dashboard",
+      "community": 18,
+      "norm_label": "dashboard()"
+    },
+    {
+      "label": "AccountCard()",
+      "file_type": "code",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L153",
+      "id": "components_dashboard_accountcard",
+      "community": 18,
+      "norm_label": "accountcard()"
+    },
+    {
+      "label": "FloatingActionButton.tsx",
+      "file_type": "code",
+      "source_file": "src/components/FloatingActionButton.tsx",
+      "source_location": "L1",
+      "id": "src_components_floatingactionbutton_tsx",
+      "community": 24,
+      "norm_label": "floatingactionbutton.tsx"
+    },
+    {
+      "label": "FloatingActionButtonProps",
+      "file_type": "code",
+      "source_file": "src/components/FloatingActionButton.tsx",
+      "source_location": "L5",
+      "id": "components_floatingactionbutton_floatingactionbuttonprops",
+      "community": 24,
+      "norm_label": "floatingactionbuttonprops"
+    },
+    {
+      "label": "FloatingActionButton()",
+      "file_type": "code",
+      "source_file": "src/components/FloatingActionButton.tsx",
+      "source_location": "L10",
+      "id": "components_floatingactionbutton_floatingactionbutton",
+      "community": 24,
+      "norm_label": "floatingactionbutton()"
+    },
+    {
+      "label": "ReportGenerator.tsx",
+      "file_type": "code",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L1",
+      "id": "src_components_reportgenerator_tsx",
+      "community": 1,
+      "norm_label": "reportgenerator.tsx"
+    },
+    {
+      "label": "ReportGeneratorProps",
+      "file_type": "code",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L16",
+      "id": "components_reportgenerator_reportgeneratorprops",
+      "community": 1,
+      "norm_label": "reportgeneratorprops"
+    },
+    {
+      "label": "ReportGenerator()",
+      "file_type": "code",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L22",
+      "id": "components_reportgenerator_reportgenerator",
+      "community": 1,
+      "norm_label": "reportgenerator()"
+    },
+    {
+      "label": "TransactionModal.tsx",
+      "file_type": "code",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L1",
+      "id": "src_components_transactionmodal_tsx",
+      "community": 1,
+      "norm_label": "transactionmodal.tsx"
+    },
+    {
+      "label": "TransactionModalProps",
+      "file_type": "code",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L8",
+      "id": "components_transactionmodal_transactionmodalprops",
+      "community": 1,
+      "norm_label": "transactionmodalprops"
+    },
+    {
+      "label": "TransactionModal()",
+      "file_type": "code",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L16",
+      "id": "components_transactionmodal_transactionmodal",
+      "community": 1,
+      "norm_label": "transactionmodal()"
+    },
+    {
+      "label": "TransactionRow.tsx",
+      "file_type": "code",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L1",
+      "id": "src_components_transactionrow_tsx",
+      "community": 1,
+      "norm_label": "transactionrow.tsx"
+    },
+    {
+      "label": "TransactionRowProps",
+      "file_type": "code",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L8",
+      "id": "components_transactionrow_transactionrowprops",
+      "community": 1,
+      "norm_label": "transactionrowprops"
+    },
+    {
+      "label": "TransactionRow()",
+      "file_type": "code",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L20",
+      "id": "components_transactionrow_transactionrow",
+      "community": 1,
+      "norm_label": "transactionrow()"
+    },
+    {
+      "label": "MemberManager.tsx",
+      "file_type": "code",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L1",
+      "id": "src_components_membermanager_tsx",
+      "community": 18,
+      "norm_label": "membermanager.tsx"
+    },
+    {
+      "label": "MemberManagerProps",
+      "file_type": "code",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L5",
+      "id": "components_membermanager_membermanagerprops",
+      "community": 18,
+      "norm_label": "membermanagerprops"
+    },
+    {
+      "label": "MemberManager()",
+      "file_type": "code",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L10",
+      "id": "components_membermanager_membermanager",
+      "community": 18,
+      "norm_label": "membermanager()"
+    },
+    {
+      "label": "Settings.tsx",
+      "file_type": "code",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L1",
+      "id": "src_components_settings_tsx",
+      "community": 1,
+      "norm_label": "settings.tsx"
+    },
+    {
+      "label": "AppSettings",
+      "file_type": "code",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L15",
+      "id": "components_settings_appsettings",
+      "community": 1,
+      "norm_label": "appsettings"
+    },
+    {
+      "label": "SettingsProps",
+      "file_type": "code",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L23",
+      "id": "components_settings_settingsprops",
+      "community": 1,
+      "norm_label": "settingsprops"
+    },
+    {
+      "label": "Settings()",
+      "file_type": "code",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L30",
+      "id": "components_settings_settings",
+      "community": 1,
+      "norm_label": "settings()"
+    },
+    {
+      "label": "Login.tsx",
+      "file_type": "code",
+      "source_file": "src/components/Login.tsx",
+      "source_location": "L1",
+      "id": "src_components_login_tsx",
+      "community": 25,
+      "norm_label": "login.tsx"
+    },
+    {
+      "label": "LoginProps",
+      "file_type": "code",
+      "source_file": "src/components/Login.tsx",
+      "source_location": "L5",
+      "id": "components_login_loginprops",
+      "community": 25,
+      "norm_label": "loginprops"
+    },
+    {
+      "label": "Login()",
+      "file_type": "code",
+      "source_file": "src/components/Login.tsx",
+      "source_location": "L9",
+      "id": "components_login_login",
+      "community": 25,
+      "norm_label": "login()"
+    },
+    {
+      "label": "AccountManager.tsx",
+      "file_type": "code",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L1",
+      "id": "src_components_accountmanager_tsx",
+      "community": 18,
+      "norm_label": "accountmanager.tsx"
+    },
+    {
+      "label": "AccountManagerProps",
+      "file_type": "code",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L6",
+      "id": "components_accountmanager_accountmanagerprops",
+      "community": 18,
+      "norm_label": "accountmanagerprops"
+    },
+    {
+      "label": "colors",
+      "file_type": "code",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L13",
+      "id": "components_accountmanager_colors",
+      "community": 18,
+      "norm_label": "colors"
+    },
+    {
+      "label": "AccountManager()",
+      "file_type": "code",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L18",
+      "id": "components_accountmanager_accountmanager",
+      "community": 18,
+      "norm_label": "accountmanager()"
+    },
+    {
+      "label": "InvestmentTracker.tsx",
+      "file_type": "code",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L1",
+      "id": "src_components_investmenttracker_tsx",
+      "community": 18,
+      "norm_label": "investmenttracker.tsx"
+    },
+    {
+      "label": "InvestmentTrackerProps",
+      "file_type": "code",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L8",
+      "id": "components_investmenttracker_investmenttrackerprops",
+      "community": 18,
+      "norm_label": "investmenttrackerprops"
+    },
+    {
+      "label": "InvestmentTracker()",
+      "file_type": "code",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L14",
+      "id": "components_investmenttracker_investmenttracker",
+      "community": 18,
+      "norm_label": "investmenttracker()"
+    },
+    {
+      "label": "TransactionForm.tsx",
+      "file_type": "code",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L1",
+      "id": "src_components_transactionform_tsx",
+      "community": 1,
+      "norm_label": "transactionform.tsx"
+    },
+    {
+      "label": "TransactionFormProps",
+      "file_type": "code",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L5",
+      "id": "components_transactionform_transactionformprops",
+      "community": 1,
+      "norm_label": "transactionformprops"
+    },
+    {
+      "label": "TransactionForm()",
+      "file_type": "code",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L13",
+      "id": "components_transactionform_transactionform",
+      "community": 1,
+      "norm_label": "transactionform()"
+    },
+    {
+      "label": "Sidebar.tsx",
+      "file_type": "code",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L1",
+      "id": "src_components_layout_sidebar_tsx",
+      "community": 1,
+      "norm_label": "sidebar.tsx"
+    },
+    {
+      "label": "SidebarProps",
+      "file_type": "code",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L6",
+      "id": "layout_sidebar_sidebarprops",
+      "community": 1,
+      "norm_label": "sidebarprops"
+    },
+    {
+      "label": "Sidebar()",
+      "file_type": "code",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L19",
+      "id": "layout_sidebar_sidebar",
+      "community": 1,
+      "norm_label": "sidebar()"
+    },
+    {
+      "label": "Header.tsx",
+      "file_type": "code",
+      "source_file": "src/components/layout/Header.tsx",
+      "source_location": "L1",
+      "id": "src_components_layout_header_tsx",
+      "community": 19,
+      "norm_label": "header.tsx"
+    },
+    {
+      "label": "HeaderProps",
+      "file_type": "code",
+      "source_file": "src/components/layout/Header.tsx",
+      "source_location": "L4",
+      "id": "layout_header_headerprops",
+      "community": 19,
+      "norm_label": "headerprops"
+    },
+    {
+      "label": "Header()",
+      "file_type": "code",
+      "source_file": "src/components/layout/Header.tsx",
+      "source_location": "L10",
+      "id": "layout_header_header",
+      "community": 19,
+      "norm_label": "header()"
+    },
+    {
+      "label": "geminiService.ts",
+      "file_type": "code",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L1",
+      "id": "src_services_geminiservice_ts",
+      "community": 1,
+      "norm_label": "geminiservice.ts"
+    },
+    {
+      "label": "getAI()",
+      "file_type": "code",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L5",
+      "id": "services_geminiservice_getai",
+      "community": 1,
+      "norm_label": "getai()"
+    },
+    {
+      "label": "categorizeTransaction()",
+      "file_type": "code",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L16",
+      "id": "services_geminiservice_categorizetransaction",
+      "community": 1,
+      "norm_label": "categorizetransaction()"
+    },
+    {
+      "label": "getFinancialInsights()",
+      "file_type": "code",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L42",
+      "id": "services_geminiservice_getfinancialinsights",
+      "community": 1,
+      "norm_label": "getfinancialinsights()"
+    },
+    {
+      "label": "cacheService.ts",
+      "file_type": "code",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L1",
+      "id": "src_services_cacheservice_ts",
+      "community": 1,
+      "norm_label": "cacheservice.ts"
+    },
+    {
+      "label": "LedgerDB",
+      "file_type": "code",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L6",
+      "id": "services_cacheservice_ledgerdb",
+      "community": 1,
+      "norm_label": "ledgerdb"
+    },
+    {
+      "label": "getDB()",
+      "file_type": "code",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L25",
+      "id": "services_cacheservice_getdb",
+      "community": 1,
+      "norm_label": "getdb()"
+    },
+    {
+      "label": "cacheService",
+      "file_type": "code",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L39",
+      "id": "services_cacheservice_cacheservice",
+      "community": 1,
+      "norm_label": "cacheservice"
+    },
+    {
+      "label": "config.ts",
+      "file_type": "code",
+      "source_file": "api/config.ts",
+      "source_location": "L1",
+      "id": "api_config_ts",
+      "community": 16,
+      "norm_label": "config.ts"
+    },
+    {
+      "label": "config",
+      "file_type": "code",
+      "source_file": "api/config.ts",
+      "source_location": "L1",
+      "id": "api_config_config",
+      "community": 16,
+      "norm_label": "config"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "api/index.ts",
+      "source_location": "L1",
+      "id": "api_index_ts",
+      "community": 16,
+      "norm_label": "index.ts"
+    },
+    {
+      "label": "__filename",
+      "file_type": "code",
+      "source_file": "api/index.ts",
+      "source_location": "L14",
+      "id": "api_index_filename",
+      "community": 16,
+      "norm_label": "__filename"
+    },
+    {
+      "label": "__dirname",
+      "file_type": "code",
+      "source_file": "api/index.ts",
+      "source_location": "L15",
+      "id": "api_index_dirname",
+      "community": 16,
+      "norm_label": "__dirname"
+    },
+    {
+      "label": "app",
+      "file_type": "code",
+      "source_file": "api/index.ts",
+      "source_location": "L20",
+      "id": "api_index_app",
+      "community": 16,
+      "norm_label": "app"
+    },
+    {
+      "label": "db.ts",
+      "file_type": "code",
+      "source_file": "api/db.ts",
+      "source_location": "L1",
+      "id": "api_db_ts",
+      "community": 16,
+      "norm_label": "db.ts"
+    },
+    {
+      "label": "__filename",
+      "file_type": "code",
+      "source_file": "api/db.ts",
+      "source_location": "L7",
+      "id": "api_db_filename",
+      "community": 16,
+      "norm_label": "__filename"
+    },
+    {
+      "label": "__dirname",
+      "file_type": "code",
+      "source_file": "api/db.ts",
+      "source_location": "L8",
+      "id": "api_db_dirname",
+      "community": 16,
+      "norm_label": "__dirname"
+    },
+    {
+      "label": "dbDir",
+      "file_type": "code",
+      "source_file": "api/db.ts",
+      "source_location": "L12",
+      "id": "api_db_dbdir",
+      "community": 16,
+      "norm_label": "dbdir"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "api/db.ts",
+      "source_location": "L19",
+      "id": "api_db_db",
+      "community": 16,
+      "norm_label": "db"
+    },
+    {
+      "label": "initDb()",
+      "file_type": "code",
+      "source_file": "api/db.ts",
+      "source_location": "L33",
+      "id": "api_db_initdb",
+      "community": 16,
+      "norm_label": "initdb()"
+    },
+    {
+      "label": "transfers.ts",
+      "file_type": "code",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L1",
+      "id": "api_routes_transfers_ts",
+      "community": 16,
+      "norm_label": "transfers.ts"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L4",
+      "id": "routes_transfers_router",
+      "community": 16,
+      "norm_label": "router"
+    },
+    {
+      "label": "amount",
+      "file_type": "code",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L9",
+      "id": "routes_transfers_amount",
+      "community": 16,
+      "norm_label": "amount"
+    },
+    {
+      "label": "fromAcc",
+      "file_type": "code",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L39",
+      "id": "routes_transfers_fromacc",
+      "community": 16,
+      "norm_label": "fromacc"
+    },
+    {
+      "label": "toAcc",
+      "file_type": "code",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L40",
+      "id": "routes_transfers_toacc",
+      "community": 16,
+      "norm_label": "toacc"
+    },
+    {
+      "label": "transfer",
+      "file_type": "code",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L48",
+      "id": "routes_transfers_transfer",
+      "community": 16,
+      "norm_label": "transfer"
+    },
+    {
+      "label": "members.ts",
+      "file_type": "code",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L1",
+      "id": "api_routes_members_ts",
+      "community": 16,
+      "norm_label": "members.ts"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L4",
+      "id": "routes_members_router",
+      "community": 16,
+      "norm_label": "router"
+    },
+    {
+      "label": "members",
+      "file_type": "code",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L13",
+      "id": "routes_members_members",
+      "community": 16,
+      "norm_label": "members"
+    },
+    {
+      "label": "info",
+      "file_type": "code",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L32",
+      "id": "routes_members_info",
+      "community": 16,
+      "norm_label": "info"
+    },
+    {
+      "label": "accounts.ts",
+      "file_type": "code",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L1",
+      "id": "api_routes_accounts_ts",
+      "community": 16,
+      "norm_label": "accounts.ts"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L4",
+      "id": "routes_accounts_router",
+      "community": 16,
+      "norm_label": "router"
+    },
+    {
+      "label": "formatted",
+      "file_type": "code",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L15",
+      "id": "routes_accounts_formatted",
+      "community": 16,
+      "norm_label": "formatted"
+    },
+    {
+      "label": "accounts",
+      "file_type": "code",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L26",
+      "id": "routes_accounts_accounts",
+      "community": 16,
+      "norm_label": "accounts"
+    },
+    {
+      "label": "info",
+      "file_type": "code",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L52",
+      "id": "routes_accounts_info",
+      "community": 16,
+      "norm_label": "info"
+    },
+    {
+      "label": "update",
+      "file_type": "code",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L65",
+      "id": "routes_accounts_update",
+      "community": 16,
+      "norm_label": "update"
+    },
+    {
+      "label": "transactions.ts",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L1",
+      "id": "api_routes_transactions_ts",
+      "community": 21,
+      "norm_label": "transactions.ts"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L4",
+      "id": "routes_transactions_router",
+      "community": 21,
+      "norm_label": "router"
+    },
+    {
+      "label": "linkedIds",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L19",
+      "id": "routes_transactions_linkedids",
+      "community": 21,
+      "norm_label": "linkedids"
+    },
+    {
+      "label": "linkedMap",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L30",
+      "id": "routes_transactions_linkedmap",
+      "community": 21,
+      "norm_label": "linkedmap"
+    },
+    {
+      "label": "formatted",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L31",
+      "id": "routes_transactions_formatted",
+      "community": 21,
+      "norm_label": "formatted"
+    },
+    {
+      "label": "transactions",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L42",
+      "id": "routes_transactions_transactions",
+      "community": 21,
+      "norm_label": "transactions"
+    },
+    {
+      "label": "info",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L73",
+      "id": "routes_transactions_info",
+      "community": 21,
+      "norm_label": "info"
+    },
+    {
+      "label": "update",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L89",
+      "id": "routes_transactions_update",
+      "community": 21,
+      "norm_label": "update"
+    },
+    {
+      "label": "linkedUpdate",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L100",
+      "id": "routes_transactions_linkedupdate",
+      "community": 21,
+      "norm_label": "linkedupdate"
+    },
+    {
+      "label": "transaction",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L110",
+      "id": "routes_transactions_transaction",
+      "community": 21,
+      "norm_label": "transaction"
+    },
+    {
+      "label": "updateTx",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L113",
+      "id": "routes_transactions_updatetx",
+      "community": 21,
+      "norm_label": "updatetx"
+    },
+    {
+      "label": "deleteTx",
+      "file_type": "code",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L169",
+      "id": "routes_transactions_deletetx",
+      "community": 21,
+      "norm_label": "deletetx"
+    },
+    {
+      "label": "investments.ts",
+      "file_type": "code",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L1",
+      "id": "api_routes_investments_ts",
+      "community": 16,
+      "norm_label": "investments.ts"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L4",
+      "id": "routes_investments_router",
+      "community": 16,
+      "norm_label": "router"
+    },
+    {
+      "label": "formatted",
+      "file_type": "code",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L11",
+      "id": "routes_investments_formatted",
+      "community": 16,
+      "norm_label": "formatted"
+    },
+    {
+      "label": "investments",
+      "file_type": "code",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L17",
+      "id": "routes_investments_investments",
+      "community": 16,
+      "norm_label": "investments"
+    },
+    {
+      "label": "returns",
+      "file_type": "code",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L36",
+      "id": "routes_investments_returns",
+      "community": 16,
+      "norm_label": "returns"
+    },
+    {
+      "label": "info",
+      "file_type": "code",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L54",
+      "id": "routes_investments_info",
+      "community": 16,
+      "norm_label": "info"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "id": "agents_md",
+      "community": 22,
+      "norm_label": "agents.md"
+    },
+    {
+      "label": "AGENTS.md - Working Conventions",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "id": "fintrack_pro_agents_agents_md_working_conventions",
+      "community": 22,
+      "norm_label": "agents.md - working conventions"
+    },
+    {
+      "label": "1) Language",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L5",
+      "id": "fintrack_pro_agents_1_language",
+      "community": 22,
+      "norm_label": "1) language"
+    },
+    {
+      "label": "2) Core Principles (Non-negotiable)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L11",
+      "id": "fintrack_pro_agents_2_core_principles_non_negotiable",
+      "community": 22,
+      "norm_label": "2) core principles (non-negotiable)"
+    },
+    {
+      "label": "Core Directives",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L21",
+      "id": "fintrack_pro_agents_core_directives",
+      "community": 22,
+      "norm_label": "core directives"
+    },
+    {
+      "label": "Philosophy (Non-negotiables)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L27",
+      "id": "fintrack_pro_agents_philosophy_non_negotiables",
+      "community": 22,
+      "norm_label": "philosophy (non-negotiables)"
+    },
+    {
+      "label": "3) Decision Order & Clarification Gate",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L34",
+      "id": "fintrack_pro_agents_3_decision_order_clarification_gate",
+      "community": 22,
+      "norm_label": "3) decision order & clarification gate"
+    },
+    {
+      "label": "4) Context Discovery & File Reading",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L54",
+      "id": "fintrack_pro_agents_4_context_discovery_file_reading",
+      "community": 22,
+      "norm_label": "4) context discovery & file reading"
+    },
+    {
+      "label": "5) Execution Discipline",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L65",
+      "id": "fintrack_pro_agents_5_execution_discipline",
+      "community": 22,
+      "norm_label": "5) execution discipline"
+    },
+    {
+      "label": "6) Auto-Documentation (Conditional)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L73",
+      "id": "fintrack_pro_agents_6_auto_documentation_conditional",
+      "community": 22,
+      "norm_label": "6) auto-documentation (conditional)"
+    },
+    {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "readme_md",
+      "community": 20,
+      "norm_label": "readme.md"
+    },
+    {
+      "label": "\ud83d\udcb0 FinTrack Pro",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L5",
+      "id": "fintrack_pro_readme_fintrack_pro",
+      "community": 20,
+      "norm_label": "\ud83d\udcb0 fintrack pro"
+    },
+    {
+      "label": "\u2728 Key Features",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L11",
+      "id": "fintrack_pro_readme_key_features",
+      "community": 20,
+      "norm_label": "\u2728 key features"
+    },
+    {
+      "label": "\ud83d\udcf8 Screenshots",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L23",
+      "id": "fintrack_pro_readme_screenshots",
+      "community": 20,
+      "norm_label": "\ud83d\udcf8 screenshots"
+    },
+    {
+      "label": "\ud83d\udee0 Technology Stack",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "id": "fintrack_pro_readme_technology_stack",
+      "community": 20,
+      "norm_label": "\ud83d\udee0 technology stack"
+    },
+    {
+      "label": "\ud83d\ude80 Getting Started",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "id": "fintrack_pro_readme_getting_started",
+      "community": 20,
+      "norm_label": "\ud83d\ude80 getting started"
+    },
+    {
+      "label": "Prerequisites",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L50",
+      "id": "fintrack_pro_readme_prerequisites",
+      "community": 20,
+      "norm_label": "prerequisites"
+    },
+    {
+      "label": "Installation",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L54",
+      "id": "fintrack_pro_readme_installation",
+      "community": 20,
+      "norm_label": "installation"
+    },
+    {
+      "label": "code:bash (git clone <repository-url>)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L57",
+      "id": "fintrack_pro_readme_codeblock_1",
+      "community": 20,
+      "norm_label": "code:bash (git clone <repository-url>)"
+    },
+    {
+      "label": "code:bash (npm install)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L63",
+      "id": "fintrack_pro_readme_codeblock_2",
+      "community": 20,
+      "norm_label": "code:bash (npm install)"
+    },
+    {
+      "label": "code:env (GEMINI_API_KEY=your_gemini_api_key_here)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L69",
+      "id": "fintrack_pro_readme_codeblock_3",
+      "community": 20,
+      "norm_label": "code:env (gemini_api_key=your_gemini_api_key_here)"
+    },
+    {
+      "label": "code:bash (npm run dev)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L77",
+      "id": "fintrack_pro_readme_codeblock_4",
+      "community": 20,
+      "norm_label": "code:bash (npm run dev)"
+    },
+    {
+      "label": "\ud83d\udcca Codebase Graph",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L84",
+      "id": "fintrack_pro_readme_codebase_graph",
+      "community": 20,
+      "norm_label": "\ud83d\udcca codebase graph"
+    },
+    {
+      "label": "DESIGN.md",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L1",
+      "id": "design_md",
+      "community": 17,
+      "norm_label": "design.md"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L1",
+      "id": "fintrack_pro_design_overview",
+      "community": 17,
+      "norm_label": "overview"
+    },
+    {
+      "label": "Colors",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L17",
+      "id": "fintrack_pro_design_colors",
+      "community": 17,
+      "norm_label": "colors"
+    },
+    {
+      "label": "Brand & Accent",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L19",
+      "id": "fintrack_pro_design_brand_accent",
+      "community": 17,
+      "norm_label": "brand & accent"
+    },
+    {
+      "label": "Surface",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L25",
+      "id": "fintrack_pro_design_surface",
+      "community": 17,
+      "norm_label": "surface"
+    },
+    {
+      "label": "Hairlines",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L32",
+      "id": "fintrack_pro_design_hairlines",
+      "community": 17,
+      "norm_label": "hairlines"
+    },
+    {
+      "label": "Text",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L36",
+      "id": "fintrack_pro_design_text",
+      "community": 17,
+      "norm_label": "text"
+    },
+    {
+      "label": "Trading Semantics",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L46",
+      "id": "fintrack_pro_design_trading_semantics",
+      "community": 17,
+      "norm_label": "trading semantics"
+    },
+    {
+      "label": "Typography",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L50",
+      "id": "fintrack_pro_design_typography",
+      "community": 17,
+      "norm_label": "typography"
+    },
+    {
+      "label": "Font Family",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L52",
+      "id": "fintrack_pro_design_font_family",
+      "community": 17,
+      "norm_label": "font family"
+    },
+    {
+      "label": "Hierarchy",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L57",
+      "id": "fintrack_pro_design_hierarchy",
+      "community": 17,
+      "norm_label": "hierarchy"
+    },
+    {
+      "label": "Principles",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L78",
+      "id": "fintrack_pro_design_principles",
+      "community": 17,
+      "norm_label": "principles"
+    },
+    {
+      "label": "Note on Font Substitutes",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L83",
+      "id": "fintrack_pro_design_note_on_font_substitutes",
+      "community": 17,
+      "norm_label": "note on font substitutes"
+    },
+    {
+      "label": "Layout",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L89",
+      "id": "fintrack_pro_design_layout",
+      "community": 17,
+      "norm_label": "layout"
+    },
+    {
+      "label": "Spacing System",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L91",
+      "id": "fintrack_pro_design_spacing_system",
+      "community": 17,
+      "norm_label": "spacing system"
+    },
+    {
+      "label": "Grid & Container",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L97",
+      "id": "fintrack_pro_design_grid_container",
+      "community": 17,
+      "norm_label": "grid & container"
+    },
+    {
+      "label": "Whitespace Philosophy",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L103",
+      "id": "fintrack_pro_design_whitespace_philosophy",
+      "community": 17,
+      "norm_label": "whitespace philosophy"
+    },
+    {
+      "label": "Elevation & Depth",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L106",
+      "id": "fintrack_pro_design_elevation_depth",
+      "community": 17,
+      "norm_label": "elevation & depth"
+    },
+    {
+      "label": "Decorative Depth",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L115",
+      "id": "fintrack_pro_design_decorative_depth",
+      "community": 17,
+      "norm_label": "decorative depth"
+    },
+    {
+      "label": "Shapes",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L119",
+      "id": "fintrack_pro_design_shapes",
+      "community": 17,
+      "norm_label": "shapes"
+    },
+    {
+      "label": "Border Radius Scale",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L121",
+      "id": "fintrack_pro_design_border_radius_scale",
+      "community": 17,
+      "norm_label": "border radius scale"
+    },
+    {
+      "label": "Components",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L136",
+      "id": "fintrack_pro_design_components",
+      "community": 23,
+      "norm_label": "components"
+    },
+    {
+      "label": "Top Navigation",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L138",
+      "id": "fintrack_pro_design_top_navigation",
+      "community": 23,
+      "norm_label": "top navigation"
+    },
+    {
+      "label": "Buttons",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L144",
+      "id": "fintrack_pro_design_buttons",
+      "community": 23,
+      "norm_label": "buttons"
+    },
+    {
+      "label": "Hero Bands",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L162",
+      "id": "fintrack_pro_design_hero_bands",
+      "community": 23,
+      "norm_label": "hero bands"
+    },
+    {
+      "label": "Cards",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L168",
+      "id": "fintrack_pro_design_cards",
+      "community": 23,
+      "norm_label": "cards"
+    },
+    {
+      "label": "Trading Surfaces",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L176",
+      "id": "fintrack_pro_design_trading_surfaces",
+      "community": 23,
+      "norm_label": "trading surfaces"
+    },
+    {
+      "label": "Pricing",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L184",
+      "id": "fintrack_pro_design_pricing",
+      "community": 23,
+      "norm_label": "pricing"
+    },
+    {
+      "label": "Forms",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L190",
+      "id": "fintrack_pro_design_forms",
+      "community": 23,
+      "norm_label": "forms"
+    },
+    {
+      "label": "Tags & Badges",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L196",
+      "id": "fintrack_pro_design_tags_badges",
+      "community": 23,
+      "norm_label": "tags & badges"
+    },
+    {
+      "label": "CTA / Footer",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L200",
+      "id": "fintrack_pro_design_cta_footer",
+      "community": 23,
+      "norm_label": "cta / footer"
+    },
+    {
+      "label": "Do's and Don'ts",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L210",
+      "id": "fintrack_pro_design_do_s_and_don_ts",
+      "community": 17,
+      "norm_label": "do's and don'ts"
+    },
+    {
+      "label": "Do",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L212",
+      "id": "fintrack_pro_design_do",
+      "community": 17,
+      "norm_label": "do"
+    },
+    {
+      "label": "Don't",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L220",
+      "id": "fintrack_pro_design_don_t",
+      "community": 17,
+      "norm_label": "don't"
+    },
+    {
+      "label": "Responsive Behavior",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L229",
+      "id": "fintrack_pro_design_responsive_behavior",
+      "community": 17,
+      "norm_label": "responsive behavior"
+    },
+    {
+      "label": "Breakpoints",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L231",
+      "id": "fintrack_pro_design_breakpoints",
+      "community": 17,
+      "norm_label": "breakpoints"
+    },
+    {
+      "label": "Touch Targets",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L240",
+      "id": "fintrack_pro_design_touch_targets",
+      "community": 17,
+      "norm_label": "touch targets"
+    },
+    {
+      "label": "Collapsing Strategy",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L246",
+      "id": "fintrack_pro_design_collapsing_strategy",
+      "community": 17,
+      "norm_label": "collapsing strategy"
+    },
+    {
+      "label": "Iteration Guide",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L253",
+      "id": "fintrack_pro_design_iteration_guide",
+      "community": 17,
+      "norm_label": "iteration guide"
+    },
+    {
+      "label": "Known Gaps",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": "L263",
+      "id": "fintrack_pro_design_known_gaps",
+      "community": 17,
+      "norm_label": "known gaps"
+    },
+    {
+      "label": "vite.config.ts",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/vite.config.ts",
+      "source_location": "L1",
+      "community": 11,
+      "norm_label": "vite.config.ts",
+      "id": "d_dev_projects_new_folder_fintrack_pro_vite_config_ts"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/api/index.ts",
+      "source_location": "L1",
+      "community": 12,
+      "norm_label": "index.ts",
+      "id": "d_dev_projects_new_folder_fintrack_pro_api_index_ts"
+    },
+    {
+      "label": "App.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/App.tsx",
+      "source_location": "L1",
+      "community": 3,
+      "norm_label": "app.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_app_tsx"
+    },
+    {
+      "label": "cn()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/App.tsx",
+      "source_location": "L36",
+      "community": 3,
+      "norm_label": "cn()",
+      "id": "app_cn"
+    },
+    {
+      "label": "App()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/App.tsx",
+      "source_location": "L40",
+      "community": 3,
+      "norm_label": "app()",
+      "id": "app_app"
+    },
+    {
+      "label": "main.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/main.tsx",
+      "source_location": "L1",
+      "community": 3,
+      "norm_label": "main.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_main_tsx"
+    },
+    {
+      "label": "types.ts",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/types.ts",
+      "source_location": "L1",
+      "community": 13,
+      "norm_label": "types.ts",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_types_ts"
+    },
+    {
+      "label": "AccountManager.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "accountmanager.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_accountmanager_tsx"
+    },
+    {
+      "label": "handleCreateOrUpdate()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L29",
+      "community": 4,
+      "norm_label": "handlecreateorupdate()",
+      "id": "accountmanager_handlecreateorupdate"
+    },
+    {
+      "label": "startEdit()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L56",
+      "community": 4,
+      "norm_label": "startedit()",
+      "id": "accountmanager_startedit"
+    },
+    {
+      "label": "toggleArchive()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L68",
+      "community": 4,
+      "norm_label": "togglearchive()",
+      "id": "accountmanager_togglearchive"
+    },
+    {
+      "label": "Dashboard.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Dashboard.tsx",
+      "source_location": "L1",
+      "community": 14,
+      "norm_label": "dashboard.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_dashboard_tsx"
+    },
+    {
+      "label": "FloatingActionButton.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/FloatingActionButton.tsx",
+      "source_location": "L1",
+      "community": 15,
+      "norm_label": "floatingactionbutton.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_floatingactionbutton_tsx"
+    },
+    {
+      "label": "InvestmentTracker.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L1",
+      "community": 2,
+      "norm_label": "investmenttracker.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_investmenttracker_tsx"
+    },
+    {
+      "label": "fetchInvestments()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L32",
+      "community": 2,
+      "norm_label": "fetchinvestments()",
+      "id": "investmenttracker_fetchinvestments"
+    },
+    {
+      "label": "fetchReturns()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L37",
+      "community": 2,
+      "norm_label": "fetchreturns()",
+      "id": "investmenttracker_fetchreturns"
+    },
+    {
+      "label": "handleCreateInv()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L50",
+      "community": 2,
+      "norm_label": "handlecreateinv()",
+      "id": "investmenttracker_handlecreateinv"
+    },
+    {
+      "label": "handleAddReturn()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L70",
+      "community": 2,
+      "norm_label": "handleaddreturn()",
+      "id": "investmenttracker_handleaddreturn"
+    },
+    {
+      "label": "Ledger.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "ledger.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_ledger_tsx"
+    },
+    {
+      "label": "fetchTransactions()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L43",
+      "community": 0,
+      "norm_label": "fetchtransactions()",
+      "id": "ledger_fetchtransactions"
+    },
+    {
+      "label": "loadCacheAndFetch()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L71",
+      "community": 0,
+      "norm_label": "loadcacheandfetch()",
+      "id": "ledger_loadcacheandfetch"
+    },
+    {
+      "label": "handleAddOrUpdateTransaction()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L97",
+      "community": 0,
+      "norm_label": "handleaddorupdatetransaction()",
+      "id": "ledger_handleaddorupdatetransaction"
+    },
+    {
+      "label": "startEdit()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L192",
+      "community": 0,
+      "norm_label": "startedit()",
+      "id": "ledger_startedit"
+    },
+    {
+      "label": "handleDelete()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L206",
+      "community": 0,
+      "norm_label": "handledelete()",
+      "id": "ledger_handledelete"
+    },
+    {
+      "label": "Login.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Login.tsx",
+      "source_location": "L1",
+      "community": 6,
+      "norm_label": "login.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_login_tsx"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Login.tsx",
+      "source_location": "L17",
+      "community": 6,
+      "norm_label": "handlesubmit()",
+      "id": "login_handlesubmit"
+    },
+    {
+      "label": "MemberManager.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/MemberManager.tsx",
+      "source_location": "L1",
+      "community": 5,
+      "norm_label": "membermanager.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_membermanager_tsx"
+    },
+    {
+      "label": "handleCreate()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/MemberManager.tsx",
+      "source_location": "L14",
+      "community": 5,
+      "norm_label": "handlecreate()",
+      "id": "membermanager_handlecreate"
+    },
+    {
+      "label": "handleDelete()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/MemberManager.tsx",
+      "source_location": "L30",
+      "community": 5,
+      "norm_label": "handledelete()",
+      "id": "membermanager_handledelete"
+    },
+    {
+      "label": "ReportGenerator.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/ReportGenerator.tsx",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "reportgenerator.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_reportgenerator_tsx"
+    },
+    {
+      "label": "generateReport()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/ReportGenerator.tsx",
+      "source_location": "L36",
+      "community": 0,
+      "norm_label": "generatereport()",
+      "id": "reportgenerator_generatereport"
+    },
+    {
+      "label": "exportPDF()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/ReportGenerator.tsx",
+      "source_location": "L76",
+      "community": 0,
+      "norm_label": "exportpdf()",
+      "id": "reportgenerator_exportpdf"
+    },
+    {
+      "label": "Settings.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Settings.tsx",
+      "source_location": "L1",
+      "community": 7,
+      "norm_label": "settings.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_settings_tsx"
+    },
+    {
+      "label": "Settings()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Settings.tsx",
+      "source_location": "L30",
+      "community": 7,
+      "norm_label": "settings()",
+      "id": "settings_settings"
+    },
+    {
+      "label": "TransactionModal.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/TransactionModal.tsx",
+      "source_location": "L1",
+      "community": 8,
+      "norm_label": "transactionmodal.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_transactionmodal_tsx"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/TransactionModal.tsx",
+      "source_location": "L28",
+      "community": 8,
+      "norm_label": "handlesubmit()",
+      "id": "transactionmodal_handlesubmit"
+    },
+    {
+      "label": "TransferModal.tsx",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/TransferModal.tsx",
+      "source_location": "L1",
+      "community": 9,
+      "norm_label": "transfermodal.tsx",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_components_transfermodal_tsx"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/TransferModal.tsx",
+      "source_location": "L24",
+      "community": 9,
+      "norm_label": "handlesubmit()",
+      "id": "transfermodal_handlesubmit"
+    },
+    {
+      "label": "cacheService.ts",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/cacheService.ts",
+      "source_location": "L1",
+      "community": 10,
+      "norm_label": "cacheservice.ts",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_services_cacheservice_ts"
+    },
+    {
+      "label": "getDB()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/cacheService.ts",
+      "source_location": "L25",
+      "community": 10,
+      "norm_label": "getdb()",
+      "id": "cacheservice_getdb"
+    },
+    {
+      "label": "geminiService.ts",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "geminiservice.ts",
+      "id": "d_dev_projects_new_folder_fintrack_pro_src_services_geminiservice_ts"
+    },
+    {
+      "label": "getAI()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L5",
+      "community": 0,
+      "norm_label": "getai()",
+      "id": "geminiservice_getai"
+    },
+    {
+      "label": "categorizeTransaction()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L16",
+      "community": 0,
+      "norm_label": "categorizetransaction()",
+      "id": "geminiservice_categorizetransaction"
+    },
+    {
+      "label": "getFinancialInsights()",
+      "file_type": "code",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L42",
+      "community": 0,
+      "norm_label": "getfinancialinsights()",
+      "id": "geminiservice_getfinancialinsights"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "vite.config.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "vite_config_ts",
+      "target": "fintrack_pro_vite_config_env",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_services_cacheservice_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "services_cacheservice_cacheservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_components_layout_sidebar_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_components_layout_header_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_dashboard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_membermanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_accountmanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_ledger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_investmenttracker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_reportgenerator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_settings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_transfermodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_transactionmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_floatingactionbutton",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.tsx",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "src_app_tsx",
+      "target": "src_app_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_main_tsx",
+      "target": "src_app_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/types.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_types_ts",
+      "target": "src_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/types.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_types_ts",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/types.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_types_ts",
+      "target": "src_types_transaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/types.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_types_ts",
+      "target": "src_types_investment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/types.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "src_types_ts",
+      "target": "src_types_investmentreturn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactioncard_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_transfermodal_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactionrow_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_membermanager_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_components_layout_sidebar_tsx",
+      "target": "src_types_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "src_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "src_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_membermanager_tsx",
+      "target": "src_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "src_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_transfermodal_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_components_layout_sidebar_tsx",
+      "target": "src_types_account",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactioncard_tsx",
+      "target": "src_types_transaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_types_transaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "src_types_transaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactionrow_tsx",
+      "target": "src_types_transaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "src_types_investment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "src_types_investmentreturn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/cn.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_utils_cn_ts",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_transactioncard_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transfermodal_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_transactionrow_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_components_settings_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_components_transactionform_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_components_layout_sidebar_tsx",
+      "target": "src_utils_cn_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_transactioncard_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transfermodal_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_transactionrow_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_components_settings_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_components_transactionform_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_components_layout_sidebar_tsx",
+      "target": "utils_cn_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "components_transactioncard_transactioncard",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L256",
+      "weight": 1.0,
+      "source": "components_reportgenerator_reportgenerator",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L140",
+      "weight": 1.0,
+      "source": "components_transactionmodal_transactionmodal",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "components_transactionrow_transactionrow",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "components_settings_settings",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "components_transactionform_transactionform",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "layout_sidebar_sidebar",
+      "target": "utils_cn_cn"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_components_transactioncard_tsx",
+      "target": "components_transactioncard_transactioncardprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionCard.tsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "src_components_transactioncard_tsx",
+      "target": "components_transactioncard_transactioncard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_components_transactioncard_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_services_geminiservice_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "services_geminiservice_categorizetransaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_services_cacheservice_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "services_cacheservice_cacheservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_components_transactionform_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "src_components_transactionrow_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "components_ledger_ledgerprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Ledger.tsx",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "src_components_ledger_tsx",
+      "target": "components_ledger_ledger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_components_transfermodal_tsx",
+      "target": "components_transfermodal_transfermodalprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransferModal.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_components_transfermodal_tsx",
+      "target": "components_transfermodal_transfermodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "components_dashboard_dashboardprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "components_dashboard_typeicons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "components_dashboard_dashboard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Dashboard.tsx",
+      "source_location": "L153",
+      "weight": 1.0,
+      "source": "src_components_dashboard_tsx",
+      "target": "components_dashboard_accountcard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/FloatingActionButton.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_floatingactionbutton_tsx",
+      "target": "components_floatingactionbutton_floatingactionbuttonprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/FloatingActionButton.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_components_floatingactionbutton_tsx",
+      "target": "components_floatingactionbutton_floatingactionbutton",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "src_services_geminiservice_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "services_geminiservice_getfinancialinsights",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "components_reportgenerator_reportgeneratorprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ReportGenerator.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "src_components_reportgenerator_tsx",
+      "target": "components_reportgenerator_reportgenerator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "src_services_geminiservice_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "services_geminiservice_categorizetransaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "components_transactionmodal_transactionmodalprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionModal.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_components_transactionmodal_tsx",
+      "target": "components_transactionmodal_transactionmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_components_transactionrow_tsx",
+      "target": "components_transactionrow_transactionrowprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionRow.tsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "src_components_transactionrow_tsx",
+      "target": "components_transactionrow_transactionrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_membermanager_tsx",
+      "target": "components_membermanager_membermanagerprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/MemberManager.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_components_membermanager_tsx",
+      "target": "components_membermanager_membermanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_components_settings_tsx",
+      "target": "components_settings_appsettings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "src_components_settings_tsx",
+      "target": "components_settings_settingsprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Settings.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "src_components_settings_tsx",
+      "target": "components_settings_settings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Login.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_login_tsx",
+      "target": "components_login_loginprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/Login.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_components_login_tsx",
+      "target": "components_login_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "components_accountmanager_accountmanagerprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "components_accountmanager_colors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/AccountManager.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "src_components_accountmanager_tsx",
+      "target": "components_accountmanager_accountmanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "components_investmenttracker_investmenttrackerprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/InvestmentTracker.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_components_investmenttracker_tsx",
+      "target": "components_investmenttracker_investmenttracker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_components_transactionform_tsx",
+      "target": "components_transactionform_transactionformprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/TransactionForm.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_components_transactionform_tsx",
+      "target": "components_transactionform_transactionform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_components_layout_sidebar_tsx",
+      "target": "layout_sidebar_sidebarprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Sidebar.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_components_layout_sidebar_tsx",
+      "target": "layout_sidebar_sidebar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Header.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_components_layout_header_tsx",
+      "target": "layout_header_headerprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Header.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_components_layout_header_tsx",
+      "target": "layout_header_header",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_services_geminiservice_ts",
+      "target": "services_geminiservice_getai",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_services_geminiservice_ts",
+      "target": "services_geminiservice_categorizetransaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "src_services_geminiservice_ts",
+      "target": "services_geminiservice_getfinancialinsights",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "services_geminiservice_categorizetransaction",
+      "target": "services_geminiservice_getai",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/geminiService.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "services_geminiservice_getfinancialinsights",
+      "target": "services_geminiservice_getai",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_services_cacheservice_ts",
+      "target": "services_cacheservice_ledgerdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "src_services_cacheservice_ts",
+      "target": "services_cacheservice_getdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/cacheService.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "src_services_cacheservice_ts",
+      "target": "services_cacheservice_cacheservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/config.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "api_config_ts",
+      "target": "api_config_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_config_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_config_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_db_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_db_initdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_routes_members_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_routes_accounts_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_routes_transactions_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_routes_investments_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_routes_transfers_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_index_filename",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_index_dirname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/index.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "api_index_ts",
+      "target": "api_index_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/db.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "api_db_ts",
+      "target": "api_db_filename",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/db.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "api_db_ts",
+      "target": "api_db_dirname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/db.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "api_db_ts",
+      "target": "api_db_dbdir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/db.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "api_db_ts",
+      "target": "api_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/db.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "api_db_ts",
+      "target": "api_db_initdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "api_db_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_members_ts",
+      "target": "api_db_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "api_db_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "api_db_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "api_db_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "api_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_members_ts",
+      "target": "api_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "api_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "api_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "api_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "routes_transfers_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "routes_transfers_amount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "routes_transfers_fromacc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "routes_transfers_toacc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transfers.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "api_routes_transfers_ts",
+      "target": "routes_transfers_transfer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_routes_members_ts",
+      "target": "routes_members_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "api_routes_members_ts",
+      "target": "routes_members_members",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/members.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "api_routes_members_ts",
+      "target": "routes_members_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "routes_accounts_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "routes_accounts_formatted",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "routes_accounts_accounts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "routes_accounts_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/accounts.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "api_routes_accounts_ts",
+      "target": "routes_accounts_update",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_linkedids",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_linkedmap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_formatted",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_transactions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_update",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_linkedupdate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L166",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_transaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L113",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_updatetx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/transactions.ts",
+      "source_location": "L169",
+      "weight": 1.0,
+      "source": "api_routes_transactions_ts",
+      "target": "routes_transactions_deletetx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "routes_investments_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "routes_investments_formatted",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "routes_investments_investments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "routes_investments_returns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/routes/investments.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "api_routes_investments_ts",
+      "target": "routes_investments_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "agents_md",
+      "target": "fintrack_pro_agents_agents_md_working_conventions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_agents_md_working_conventions",
+      "target": "fintrack_pro_agents_1_language",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_agents_md_working_conventions",
+      "target": "fintrack_pro_agents_2_core_principles_non_negotiable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_agents_md_working_conventions",
+      "target": "fintrack_pro_agents_3_decision_order_clarification_gate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_agents_md_working_conventions",
+      "target": "fintrack_pro_agents_4_context_discovery_file_reading",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_agents_md_working_conventions",
+      "target": "fintrack_pro_agents_5_execution_discipline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_agents_md_working_conventions",
+      "target": "fintrack_pro_agents_6_auto_documentation_conditional",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_2_core_principles_non_negotiable",
+      "target": "fintrack_pro_agents_core_directives",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "fintrack_pro_agents_2_core_principles_non_negotiable",
+      "target": "fintrack_pro_agents_philosophy_non_negotiables",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "readme_md",
+      "target": "fintrack_pro_readme_fintrack_pro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_fintrack_pro",
+      "target": "fintrack_pro_readme_key_features",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_fintrack_pro",
+      "target": "fintrack_pro_readme_screenshots",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_fintrack_pro",
+      "target": "fintrack_pro_readme_technology_stack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_fintrack_pro",
+      "target": "fintrack_pro_readme_getting_started",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_fintrack_pro",
+      "target": "fintrack_pro_readme_codebase_graph",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_getting_started",
+      "target": "fintrack_pro_readme_prerequisites",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_getting_started",
+      "target": "fintrack_pro_readme_installation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_installation",
+      "target": "fintrack_pro_readme_codeblock_1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_installation",
+      "target": "fintrack_pro_readme_codeblock_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_installation",
+      "target": "fintrack_pro_readme_codeblock_3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "fintrack_pro_readme_installation",
+      "target": "fintrack_pro_readme_codeblock_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_colors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_typography",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_layout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_elevation_depth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_shapes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_components",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L210",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_do_s_and_don_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L229",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_responsive_behavior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L253",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_iteration_guide",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L263",
+      "weight": 1.0,
+      "source": "design_md",
+      "target": "fintrack_pro_design_known_gaps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_colors",
+      "target": "fintrack_pro_design_brand_accent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_colors",
+      "target": "fintrack_pro_design_surface",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_colors",
+      "target": "fintrack_pro_design_hairlines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_colors",
+      "target": "fintrack_pro_design_text",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_colors",
+      "target": "fintrack_pro_design_trading_semantics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_typography",
+      "target": "fintrack_pro_design_font_family",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_typography",
+      "target": "fintrack_pro_design_hierarchy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_typography",
+      "target": "fintrack_pro_design_principles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_typography",
+      "target": "fintrack_pro_design_note_on_font_substitutes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_layout",
+      "target": "fintrack_pro_design_spacing_system",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_layout",
+      "target": "fintrack_pro_design_grid_container",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_layout",
+      "target": "fintrack_pro_design_whitespace_philosophy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L115",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_elevation_depth",
+      "target": "fintrack_pro_design_decorative_depth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L121",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_shapes",
+      "target": "fintrack_pro_design_border_radius_scale",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L138",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_top_navigation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_buttons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_hero_bands",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_cards",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_trading_surfaces",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L184",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_pricing",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L190",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_forms",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_tags_badges",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L200",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_components",
+      "target": "fintrack_pro_design_cta_footer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_do_s_and_don_ts",
+      "target": "fintrack_pro_design_do",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L220",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_do_s_and_don_ts",
+      "target": "fintrack_pro_design_don_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_responsive_behavior",
+      "target": "fintrack_pro_design_breakpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_responsive_behavior",
+      "target": "fintrack_pro_design_touch_targets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "DESIGN.md",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "fintrack_pro_design_responsive_behavior",
+      "target": "fintrack_pro_design_collapsing_strategy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/App.tsx",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_app_tsx",
+      "target": "app_cn"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/App.tsx",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_app_tsx",
+      "target": "app_app"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/main.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_app_tsx",
+      "target": "d_dev_projects_new_folder_fintrack_pro_src_main_tsx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_accountmanager_tsx",
+      "target": "accountmanager_handlecreateorupdate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_accountmanager_tsx",
+      "target": "accountmanager_startedit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/AccountManager.tsx",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_accountmanager_tsx",
+      "target": "accountmanager_togglearchive"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_investmenttracker_tsx",
+      "target": "investmenttracker_fetchinvestments"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_investmenttracker_tsx",
+      "target": "investmenttracker_fetchreturns"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_investmenttracker_tsx",
+      "target": "investmenttracker_handlecreateinv"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_investmenttracker_tsx",
+      "target": "investmenttracker_handleaddreturn"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L63",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "investmenttracker_fetchinvestments",
+      "target": "investmenttracker_handlecreateinv"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/InvestmentTracker.tsx",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "investmenttracker_fetchreturns",
+      "target": "investmenttracker_handleaddreturn"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_ledger_tsx",
+      "target": "ledger_fetchtransactions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_ledger_tsx",
+      "target": "ledger_loadcacheandfetch"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_ledger_tsx",
+      "target": "ledger_handleaddorupdatetransaction"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L192",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_ledger_tsx",
+      "target": "ledger_startedit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L206",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_ledger_tsx",
+      "target": "ledger_handledelete"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ledger_fetchtransactions",
+      "target": "ledger_loadcacheandfetch"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L182",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ledger_fetchtransactions",
+      "target": "ledger_handleaddorupdatetransaction"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L218",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ledger_fetchtransactions",
+      "target": "ledger_handledelete"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Ledger.tsx",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "ledger_handleaddorupdatetransaction",
+      "target": "geminiservice_categorizetransaction"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Login.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_login_tsx",
+      "target": "login_handlesubmit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/MemberManager.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_membermanager_tsx",
+      "target": "membermanager_handlecreate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/MemberManager.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_membermanager_tsx",
+      "target": "membermanager_handledelete"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/ReportGenerator.tsx",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_reportgenerator_tsx",
+      "target": "reportgenerator_generatereport"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/ReportGenerator.tsx",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_reportgenerator_tsx",
+      "target": "reportgenerator_exportpdf"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/ReportGenerator.tsx",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "reportgenerator_generatereport",
+      "target": "geminiservice_getfinancialinsights"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/Settings.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_settings_tsx",
+      "target": "settings_settings"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/TransactionModal.tsx",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_transactionmodal_tsx",
+      "target": "transactionmodal_handlesubmit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/components/TransferModal.tsx",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_components_transfermodal_tsx",
+      "target": "transfermodal_handlesubmit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/cacheService.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_services_cacheservice_ts",
+      "target": "cacheservice_getdb"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_services_geminiservice_ts",
+      "target": "geminiservice_getai"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_services_geminiservice_ts",
+      "target": "geminiservice_categorizetransaction"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "d_dev_projects_new_folder_fintrack_pro_src_services_geminiservice_ts",
+      "target": "geminiservice_getfinancialinsights"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "geminiservice_getai",
+      "target": "geminiservice_categorizetransaction"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:/Dev/projects/New folder/FinTrack-Pro/src/services/geminiService.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "geminiservice_getai",
+      "target": "geminiservice_getfinancialinsights"
+    }
+  ],
+  "hyperedges": []
+}

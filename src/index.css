@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-primary: #0052ff;
+  --color-primary-active: #0041cc;
+  --color-primary-disabled: #a8b8cc;
+  --color-canvas: #ffffff;
+  --color-surface-soft: #f7f7f7;
+  --color-surface-strong: #eef0f3;
+  --color-surface-dark: #0a0b0d;
+  --color-surface-dark-elevated: #16181c;
+  --color-hairline: #dee1e6;
+  --color-hairline-soft: #eef0f3;
+  --color-ink: #0a0b0d;
+  --color-body: #5b616e;
+  --color-muted: #7c828a;
+  --color-on-primary: #ffffff;
+}
+
+:root.dark {
+  --color-primary: #3b82f6;
+  --color-primary-active: #60a5fa;
+  --color-primary-disabled: #1e3a5f;
+  --color-canvas: #0a0b0d;
+  --color-surface-soft: #16181c;
+  --color-surface-strong: #1e2028;
+  --color-surface-dark: #000000;
+  --color-surface-dark-elevated: #16181c;
+  --color-hairline: #2a2c36;
+  --color-hairline-soft: #1e2028;
+  --color-ink: #f1f5f9;
+  --color-body: #94a3b8;
+  --color-muted: #64748b;
+  --color-on-primary: #ffffff;
+}
+
+@theme {
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-primary: var(--color-primary);
+  --color-primary-active: var(--color-primary-active);
+  --color-primary-disabled: var(--color-primary-disabled);
+  --color-canvas: var(--color-canvas);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-surface-strong: var(--color-surface-strong);
+  --color-surface-dark: var(--color-surface-dark);
+  --color-surface-dark-elevated: var(--color-surface-dark-elevated);
+  --color-hairline: var(--color-hairline);
+  --color-hairline-soft: var(--color-hairline-soft);
+  --color-ink: var(--color-ink);
+  --color-body: var(--color-body);
+  --color-muted: var(--color-muted);
+  --color-on-primary: var(--color-on-primary);
+  --color-on-dark: #ffffff;
+  --color-on-dark-soft: #94a3b8;
+  --color-semantic-up: #05b169;
+  --color-semantic-down: #cf202f;
+  --spacing-section: 96px;
+  --radius-pill: 100px;
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 4px;
+}
+
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-canvas);
+  color: var(--color-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, .font-display {
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+@layer components {
+  .financial-number {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .btn-pill {
+    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+  }
+
+  .btn-primary {
+    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-primary-active);
+  }
+
+  .btn-secondary {
+    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+    background-color: var(--color-surface-strong);
+    color: var(--color-ink);
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-hairline);
+  }
+
+
+
+  .card-xl {
+    background-color: var(--color-canvas);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-hairline);
+    padding: 1.25rem;
+  }
+
+  .section-padding {
+    @apply py-[96px];
+  }
+}
+
+

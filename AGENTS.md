@@ -1,0 +1,89 @@
+# AGENTS.md - Working Conventions
+
+---
+
+## 1) Language
+- **Repository artifacts (mandatory)**: All documentation/guides, code comments, and any text written into files should be in **English**.
+- **Conversation**: Replies in the chat should be in **English**.
+
+---
+
+## 2) Core Principles (Non-negotiable)
+- Clarify Ambiguity First: If a requirement is unclear or incomplete, ask 1-2 clarifying questions before proceeding. Never guess.
+- Code Only What Was Asked: Follow the PRD/ticket scope strictly; no extra features.
+- Minimum Viable Change: Deliver the simplest, most idempotent fix that works; avoid over-engineering.
+- Reuse Before Rewriting: Prefer existing modules or utilities; avoid duplication.
+- File Length Limit: Keep every file under 300 LOC; if a change would exceed this, pause and propose a refactor or split plan.
+- Configuration and Secrets: Load all secrets or config from environment variables only; never hardcode.
+- When writing code, aim for simplicity and readability, not just brevity. Short code that is hard to read is worse than slightly longer code that is clear.
+- Clean Up Temporary Files: Delete any temporary test files immediately after use.
+
+### Core Directives
+- WRITE CODE ONLY TO SPEC.
+- MINIMUM, NOT MAXIMUM.
+- ONE SIMPLE SOLUTION.
+- CLARIFY, DON'T ASSUME.
+
+### Philosophy (Non-negotiables)
+- Do not add unnecessary files or modules; if a new file is unavoidable, justify it.
+- Do not change architecture or patterns unless explicitly required and justified.
+- Prioritize readability and maintainability over clever or complex code.
+
+---
+
+## 3) Decision Order & Clarification Gate
+- **Rule precedence (highest to lowest)**:
+  1. Safety and non-destructive behavior
+  2. Core Principles (Section 2)
+  3. Explicit user request and task scope
+  4. Dynamic context loading rules
+  5. Output/formatting preferences
+- **When to ask before execution**:
+  - Missing required inputs (paths, target environment, acceptance criteria)
+  - Multiple valid implementation paths with materially different outcomes
+  - Any potentially destructive or irreversible action
+- **When to execute directly**:
+  - Task is clear, low-risk, and can be completed with minimum viable change
+- **Question workflow**:
+  - Prefer a dedicated question tool when available to ask 1-2 short, decision-driving questions
+  - If no question tool is available, ask in chat first, wait for user answer, then execute
+  - Do not guess missing critical requirements
+
+---
+
+## 4) Context Discovery & File Reading
+- **Before editing/creating files**: Read all relevant files in full to understand context.
+- **Before starting a task**: Read at minimum `README.md` and relevant files in `docs/*` (if present).
+- **Default discovery tool**: Use `rg` to find source-of-truth implementations quickly.
+- **`docs/structure.md` is optional**: Use it when present for broad navigation; do not block work if missing.
+- **Structure index updates**: Create or refresh `docs/structure.md` only when requested, or when a major restructure makes navigation unreliable.
+
+---
+
+
+
+## 5) Execution Discipline
+- **Run only necessary commands**; avoid destructive commands (`rm`, `git reset`...) unless explicitly requested.
+- **Timeout**: Default 60s; cap at 70-80s for potentially long-running commands.
+- **Permission errors**: Explain clearly and propose safe manual steps.
+- **New dependencies**: Do not add unless truly necessary and user agrees.
+
+---
+
+## 6) Auto-Documentation (Conditional)
+After completing impactful changes (feature/bugfix/schema/architecture), update briefly:
+- `README.md`: If stable info (stack/versions/overview) is affected.
+- `HANDOFF.md`, `CHANGELOG.md`, `docs/structure.md`: Update if the file exists, or create only when explicitly requested.
+- `CHANGELOG.md` format (when used): `YYYY-MM-DD: <Fix|Add|Change|Remove> <what> at <path> - <impact> (completed).`
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, invoke the `skill` tool with `skill: "graphify"` before doing anything else.
+
+Rules:
+- ALWAYS read graphify-out/GRAPH_REPORT.md before reading any source files, running grep/glob searches, or answering codebase questions. The graph is your primary map of the codebase.
+- IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
