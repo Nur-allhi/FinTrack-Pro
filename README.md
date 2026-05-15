@@ -9,7 +9,9 @@ A comprehensive family financial tracker with multi-account management, investme
 - **Account Groups** — Group accounts under parent groups (e.g., "HK Bank" containing Savings, Current, Fixed accounts) with accumulated balance
 - **Investment Tracking** — Monitor principal amounts and track returns with cumulative ROI visualization
 - **Professional Ledger** — Detailed transaction history per account with running balance, debit/credit view
-- **Report Generation** — Generate PDF financial reports with transaction summaries
+- **Report Generation** — Generate PDF & CSV financial reports with transaction summaries
+- **Bank Statement PDF** — Export ledger as professionally formatted PDF with opening/closing balance
+- **Quick Tasks** — Built-in todo list widget on the dashboard with localStorage persistence
 - **Dark Mode** — Institutional dark theme with CSS variable system
 - **Type Color Customization** — System-wide colors per account type (Bank, Cash, Mobile, etc.)
 - **Global Search** — Search accounts and members from the header

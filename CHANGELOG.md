@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-05-15
+
+### Add
+- Dashboard Quick Tasks widget — todo list with localStorage persistence at `src/components/Dashboard.tsx`
+- Report CSV export — downloadable CSV alongside PDF at `src/components/ReportGenerator.tsx`
+- Report Category column — included in both CSV and PDF exports at `src/components/ReportGenerator.tsx`
+- Account member context dropdowns — member name shown in all account selectors at `src/components/ReportGenerator.tsx`, `src/components/TransferModal.tsx`, `src/components/TransactionModal.tsx`
+
+### Change
+- TransactionForm — redesigned with desktop 2-row 12-col grid and mobile stacked layout matching `Design/` spec at `src/components/TransactionForm.tsx`
+- TransactionForm date input — styled to match Select component (rounded-pill, bg-surface-soft, Calendar icon) at `src/components/TransactionForm.tsx`
+- DebitCreditToggle — removed max-width cap, fills available space at `src/components/DebitCreditToggle.tsx`
+- Select button padding — `py-2` → `py-3` to match input heights at `src/components/Select.tsx`
+- Select dropdown — `overflow-hidden` → `overflow-y-auto` with `max-h-[200px]` at `src/components/Select.tsx`
+- FAB — unified speed-dial styling, click-outside auto-close, auto-close on modal open at `src/components/FloatingActionButton.tsx`
+- FAB — hidden on desktop (`md:hidden`), visible on mobile only at `src/App.tsx`
+- Dashboard banner — removed Transfer Funds / Generate Report buttons at `src/components/Dashboard.tsx`
+- Dashboard quick filters — fallback color for "All" and "Others" pills at `src/components/Dashboard.tsx`
+- Ledger — replaced CSV download with bank-statement PDF (pure jsPDF) at `src/components/Ledger.tsx`
+- Ledger — smoother optimistic updates, removed full re-fetch on save/delete at `src/components/Ledger.tsx`
+- Report PDF — bank-statement format with proper locale and currency fallback at `src/components/ReportGenerator.tsx`
+
+### Fix
+- PDF numbers not in English — forced `en-US` locale on all `toLocaleString()` calls
+- PDF currency symbol `ó` — ASCII-safe fallback `Tk ` for non-ASCII symbols in jsPDF Helvetica
+- FAB not closing after posting — click-outside handler + modal state watcher at `src/components/FloatingActionButton.tsx`
+
 ## 2026-05-14
 
 ### Fix

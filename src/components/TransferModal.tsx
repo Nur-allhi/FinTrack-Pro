@@ -89,7 +89,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                     value={transfer.from_account_id}
                     onChange={v => setTransfer({...transfer, from_account_id: v})}
                     placeholder="Select Source"
-                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
+                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} · ${a.member_name} (${currency}${a.current_balance.toLocaleString()})` : `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
                   />
                 </div>
 
@@ -105,7 +105,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                     value={transfer.to_account_id}
                     onChange={v => setTransfer({...transfer, to_account_id: v})}
                     placeholder="Select Destination"
-                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
+                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} · ${a.member_name} (${currency}${a.current_balance.toLocaleString()})` : `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
                   />
                 </div>
 

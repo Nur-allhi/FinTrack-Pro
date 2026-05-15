@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Account, Member } from '../types';
 import { cn } from '../utils/cn';
 import { 
@@ -12,7 +12,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Filter,
-  Users
+  Users,
+  Plus,
+  ArrowLeftRight,
+  Check,
+  X
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -22,6 +26,7 @@ interface DashboardProps {
   setFilterMemberId: (id: number | 'all' | 'general') => void;
   onSelectAccount: (id: number) => void;
   onOpenTransfer: () => void;
+  onOpenTransaction: () => void;
   onGenerateReport: () => void;
   settings: {
     showNetWorth: boolean;
@@ -50,6 +55,7 @@ export default function Dashboard({
   setFilterMemberId, 
   onSelectAccount, 
   onOpenTransfer,
+  onOpenTransaction,
   onGenerateReport,
   settings
 }: DashboardProps) {
@@ -95,6 +101,31 @@ export default function Dashboard({
 
   const totalBalance = activeAccounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0);
 
+  const [todos, setTodos] = useState<{id: number; text: string; done: boolean}[]>(() => {
+    try { return JSON.parse(localStorage.getItem('dashboard_todos') || '[]'); }
+    catch { return []; }
+  });
+  const [newTodo, setNewTodo] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('dashboard_todos', JSON.stringify(todos));
+  }, [todos]);
+
+  const addTodo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTodo.trim()) return;
+    setTodos([...todos, { id: Date.now(), text: newTodo.trim(), done: false }]);
+    setNewTodo('');
+  };
+
+  const toggleTodo = (id: number) => {
+    setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  };
+
+  const deleteTodo = (id: number) => {
+    setTodos(todos.filter(t => t.id !== id));
+  };
+
   return (
     <div className="space-y-8">
       {/* Hero / Summary Section */}
@@ -104,39 +135,91 @@ export default function Dashboard({
             <div className="absolute top-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-primary/20 rounded-full blur-[64px] md:blur-[128px] -translate-y-1/2 translate-x-1/2" />
           </div>
           
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center">
-            <div>
-              <p className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-[0.3em] mb-2 md:mb-4">Total Balance</p>
-              <h3 className="text-3xl md:text-5xl lg:text-6xl font-normal text-ink tracking-[-0.03em] financial-number mb-4 md:mb-8">
-                {settings.currency}{totalBalance.toLocaleString()}
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                <button onClick={onOpenTransfer} className="btn-primary text-xs md:text-sm px-5 md:px-8 py-2.5 md:py-3">Transfer Funds</button>
-                <button onClick={onGenerateReport} className="btn-pill bg-canvas text-ink border border-hairline px-5 md:px-8 py-2.5 md:py-3 text-xs md:text-sm hover:bg-surface-soft transition-colors">Generate Report</button>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
+            <div className="space-y-4 md:space-y-6">
+              <div>
+                <p className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-[0.3em] mb-2 md:mb-4">Total Balance</p>
+                <h3 className="text-3xl md:text-5xl lg:text-6xl font-normal text-ink tracking-[-0.03em] financial-number">
+                  {settings.currency}{totalBalance.toLocaleString()}
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                {settings.showCurrentAssets && (
+                  <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
+                    <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Assets</p>
+                    <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
+                      {settings.currency}{totalBalance.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+                {settings.showLiabilities && (
+                  <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
+                    <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
+                    <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
+                      {settings.currency}0
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              {settings.showCurrentAssets && (
-                <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
-                  <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Assets</p>
-                  <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
-                    {settings.currency}{totalBalance.toLocaleString()}
-                  </p>
-                </div>
-              )}
-              {settings.showLiabilities && (
-                <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
-                  <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
-                  <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
-                    {settings.currency}0
-                  </p>
-                </div>
-              )}
+
+            <div className="bg-canvas/80 backdrop-blur-sm rounded-xl border border-hairline p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Quick Tasks</p>
+                {todos.length > 0 && (
+                  <span className="text-[10px] font-bold text-primary">{todos.filter(t => !t.done).length} pending</span>
+                )}
+              </div>
+              <div className="space-y-1 mb-3 max-h-[180px] overflow-y-auto">
+                {todos.length === 0 ? (
+                  <p className="text-[11px] text-muted italic">No tasks yet. Add one below.</p>
+                ) : (
+                  todos.map(todo => (
+                    <div key={todo.id} className="flex items-center gap-2 group py-0.5">
+                      <button
+                        type="button"
+                        onClick={() => toggleTodo(todo.id)}
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${todo.done ? 'bg-primary border-primary' : 'border-hairline hover:border-muted'}`}
+                      >
+                        {todo.done && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                      <span className={`flex-1 text-xs ${todo.done ? 'line-through text-muted' : 'text-ink'}`}>{todo.text}</span>
+                      <button
+                        type="button"
+                        onClick={() => deleteTodo(todo.id)}
+                        className="opacity-0 group-hover:opacity-100 text-muted hover:text-semantic-down transition-all"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              <form onSubmit={addTodo} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a task..."
+                  value={newTodo}
+                  onChange={e => setNewTodo(e.target.value)}
+                  className="flex-1 bg-surface-soft border border-hairline rounded-pill px-3 py-1.5 text-xs text-ink placeholder:text-muted outline-none focus:border-primary transition-colors"
+                />
+                <button type="submit" className="btn-primary px-3 py-1.5 text-[10px]">Add</button>
+              </form>
             </div>
           </div>
         </div>
       )}
+
+      <div className="hidden md:flex items-center gap-3">
+        <button onClick={onOpenTransaction} className="btn-primary px-6 py-3 text-xs md:text-sm">
+          <Plus className="w-4 h-4" />
+          New Transaction
+        </button>
+        <button onClick={onOpenTransfer} className="btn-pill bg-canvas text-ink border border-hairline px-6 py-3 text-xs md:text-sm hover:bg-surface-soft transition-colors">
+          <ArrowLeftRight className="w-4 h-4" />
+          Inter-Account Transfer
+        </button>
+      </div>
 
       {/* Accounts List Section */}
       <div className="space-y-4 md:space-y-6">
@@ -161,7 +244,7 @@ export default function Dashboard({
                     ? "text-white shadow-sm"
                     : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
                 )}
-                style={filterType === f.key && typeColor ? { backgroundColor: typeColor } : {}}
+                style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
               >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
                 {f.label}

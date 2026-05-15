@@ -61,35 +61,146 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
     }
   };
 
+  const exportCSV = () => {
+    const header = 'Date,Particulars,Category,Debit,Credit';
+    const rows = reportData.map(t => [
+      t.date,
+      `"${t.particulars}"`,
+      `"${t.category || ''}"`,
+      t.amount < 0 ? `${currency}${Math.abs(t.amount).toLocaleString('en-US')}` : '',
+      t.amount > 0 ? `${currency}${t.amount.toLocaleString('en-US')}` : ''
+    ].join(','));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FinTrack_Report_${filters.startDate}_${filters.endDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportPDF = () => {
     const doc = new jsPDF();
+    const margin = 14;
+    const pageW = doc.internal.pageSize.getWidth();
+    const usableW = pageW - margin * 2;
+    const colWidths = [24, usableW - 24 - 28 - 28 - 28, 28, 28, 28];
+    const headers = ['Date', 'Particulars', 'Category', 'Debit', 'Credit'];
     const accountName = filters.accountId ? accounts.find(a => a.id === Number(filters.accountId))?.name : 'All Accounts';
-    
-    doc.setFontSize(20);
-    doc.setTextColor(0, 82, 255); // Coinbase Blue
-    doc.text('FinTrack Pro - Financial Report', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(124, 130, 138); // Muted
-    doc.text(`Period: ${filters.startDate} to ${filters.endDate}`, 14, 32);
-    doc.text(`Account: ${accountName}`, 14, 38);
+    const pdfCur = /^[\x00-\x7F]+$/.test(currency) ? currency : 'Tk ';
+    const fm = (n: number) => `${pdfCur}${Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const totalDebit = reportData.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const totalCredit = reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
 
-    let y = 50;
+    let pageNum = 1;
 
-    (doc as any).autoTable({
-      startY: y + 10,
-      head: [['Date', 'Particulars', 'Category', 'Debit', 'Credit']],
-      body: reportData.map(t => [
-        t.date,
-        t.particulars,
-        t.category || '-',
-        t.amount < 0 ? `${currency}${Math.abs(t.amount).toLocaleString()}` : '-',
-        t.amount > 0 ? `${currency}${t.amount.toLocaleString()}` : '-'
-      ]),
-      headStyles: { fillColor: [0, 82, 255] },
-      alternateRowStyles: { fillColor: [247, 247, 247] }
+    const drawPageHeader = () => {
+      doc.setFillColor(248, 248, 250);
+      doc.rect(0, 0, pageW, 38, 'F');
+      doc.setDrawColor(0, 82, 255);
+      doc.setLineWidth(0.8);
+      doc.line(0, 38, pageW, 38);
+      doc.setLineWidth(0.2);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(0, 82, 255);
+      doc.text('FinTrack Pro', margin, 18);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(80, 80, 80);
+      doc.text('Financial Report', pageW / 2, 18, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(140, 140, 140);
+      doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy')}`, pageW - margin, 18, { align: 'right' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`${accountName}  |  ${filters.startDate} to ${filters.endDate}`, margin, 30);
+    };
+
+    const drawTableHeader = (yPos: number) => {
+      doc.setFillColor(0, 82, 255);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.rect(margin, yPos, usableW, 7, 'F');
+      let x = margin;
+      headers.forEach((h, i) => {
+        const align = i <= 2 ? 'left' : 'right';
+        doc.text(h, x + (align === 'right' ? colWidths[i] - 3 : 3), yPos + 5, { align });
+        x += colWidths[i];
+      });
+      return yPos + 9;
+    };
+
+    const drawSummary = (yPos: number) => {
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPos + 2, margin + usableW, yPos + 2);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      const partsX = margin + colWidths[0];
+      doc.text('Total:', partsX + 2, yPos + 8);
+      const debitX = margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3];
+      if (totalDebit > 0) doc.text(fm(totalDebit), debitX - 2, yPos + 8, { align: 'right' });
+      const creditX = debitX + colWidths[4];
+      if (totalCredit > 0) doc.text(fm(totalCredit), creditX - 2, yPos + 8, { align: 'right' });
+    };
+
+    const drawFooter = () => {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 160);
+      doc.text(`Page ${pageNum}`, pageW / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    };
+
+    drawPageHeader();
+
+    let y = 44;
+    y = drawTableHeader(y);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(60, 60, 60);
+
+    reportData.forEach((t, idx) => {
+      if (y + 6 > doc.internal.pageSize.getHeight() - 20) {
+        drawSummary(y);
+        drawFooter();
+        doc.addPage();
+        pageNum++;
+        drawPageHeader();
+        y = 44;
+        y = drawTableHeader(y);
+      }
+      if (idx % 2 === 0) {
+        doc.setFillColor(252, 252, 252);
+        doc.rect(margin, y, usableW, 6, 'F');
+      }
+      let x = margin;
+      const cat = t.category || '';
+      const cells = [
+        { text: t.date, align: 'left' as const },
+        { text: t.particulars, align: 'left' as const },
+        { text: cat.length > 16 ? cat.slice(0, 14) + '..' : cat, align: 'left' as const },
+        { text: t.amount < 0 ? fm(t.amount) : '', align: 'right' as const },
+        { text: t.amount > 0 ? fm(t.amount) : '', align: 'right' as const }
+      ];
+      cells.forEach((cell, ci) => {
+        doc.text(cell.text, x + (cell.align === 'right' ? colWidths[ci] - 2 : 2), y + 4, { align: cell.align });
+        x += colWidths[ci];
+      });
+      y += 6;
     });
 
+    if (reportData.length > 0) drawSummary(y);
+    drawFooter();
     doc.save(`FinTrack_Report_${filters.startDate}_${filters.endDate}.pdf`);
   };
 
@@ -124,7 +235,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
               onChange={v => setFilters({...filters, accountId: v})}
               options={[
                 { value: '', label: 'All Accounts' },
-                ...accounts.map(a => ({ value: String(a.id), label: a.name }))
+                ...accounts.map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} (${a.member_name})` : a.name }))
               ]}
             />
           </div>
@@ -144,10 +255,16 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
             <div className="bg-canvas border border-hairline rounded-xl shadow-sm overflow-x-auto">
               <div className="p-4 md:p-5 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
                 <h4 className="text-xs md:text-sm font-normal text-ink tracking-tight">Transaction Ledger</h4>
-                <button onClick={exportPDF} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
-                  <Download className="w-3 md:w-4 h-3 md:h-4" />
-                  Export PDF
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={exportCSV} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
+                    <Download className="w-3 md:w-4 h-3 md:h-4" />
+                    CSV
+                  </button>
+                  <button onClick={exportPDF} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
+                    <Download className="w-3 md:w-4 h-3 md:h-4" />
+                    PDF
+                  </button>
+                </div>
               </div>
               <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>

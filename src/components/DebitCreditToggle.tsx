@@ -7,26 +7,26 @@ interface DebitCreditToggleProps {
 
 export default function DebitCreditToggle({ isCredit, onChange }: DebitCreditToggleProps) {
   return (
-    <div className="flex p-1 bg-surface-strong rounded-pill">
+    <div className="inline-flex bg-surface-soft p-1 rounded-full border border-hairline w-full">
       <button
         type="button"
         onClick={() => onChange(false)}
         className={cn(
-          "flex-1 py-1.5 rounded-pill text-[10px] font-bold transition-all",
-          !isCredit ? "bg-canvas text-semantic-down shadow-sm" : "text-muted"
+          "flex-1 text-center py-2.5 px-4 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
+          !isCredit ? "bg-canvas text-semantic-down shadow-sm" : "text-muted hover:text-ink"
         )}
       >
-        DEBIT
+        Debit
       </button>
       <button
         type="button"
         onClick={() => onChange(true)}
         className={cn(
-          "flex-1 py-1.5 rounded-pill text-[10px] font-bold transition-all",
-          isCredit ? "bg-canvas text-semantic-up shadow-sm" : "text-muted"
+          "flex-1 text-center py-2.5 px-4 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
+          isCredit ? "bg-canvas text-primary shadow-sm" : "text-muted hover:text-ink"
         )}
       >
-        CREDIT
+        Credit
       </button>
     </div>
   );

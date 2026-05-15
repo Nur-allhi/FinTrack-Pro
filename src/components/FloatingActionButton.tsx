@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, ArrowLeftRight, FileEdit, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface FloatingActionButtonProps {
   onNewTransaction: () => void;
   onNewTransfer: () => void;
+  isTransactionModalOpen?: boolean;
+  isTransferModalOpen?: boolean;
 }
 
-export default function FloatingActionButton({ onNewTransaction, onNewTransfer }: FloatingActionButtonProps) {
+export default function FloatingActionButton({ onNewTransaction, onNewTransfer, isTransactionModalOpen, isTransferModalOpen }: FloatingActionButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [isTransactionModalOpen, isTransferModalOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+    <div ref={containerRef} className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
       <AnimatePresence>
         {isOpen && (
           <div className="flex flex-col items-end gap-3 mb-2">
@@ -23,10 +41,10 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer }
                 onNewTransfer();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-3 px-6 py-3 bg-canvas text-ink rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
+              className="flex items-center gap-4 px-6 py-3.5 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
             >
-              <span className="text-sm font-bold uppercase tracking-widest">Inter-Account Transfer</span>
-              <div className="p-2 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
+              <span className="text-xs font-bold uppercase tracking-widest text-ink">Inter-Account Transfer</span>
+              <div className="p-2.5 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
                 <ArrowLeftRight className="w-5 h-5 text-primary" />
               </div>
             </motion.button>
@@ -40,10 +58,10 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer }
                 onNewTransaction();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-3 px-6 py-3 bg-canvas text-ink rounded-full shadow-lg border border-hairline hover:bg-surface-soft transition-all group"
+              className="flex items-center gap-4 px-6 py-3.5 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
             >
-              <span className="text-sm font-semibold tracking-wide">New Transaction</span>
-              <div className="p-2 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors">
+              <span className="text-xs font-bold uppercase tracking-widest text-ink">New Transaction</span>
+              <div className="p-2.5 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
                 <FileEdit className="w-5 h-5 text-primary" />
               </div>
             </motion.button>
@@ -53,24 +71,17 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer }
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-          isOpen ? 'bg-surface-dark rotate-45' : 'bg-primary hover:scale-110 active:scale-95'
+        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
+          isOpen ? 'bg-primary rotate-45' : 'bg-primary hover:scale-110 active:scale-95'
         }`}
       >
         {isOpen ? (
-          <X className="w-8 h-8 text-white -rotate-45" />
+          <X className="w-7 h-7 text-white" />
         ) : (
-          <Plus className="w-8 h-8 text-white" />
+          <Plus className="w-7 h-7 text-white" />
         )}
       </button>
 
-      {/* Backdrop for closing when clicking outside */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 -z-10 bg-black/5 backdrop-blur-[1px]" 
-          onClick={() => setIsOpen(false)}
-        />
-      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Account } from '../types';
 import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -18,6 +18,8 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [tx, setTx] = useState({
     account_id: initialAccountId?.toString() || '',
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -26,6 +28,13 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
     isCredit: false,
     category: ''
   });
+
+  useEffect(() => {
+    fetch('/api/transactions/categories')
+      .then(res => res.json())
+      .then(setCategories)
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +104,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                     value={tx.account_id}
                     onChange={v => setTx({...tx, account_id: v})}
                     placeholder="Select Account"
-                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
+                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} · ${a.member_name} (${currency}${a.current_balance.toLocaleString()})` : `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
                   />
                 </div>
 
@@ -126,6 +135,33 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                     placeholder="0.00"
                     className="w-full px-5 py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm financial-number"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Category</label>
+                  <div className="flex flex-col gap-2">
+                    <Select
+                      value={isCustomCategory ? '__new__' : (categories.includes(tx.category) ? tx.category : '')}
+                      onChange={(v) => {
+                        if (v === '__new__') { setIsCustomCategory(true); setTx({...tx, category: ''}); }
+                        else { setIsCustomCategory(false); setTx({...tx, category: v}); }
+                      }}
+                      placeholder={tx.category && !categories.includes(tx.category) ? tx.category : 'Select category'}
+                      options={[
+                        ...categories.map(c => ({ value: c, label: c })),
+                        { value: '__new__', label: 'New category...' }
+                      ]}
+                    />
+                    {isCustomCategory && (
+                      <input
+                        type="text"
+                        placeholder="Type new category name"
+                        value={tx.category}
+                        onChange={e => setTx({...tx, category: e.target.value})}
+                        className="w-full px-5 py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
+                      />
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

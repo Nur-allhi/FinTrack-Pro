@@ -37,13 +37,13 @@ export default function Select({ value, onChange, options, placeholder, classNam
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-2 px-3.5 py-2 bg-surface-soft border border-hairline rounded-pill text-xs font-semibold uppercase tracking-wider text-ink hover:bg-canvas hover:border-muted transition-all cursor-pointer"
+        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 bg-surface-soft border border-hairline rounded-pill text-xs font-semibold uppercase tracking-wider text-ink hover:bg-canvas hover:border-muted transition-all cursor-pointer"
       >
         <span className="truncate">{displayLabel}</span>
         <ChevronDown className={cn("w-3.5 h-3.5 text-muted shrink-0 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-canvas border border-hairline rounded-xl shadow-xl overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-canvas border border-hairline rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
           {options.map(opt => (
             <button
               key={opt.value}

@@ -3,6 +3,27 @@ import { db, supabase } from "../db.js";
 
 const router = express.Router();
 
+router.get("/categories", async (req, res) => {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("category")
+        .neq("category", "")
+        .neq("category", null);
+      if (error) throw error;
+      const categories = [...new Set((data || []).map((t: any) => t.category).filter(Boolean))].sort();
+      return res.json(categories);
+    }
+    const rows = db.prepare("SELECT DISTINCT category FROM transactions WHERE category IS NOT NULL AND category != '' ORDER BY category").all();
+    const categories = rows.map((r: any) => r.category);
+    res.json(categories);
+  } catch (err: any) {
+    console.error("GET /api/transactions/categories error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/:accountId", async (req, res) => {
   try {
     if (supabase) {
