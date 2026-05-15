@@ -16,10 +16,16 @@ import exportRoutes from "./routes/export.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize Database
-initDb();
-
 const app = express();
+
+// Initialize database asynchronously — Vercel cold start waits for this
+const startup = initDb().catch(e => console.error("Startup error:", e));
+
+// Middleware that waits for DB init before processing requests
+app.use(async (_req: any, _res: any, next: any) => {
+  await startup;
+  next();
+});
 app.use(express.json());
 
 // Global Error Handlers
