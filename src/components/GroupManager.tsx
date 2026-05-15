@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, X, Edit2, Trash2, Layers, ChevronDown, Wallet } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
+import { authService } from '../services/authService';
 import Select from './Select';
 
 interface GroupChild {
@@ -40,7 +41,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
 
   const fetchGroups = async () => {
     try {
-      const [gRes, mRes] = await Promise.all([fetch('/api/groups'), fetch('/api/members')]);
+      const [gRes, mRes] = await Promise.all([authService.apiFetch('/api/groups'), authService.apiFetch('/api/members')]);
       if (gRes.ok) setGroups(await gRes.json());
       if (mRes.ok) setMembers(await mRes.json());
     } catch (err) {
@@ -58,7 +59,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
     try {
       const method = editingGroup ? 'PATCH' : 'POST';
       const url = editingGroup ? `/api/groups/${editingGroup.id}` : '/api/groups';
-      const res = await fetch(url, {
+      const res = await authService.apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -90,7 +91,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Delete group "${name}"? Child accounts will be unlinked but not deleted.`)) return;
     try {
-      await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+      await authService.apiFetch(`/api/groups/${id}`, { method: 'DELETE' });
       toast("Group deleted.", 'success');
       fetchGroups();
       onUpdate();

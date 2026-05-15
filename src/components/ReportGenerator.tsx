@@ -11,6 +11,7 @@ import jsPDF from 'jspdf';
 import { cn } from '../utils/cn';
 import { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency } from '../utils/pdf';
 import Select from './Select';
+import { authService } from '../services/authService';
 import DatePicker from './DatePicker';
 
 interface ReportGeneratorProps {
@@ -40,13 +41,13 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
       let allTxs: Transaction[] = [];
       
       if (filters.accountId) {
-        const res = await fetch(`/api/transactions/${filters.accountId}`);
+        const res = await authService.apiFetch(`/api/transactions/${filters.accountId}`);
         allTxs = await res.json();
       } else {
         const targetAccounts = memberAccountIds
           ? accounts.filter(a => memberAccountIds.includes(a.id))
           : accounts;
-        const promises = targetAccounts.map(a => fetch(`/api/transactions/${a.id}`).then(r => r.json()));
+        const promises = targetAccounts.map(a => authService.apiFetch(`/api/transactions/${a.id}`).then(r => r.json()));
         const results = await Promise.all(promises);
         allTxs = results.flat();
       }

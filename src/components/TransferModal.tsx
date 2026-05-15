@@ -5,6 +5,7 @@ import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
+import { authService } from '../services/authService';
 import Select from './Select';
 
 interface TransferModalProps {
@@ -35,7 +36,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
 
     setLoading(true);
     try {
-      const res = await fetch('/api/transfers', {
+      const res = await authService.apiFetch('/api/transfers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

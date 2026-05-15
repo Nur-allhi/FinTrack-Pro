@@ -3,14 +3,14 @@ import { db, supabase } from "../db.js";
 
 const router = express.Router();
 
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
     if (supabase) {
       const [members, accounts, transactions, investments, returns] = await Promise.all([
-        supabase.from("members").select("*"),
-        supabase.from("accounts").select("*"),
-        supabase.from("transactions").select("*"),
-        supabase.from("investments").select("*"),
+        supabase.from("members").select("*").eq("user_id", req.user!.id),
+        supabase.from("accounts").select("*").eq("user_id", req.user!.id),
+        supabase.from("transactions").select("*").eq("user_id", req.user!.id),
+        supabase.from("investments").select("*").eq("user_id", req.user!.id),
         supabase.from("investment_returns").select("*"),
       ]);
       return res.json({
@@ -40,26 +40,26 @@ router.post("/", async (req, res) => {
     const { members, accounts, transactions, investments, investmentReturns } = req.body;
 
     if (supabase) {
-      if (members?.length) await supabase.from("members").delete().neq("id", 0);
-      if (accounts?.length) await supabase.from("accounts").delete().neq("id", 0);
-      if (transactions?.length) await supabase.from("transactions").delete().neq("id", 0);
-      if (investments?.length) await supabase.from("investments").delete().neq("id", 0);
+      if (members?.length) await supabase.from("members").delete().eq("user_id", req.user!.id);
+      if (accounts?.length) await supabase.from("accounts").delete().eq("user_id", req.user!.id);
+      if (transactions?.length) await supabase.from("transactions").delete().eq("user_id", req.user!.id);
+      if (investments?.length) await supabase.from("investments").delete().eq("user_id", req.user!.id);
       if (investmentReturns?.length) await supabase.from("investment_returns").delete().neq("id", 0);
 
       if (members?.length) {
-        const { error } = await supabase.from("members").insert(members);
+        const { error } = await supabase.from("members").insert(members.map((m: any) => ({ ...m, user_id: req.user!.id })));
         if (error) throw error;
       }
       if (accounts?.length) {
-        const { error } = await supabase.from("accounts").insert(accounts);
+        const { error } = await supabase.from("accounts").insert(accounts.map((a: any) => ({ ...a, user_id: req.user!.id })));
         if (error) throw error;
       }
       if (transactions?.length) {
-        const { error } = await supabase.from("transactions").insert(transactions);
+        const { error } = await supabase.from("transactions").insert(transactions.map((t: any) => ({ ...t, user_id: req.user!.id })));
         if (error) throw error;
       }
       if (investments?.length) {
-        const { error } = await supabase.from("investments").insert(investments);
+        const { error } = await supabase.from("investments").insert(investments.map((i: any) => ({ ...i, user_id: req.user!.id })));
         if (error) throw error;
       }
       if (investmentReturns?.length) {
@@ -110,15 +110,15 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/clear-all", async (_req, res) => {
+router.delete("/clear-all", async (req, res) => {
   try {
     if (supabase) {
       await Promise.all([
         supabase.from("investment_returns").delete().neq("id", 0),
-        supabase.from("investments").delete().neq("id", 0),
-        supabase.from("transactions").delete().neq("id", 0),
-        supabase.from("accounts").delete().neq("id", 0),
-        supabase.from("members").delete().neq("id", 0),
+        supabase.from("investments").delete().eq("user_id", req.user!.id),
+        supabase.from("transactions").delete().eq("user_id", req.user!.id),
+        supabase.from("accounts").delete().eq("user_id", req.user!.id),
+        supabase.from("members").delete().eq("user_id", req.user!.id),
       ]);
       return res.json({ success: true });
     }

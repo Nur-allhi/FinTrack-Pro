@@ -4,6 +4,7 @@ import { Account, Member } from '../types';
 import { Plus, X, Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target, Home } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
+import { authService } from '../services/authService';
 import Select from './Select';
 
 interface AccountManagerProps {
@@ -46,7 +47,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   });
 
   useEffect(() => {
-    fetch('/api/groups').then(r => r.ok && r.json()).then(d => setGroups(d || [])).catch(() => {});
+    authService.apiFetch('/api/groups').then(r => r.ok && r.json()).then(d => setGroups(d || [])).catch(() => {});
   }, []);
 
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
@@ -56,7 +57,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
       const method = editingAccount ? 'PATCH' : 'POST';
       const url = editingAccount ? `/api/accounts/${editingAccount.id}` : '/api/accounts';
       
-      const res = await fetch(url, {
+      const res = await authService.apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +97,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
 
   const toggleArchive = async (id: number, current: number) => {
     try {
-      await fetch(`/api/accounts/${id}`, {
+      await authService.apiFetch(`/api/accounts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ archived: current ? 0 : 1 })

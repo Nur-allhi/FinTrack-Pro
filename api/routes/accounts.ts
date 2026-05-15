@@ -6,10 +6,10 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     if (supabase) {
-      const { data: accounts, error: accError } = await supabase.from("accounts").select("*, members(name), parents:parent_id(name)");
+      const { data: accounts, error: accError } = await supabase.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", req.user!.id);
       if (accError) throw accError;
       
-      const { data: transactions, error: txError } = await supabase.from("transactions").select("account_id, amount");
+      const { data: transactions, error: txError } = await supabase.from("transactions").select("account_id, amount").eq("user_id", req.user!.id);
       if (txError) throw txError;
 
       const formatted = accounts
@@ -48,7 +48,8 @@ router.post("/", async (req, res) => {
     
     if (supabase) {
       const { data, error } = await supabase.from("accounts").insert([{ 
-        name, type, member_id, parent_id, color, initial_balance: initial_balance || 0 
+        name, type, member_id, parent_id, color, initial_balance: initial_balance || 0,
+        user_id: req.user!.id
       }]).select().single();
       if (error) throw error;
       return res.json(data);
@@ -77,7 +78,7 @@ router.patch("/:id", async (req, res) => {
       if (parent_id !== undefined) update.parent_id = parent_id;
       if (initial_balance !== undefined) update.initial_balance = initial_balance;
       
-      const { error } = await supabase.from("accounts").update(update).eq("id", req.params.id);
+      const { error } = await supabase.from("accounts").update(update).eq("id", req.params.id).eq("user_id", req.user!.id);
       if (error) throw error;
       return res.json({ success: true });
     }

@@ -12,8 +12,8 @@ router.post("/", async (req, res) => {
     }
     
     if (supabase) {
-      const { data: fromAcc }: any = await supabase.from("accounts").select("name, members(name)").eq("id", from_account_id).single();
-      const { data: toAcc }: any = await supabase.from("accounts").select("name, members(name)").eq("id", to_account_id).single();
+      const { data: fromAcc }: any = await supabase.from("accounts").select("name, members(name)").eq("id", from_account_id).eq("user_id", req.user!.id).single();
+      const { data: toAcc }: any = await supabase.from("accounts").select("name, members(name)").eq("id", to_account_id).eq("user_id", req.user!.id).single();
 
       const fromMember = fromAcc?.members?.[0]?.name ? ` (${fromAcc.members[0].name})` : '';
       const toMember = toAcc?.members?.[0]?.name ? ` (${toAcc.members[0].name})` : '';
@@ -22,16 +22,18 @@ router.post("/", async (req, res) => {
       const creditParticulars = `Transfer from: ${fromAcc?.name}${fromMember}${particulars ? ` - ${particulars}` : ''}`;
 
       const { data: debit, error: dError } = await supabase.from("transactions").insert([{
-        account_id: from_account_id, date, particulars: debitParticulars, category: 'Transfer', amount: -amount, type: 'transfer'
+        account_id: from_account_id, date, particulars: debitParticulars, category: 'Transfer', amount: -amount, type: 'transfer',
+        user_id: req.user!.id
       }]).select().single();
       if (dError) throw dError;
 
       const { data: credit, error: cError } = await supabase.from("transactions").insert([{
-        account_id: to_account_id, date, particulars: creditParticulars, category: 'Transfer', amount: amount, type: 'transfer', linked_transaction_id: debit.id
+        account_id: to_account_id, date, particulars: creditParticulars, category: 'Transfer', amount: amount, type: 'transfer', linked_transaction_id: debit.id,
+        user_id: req.user!.id
       }]).select().single();
       if (cError) throw cError;
 
-      await supabase.from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id);
+      await supabase.from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id).eq("user_id", req.user!.id);
       
       return res.json({ debitId: debit.id, creditId: credit.id });
     }

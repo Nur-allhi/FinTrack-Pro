@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Member, Account } from '../types';
 import { Plus, X, User, Trash2, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ArrowLeft } from 'lucide-react';
 import { useToast } from './Toast';
+import { authService } from '../services/authService';
 
 interface MemberManagerProps {
   members: Member[];
@@ -28,7 +29,7 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch('/api/members', {
+      await authService.apiFetch('/api/members', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newMember)
       });
@@ -43,7 +44,7 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure? Their accounts will become unassigned.")) return;
     try {
-      await fetch(`/api/members/${id}`, { method: 'DELETE' });
+      await authService.apiFetch(`/api/members/${id}`, { method: 'DELETE' });
       if (selectedMember?.id === id) setSelectedMember(null);
       onUpdate();
     } catch (error) {

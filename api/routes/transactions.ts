@@ -9,6 +9,7 @@ router.get("/categories", async (req, res) => {
       const { data, error } = await supabase
         .from("transactions")
         .select("category")
+        .eq("user_id", req.user!.id)
         .neq("category", "")
         .neq("category", null);
       if (error) throw error;
@@ -31,6 +32,7 @@ router.get("/:accountId", async (req, res) => {
         .from("transactions")
         .select("*")
         .eq("account_id", req.params.accountId)
+        .eq("user_id", req.user!.id)
         .order("date", { ascending: false })
         .order("id", { ascending: false });
         
@@ -45,7 +47,8 @@ router.get("/:accountId", async (req, res) => {
         const { data: linkedTxs, error: linkedError } = await supabase
           .from("transactions")
           .select("id, account_id, accounts(name)")
-          .in("id", linkedIds);
+          .in("id", linkedIds)
+          .eq("user_id", req.user!.id);
 
         if (!linkedError && linkedTxs) {
           const linkedMap = new Map(linkedTxs.map((lt: any) => [lt.id, lt.accounts?.[0]?.name]));
@@ -85,7 +88,8 @@ router.post("/", async (req, res) => {
     
     if (supabase) {
       const { data, error } = await supabase.from("transactions").insert([{
-        account_id, date, particulars, category, amount, type: type || 'normal', linked_transaction_id, summary
+        account_id, date, particulars, category, amount, type: type || 'normal', linked_transaction_id, summary,
+        user_id: req.user!.id
       }]).select().single();
       if (error) throw error;
       return res.json(data);
@@ -104,7 +108,7 @@ router.patch("/:id", async (req, res) => {
     const { date, particulars, category, amount, summary } = req.body;
     
     if (supabase) {
-      const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", req.params.id).single();
+      const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", req.params.id).eq("user_id", req.user!.id).single();
       if (fetchError) throw fetchError;
 
       const update: any = {};
@@ -114,7 +118,7 @@ router.patch("/:id", async (req, res) => {
       if (amount !== undefined) update.amount = amount;
       if (summary !== undefined) update.summary = summary;
       
-      const { error } = await supabase.from("transactions").update(update).eq("id", req.params.id);
+      const { error } = await supabase.from("transactions").update(update).eq("id", req.params.id).eq("user_id", req.user!.id);
       if (error) throw error;
 
       if (transaction && transaction.linked_transaction_id) {
@@ -122,7 +126,7 @@ router.patch("/:id", async (req, res) => {
         if (amount !== undefined && transaction.type === 'transfer') {
           linkedUpdate.amount = -amount;
         }
-        await supabase.from("transactions").update(linkedUpdate).eq("id", transaction.linked_transaction_id);
+        await supabase.from("transactions").update(linkedUpdate).eq("id", transaction.linked_transaction_id).eq("user_id", req.user!.id);
       }
 
       return res.json({ success: true });
@@ -170,16 +174,16 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     if (supabase) {
-      const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", req.params.id).single();
+      const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", req.params.id).eq("user_id", req.user!.id).single();
       if (fetchError) {
         if (fetchError.code === 'PGRST116') return res.json({ success: true });
         throw fetchError;
       }
 
       if (transaction && transaction.linked_transaction_id) {
-        await supabase.from("transactions").delete().eq("id", transaction.linked_transaction_id);
+        await supabase.from("transactions").delete().eq("id", transaction.linked_transaction_id).eq("user_id", req.user!.id);
       }
-      const { error: delError } = await supabase.from("transactions").delete().eq("id", req.params.id);
+      const { error: delError } = await supabase.from("transactions").delete().eq("id", req.params.id).eq("user_id", req.user!.id);
       if (delError) throw delError;
       return res.json({ success: true });
     }
@@ -213,7 +217,8 @@ router.patch("/category/rename", async (req, res) => {
       const { error } = await supabase
         .from("transactions")
         .update({ category: newName })
-        .eq("category", oldName);
+        .eq("category", oldName)
+        .eq("user_id", req.user!.id);
       if (error) throw error;
       return res.json({ success: true });
     }

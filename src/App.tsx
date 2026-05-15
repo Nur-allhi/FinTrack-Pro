@@ -7,13 +7,15 @@ import {
   TrendingUp, 
   FileText, 
   Layers,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
 
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
+import { authService } from './services/authService';
 import { cn } from './utils/cn';
 
 // Layout Components
@@ -33,15 +35,17 @@ const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const FloatingActionButton = lazy(() => import('./components/FloatingActionButton'));
 const Login = lazy(() => import('./components/Login'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'reports' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'reports' | 'settings' | 'admin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const defaultTypeColors: Record<string, string> = {
     cash: '#10B981', bank: '#0052FF', mobile: '#8B5CF6',
@@ -64,8 +68,15 @@ export default function App() {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-    setIsAuthenticated(!!token);
+    const stored = localStorage.getItem('auth_token');
+    if (stored) {
+      setIsAuthenticated(true);
+      authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
+        if (d.isAdmin) setIsAdmin(true);
+      }).catch(() => {});
+    } else {
+      setIsAuthenticated(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -77,24 +88,21 @@ export default function App() {
     document.documentElement.style.fontSize = sizes[settings.fontSize] || '16px';
   }, [settings.fontSize]);
 
-
-
-  const handleLogin = (token: string, rememberMe: boolean) => {
-    if (rememberMe) localStorage.setItem('auth_token', token);
-    else sessionStorage.setItem('auth_token', token);
+  const handleLogin = (token: string) => {
+    localStorage.setItem('auth_token', token);
     setIsAuthenticated(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('auth_token');
-    sessionStorage.removeItem('auth_token');
     setIsAuthenticated(false);
+    await authService.signOut();
   };
 
   const fetchData = async () => {
     setLastUpdate(Date.now());
     try {
-      const [membersRes, accountsRes] = await Promise.all([fetch('/api/members'), fetch('/api/accounts')]);
+      const [membersRes, accountsRes] = await Promise.all([authService.apiFetch('/api/members'), authService.apiFetch('/api/accounts')]);
       if (!membersRes.ok || !accountsRes.ok) throw new Error("Server error");
       const membersData = await membersRes.json();
       const accountsData = await accountsRes.json();
@@ -127,6 +135,7 @@ export default function App() {
     { id: 'groups', label: 'Groups', icon: Layers },
     { id: 'investments', label: 'Investments', icon: TrendingUp },
     { id: 'reports', label: 'Reports', icon: FileText },
+    ...(isAdmin ? [{ id: 'admin' as const, label: 'Users', icon: Shield }] : []),
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
@@ -144,6 +153,7 @@ export default function App() {
       case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
       case 'investments': return <InvestmentTracker accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
+      case 'admin': return <AdminPanel />;
       case 'settings': return <Settings settings={settings} onUpdateSettings={(s: any) => { setSettings(s); cacheService.setSettings(s); }} onExportData={async () => { const blob = new Blob([JSON.stringify({ members, accounts, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `fintrack-export-${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url); }} onClearCache={async () => { if (confirm("Clear cache?")) { await cacheService.clearCache(); window.location.reload(); } }} />;
       default: return null;
     }

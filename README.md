@@ -1,35 +1,35 @@
 # FinTrack Pro
 
-A comprehensive family financial tracker with multi-account management, investment tracking, account grouping, and member-based organization.
+A comprehensive family financial tracker with multi-account management, investment tracking, account grouping, member-based organization, and **multi-tenant Supabase Auth**.
 
 ## Features
 
+- **Multi-User Auth** — Sign in with Google OAuth or Email/Password via Supabase Auth; each user has isolated data
+- **Admin Panel** — Designated admins can create/manage user accounts from the app UI
 - **Multi-Account Management** — Track Cash, Bank, Mobile Wallets, and Investments in one place
 - **Member-Based Tracking** — Organize accounts and transactions by family members
-- **Account Groups** — Group accounts under parent groups (e.g., "HK Bank" containing Savings, Current, Fixed accounts) with accumulated balance
+- **Account Groups** — Group accounts under parent groups with accumulated balance
 - **Investment Tracking** — Monitor principal amounts and track returns with cumulative ROI visualization
 - **Professional Ledger** — Detailed transaction history per account with running balance, debit/credit view
 - **Report Generation** — Generate PDF & CSV financial reports with transaction summaries
 - **Bank Statement PDF** — Export ledger as professionally formatted PDF with opening/closing balance
 - **Quick Tasks** — Built-in todo list widget on the dashboard with localStorage persistence
 - **Dark Mode** — Institutional dark theme with CSS variable system
-- **Type Color Customization** — System-wide colors per account type (Bank, Cash, Mobile, etc.)
+- **Type Color Customization** — System-wide colors per account type
 - **Global Search** — Search accounts and members from the header
-- **Quick Filters** — Filter dashboard by account type (Banks, Cash, Mobile, Investments)
-- **Responsive Design** — Optimized for mobile, tablet, and desktop with card-based layouts
-- **Font Size Scaling** — Adjust base font size (small/normal/large) in Settings
-- **Custom DatePicker** — Calendar UI dropdown for date selection with month/date/range modes
-- **Guest Login** — One-click access without credentials for development
-- **Category Management** — Rename categories via Settings with auto-update across all transactions
+- **Quick Filters** — Filter dashboard by account type
+- **Responsive Design** — Optimized for mobile, tablet, and desktop
+- **Custom DatePicker** — Calendar UI dropdown for date selection
+- **Category Management** — Rename categories via Settings
 - **Data Export/Import** — Full backup and restore via JSON in Settings
-- **Clear All Data** — Wipe database and local storage from Settings
 - **Animated Loading Screen** — Sliding progress bar for content loading
 
 ## Tech Stack
 
 - **Frontend**: React 19, Vite 6, Tailwind CSS v4, Recharts, Framer Motion
 - **Backend**: Node.js, Express, tsx
-- **Database**: SQLite (local) / Supabase (production)
+- **Auth**: Supabase Auth (Google OAuth + Email/Password)
+- **Database**: Supabase (primary) / SQLite (fallback)
 - **Deployment**: Vercel (static + serverless functions)
 
 ## Getting Started
@@ -37,6 +37,7 @@ A comprehensive family financial tracker with multi-account management, investme
 ### Prerequisites
 
 - Node.js (LTS recommended)
+- Supabase project (free tier works)
 
 ### Installation
 
@@ -48,46 +49,49 @@ npm install
 
 ### Environment Setup
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (see `.env.example`):
 
 ```env
-# Database (SQLite by default)
-DATABASE_URL="data.db"
+# Supabase Configuration (required)
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 
-# Optional: Supabase for cloud database
-SUPABASE_URL="your_supabase_url"
-SUPABASE_ANON_KEY="your_supabase_key"
-
-# Authentication (change defaults for production!)
-AUTH_USERNAME="admin"
-AUTH_PASSWORD="password123"
-
-# Optional: Gemini AI (for transaction categorization)
-GEMINI_API_KEY="your_gemini_key"
-GEMINI_MODEL="gemini-2.0-flash"
+# Admin emails (comma-separated) — users who can access the admin panel
+ADMIN_EMAILS="admin@example.com"
 
 # App URL
 APP_URL="http://localhost:3001"
 ```
 
+### Supabase Setup
+
+1. **Enable auth providers** in Supabase Dashboard → Authentication → Providers (Email/Password is on by default; Google OAuth optional)
+2. **Run the migration** from `supabase/migrations/001_add_user_id.sql` in the Supabase SQL Editor
+3. **Create your admin user** via Supabase Dashboard → Authentication → Add User
+
+See `GUIDE.md` for full step-by-step instructions.
+
 ### Run
 
 ```bash
+npm run build
 npm run dev
 ```
 
 The app will be available at `http://localhost:3001`.
 
-Default login: `admin` / `password123`
-
 ## Project Structure
 
 ```
 api/                    # Express backend
-├── db.ts               # Database setup (SQLite / Supabase)
-├── config.ts           # Auth configuration
+├── db.ts               # Database setup (Supabase + SQLite fallback)
+├── config.ts           # Auth + admin configuration
 ├── index.ts            # Server entry point
+├── middleware/
+│   └── auth.ts         # JWT verification + admin check middleware
 └── routes/
+    ├── admin.ts        # Admin user management (create/list/delete)
     ├── members.ts      # Member CRUD
     ├── accounts.ts     # Account CRUD
     ├── transactions.ts # Transaction CRUD + category rename
@@ -97,21 +101,22 @@ api/                    # Express backend
     └── export.ts       # Data export / import / clear-all
 
 src/                    # React frontend
-├── App.tsx             # Main app with routing, settings, data fetching
+├── App.tsx             # Main app with routing, settings, auth, data fetching
 ├── main.tsx            # Entry point
 ├── types.ts            # TypeScript interfaces
 ├── index.css           # Global styles, theme, dark mode
 ├── services/
-│   └── cacheService.ts # IndexedDB cache
+│   ├── cacheService.ts # IndexedDB cache
+│   └── authService.ts  # Supabase Auth client + authenticated fetch helper
 ├── utils/
 │   ├── cn.ts           # Tailwind class merge utility
-│   ├── pdf.ts          # Shared PDF helpers (page header, table, footer)
+│   ├── pdf.ts          # Shared PDF helpers
 │   └── ledgerPdf.ts    # Ledger-specific PDF export
 └── components/
     ├── layout/
     │   ├── Sidebar.tsx # Navigation sidebar
     │   └── Header.tsx  # Top header with search
-    ├── AccountCard.tsx # Dashboard account card
+    ├── AdminPanel.tsx  # User management UI (admin only)
     ├── Dashboard.tsx   # Main dashboard with filters
     ├── Ledger.tsx      # Transaction ledger per account
     ├── AccountManager.tsx  # Account CRUD with inline editing
@@ -120,42 +125,39 @@ src/                    # React frontend
     ├── InvestmentTracker.tsx   # Investment positions & returns
     ├── ReportGenerator.tsx     # PDF/CSV report generation
     ├── Settings.tsx     # App settings & customization
-    ├── Login.tsx        # Authentication with guest access
+    ├── Login.tsx        # Auth with Google OAuth + Email/Password
     ├── TransactionForm.tsx  # Transaction entry form
-    ├── TransactionRow.tsx   # Desktop ledger row
-    ├── TransactionCard.tsx  # Mobile ledger card
     ├── TransferModal.tsx    # Transfer between accounts
     ├── TransactionModal.tsx # Quick transaction modal
     ├── FloatingActionButton.tsx # FAB for quick actions
-    ├── DebitCreditToggle.tsx    # Shared debit/credit toggle
-    ├── Select.tsx           # Custom styled select (portal-based)
-    ├── DatePicker.tsx       # Custom calendar date picker
-    ├── RenameModal.tsx      # Rename confirmation modal
-    ├── LoadingScreen.tsx    # Animated loading screen
-    └── Toast.tsx            # Toast notification system
+    ├── Toast.tsx            # Toast notification system
+    └── ...                   # Supporting components
 ```
 
 ## Database Schema
 
-**accounts** — `id`, `name`, `type` (cash/bank/mobile/investment/purpose/home_exp/group), `member_id`, `parent_id`, `color`, `archived`, `initial_balance`
+Each table includes a `user_id UUID` column for multi-tenant data isolation.
 
-**members** — `id`, `name`, `relationship`
+**accounts** — `id`, `name`, `type`, `member_id`, `parent_id`, `color`, `archived`, `initial_balance`, `user_id`
 
-**transactions** — `id`, `account_id`, `date`, `particulars`, `category`, `amount`, `type` (normal/transfer), `linked_transaction_id`, `summary`
+**members** — `id`, `name`, `relationship`, `user_id`
 
-**investments** — `id`, `account_id`, `principal`, `date`
+**transactions** — `id`, `account_id`, `date`, `particulars`, `category`, `amount`, `type`, `linked_transaction_id`, `summary`, `user_id`
 
-**investment_returns** — `id`, `investment_id`, `date`, `amount`, `percentage`
+**investments** — `id`, `account_id`, `principal`, `date`, `user_id`
 
-## Account Groups
+**investment_returns** — `id`, `investment_id`, `date`, `amount`, `percentage`, `user_id`
 
-Groups allow you to create parent containers that aggregate child account balances:
+## Auth Flow
 
-1. Navigate to **Groups** in the sidebar
-2. Click **New Group** to create a group (e.g., "HK Bank")
-3. Go to **Accounts** and assign accounts to the group via the "Group" dropdown
-4. The Groups page shows the accumulated balance for each group
-5. Expand a group to see its child accounts with individual balances
+```
+Login (Google OAuth or Email/Password)
+  → Supabase Auth returns JWT (access_token)
+  → Backend verifies JWT via supabaseAdmin.auth.getUser()
+  → All subsequent API calls include Authorization: Bearer <token>
+  → Backend filters all queries by user_id from the verified token
+  → Admin panel visible only to users in ADMIN_EMAILS list
+```
 
 ## Settings
 
@@ -163,8 +165,8 @@ Groups allow you to create parent containers that aggregate child account balanc
 - **Dark Mode** — Toggle institutional dark theme
 - **Font Size** — Small / Normal / Large base text scaling
 - **Currency** — BDT, USD, EUR, GBP, INR
-- **Account Colors** — Customize colors per account type (Bank, Cash, Mobile, Investment, etc.)
-- **Data Export** — Download all data (members, accounts, transactions, investments) as JSON
+- **Account Colors** — Customize colors per account type
+- **Data Export** — Download all data as JSON
 - **Data Import** — Restore from a previously exported JSON file
 - **Clear All Data** — Wipe database and localStorage
 - **Category Management** — Rename transaction categories

@@ -5,6 +5,7 @@ import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
 import DebitCreditToggle from './DebitCreditToggle';
+import { authService } from '../services/authService';
 import Select from './Select';
 
 interface TransactionModalProps {
@@ -31,7 +32,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
   });
 
   useEffect(() => {
-    fetch('/api/transactions/categories')
+    authService.apiFetch('/api/transactions/categories')
       .then(res => res.json())
       .then(setCategories)
       .catch(() => {});
@@ -48,7 +49,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
     onUpdate();
     try {
       const amount = parseFloat(tx.amount) * (tx.isCredit ? 1 : -1);
-      const res = await fetch('/api/transactions', {
+      const res = await authService.apiFetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

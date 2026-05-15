@@ -5,6 +5,7 @@ import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { cn } from '../utils/cn';
+import { authService } from '../services/authService';
 import Select from './Select';
 
 interface InvestmentTrackerProps {
@@ -33,12 +34,12 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
   });
 
   const fetchInvestments = async () => {
-    const res = await fetch('/api/investments');
+    const res = await authService.apiFetch('/api/investments');
     setInvestments(await res.json());
   };
 
   const fetchReturns = async (id: number) => {
-    const res = await fetch(`/api/investments/${id}/returns`);
+    const res = await authService.apiFetch(`/api/investments/${id}/returns`);
     setReturns(await res.json());
   };
 
@@ -53,7 +54,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
   const handleCreateInv = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch('/api/investments', {
+      await authService.apiFetch('/api/investments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,7 +75,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
     e.preventDefault();
     if (!selectedInv) return;
     try {
-      await fetch(`/api/investments/${selectedInv.id}/returns`, {
+      await authService.apiFetch(`/api/investments/${selectedInv.id}/returns`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

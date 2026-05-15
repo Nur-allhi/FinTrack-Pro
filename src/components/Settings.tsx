@@ -19,6 +19,7 @@ import {
 import { cn } from '../utils/cn';
 import Select from './Select';
 import RenameModal from './RenameModal';
+import { authService } from '../services/authService';
 import { useToast } from './Toast';
 
 interface AppSettings {
@@ -47,7 +48,7 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    fetch('/api/transactions/categories')
+    authService.apiFetch('/api/transactions/categories')
       .then(r => r.json())
       .then(setCategories)
       .catch(() => {});
@@ -58,7 +59,7 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
     const oldName = renameTarget;
     setRenameTarget(null);
     try {
-      const res = await fetch('/api/transactions/category/rename', {
+      const res = await authService.apiFetch('/api/transactions/category/rename', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ oldName, newName })
@@ -75,7 +76,7 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
     if (!confirm('This will permanently delete ALL data (members, accounts, transactions, investments) and clear local storage. Are you sure?')) return;
     if (!confirm('Final confirmation: this cannot be undone. Clear everything?')) return;
     try {
-      const res = await fetch('/api/export/clear-all', { method: 'DELETE' });
+      const res = await authService.apiFetch('/api/export/clear-all', { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to clear database');
       localStorage.clear();
       sessionStorage.clear();
@@ -88,7 +89,7 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
 
   const handleExport = async () => {
     try {
-      const res = await fetch('/api/export');
+      const res = await authService.apiFetch('/api/export');
       if (!res.ok) throw new Error('Export failed');
       const data = await res.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -112,7 +113,7 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
       const text = await file.text();
       const data = JSON.parse(text);
       if (!data.members || !data.accounts) throw new Error('Invalid format');
-      const res = await fetch('/api/import', {
+      const res = await authService.apiFetch('/api/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

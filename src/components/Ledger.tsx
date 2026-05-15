@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { cacheService } from '../services/cacheService';
 import { exportLedgerPDF } from '../utils/ledgerPdf';
 import { useToast } from './Toast';
+import { authService } from '../services/authService';
 import Select from './Select';
 import DatePicker from './DatePicker';
 
@@ -61,7 +62,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     else setIsSyncing(true);
     
     try {
-      const res = await fetch(`/api/transactions/${account.id}`);
+      const res = await authService.apiFetch(`/api/transactions/${account.id}`);
       if (!res.ok) throw new Error("Server error");
       const data = await res.json();
       setTransactions(data);
@@ -83,7 +84,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       else fetchTransactions(true);
     };
     load();
-    fetch('/api/transactions/categories')
+    authService.apiFetch('/api/transactions/categories')
       .then(res => res.json())
       .then(setAllCategories)
       .catch(() => {});
@@ -118,7 +119,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     try {
       const method = editingTx ? 'PATCH' : 'POST';
       const url = editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions';
-      const res = await fetch(url, {
+      const res = await authService.apiFetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, summary })
       });
@@ -138,7 +139,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     setTransactions(transactions.filter(t => t.id !== id));
     setDeletingId(null);
     try {
-      const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+      const res = await authService.apiFetch(`/api/transactions/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Delete failed");
       onUpdate();
     } catch (error) {

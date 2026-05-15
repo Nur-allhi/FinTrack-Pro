@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     if (supabase) {
-      const { data, error } = await supabase.from("members").select("*");
+      const { data, error } = await supabase.from("members").select("*").eq("user_id", req.user!.id);
       if (error) throw error;
       return res.json(data);
     }
@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
     if (!name) return res.status(400).json({ error: "Name is required" });
     
     if (supabase) {
-      const { data, error } = await supabase.from("members").insert([{ name, relationship }]).select().single();
+      const { data, error } = await supabase.from("members").insert([{ name, relationship, user_id: req.user!.id }]).select().single();
       if (error) throw error;
       return res.json(data);
     }
@@ -40,7 +40,7 @@ router.post("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     if (supabase) {
-      const { error } = await supabase.from("members").delete().eq("id", req.params.id);
+      const { error } = await supabase.from("members").delete().eq("id", req.params.id).eq("user_id", req.user!.id);
       if (error) throw error;
       return res.json({ success: true });
     }

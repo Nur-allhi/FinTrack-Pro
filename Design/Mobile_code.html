@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Entry Form</title>
+<!-- Tailwind CSS v3 CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-typography">
+    /* Ensuring clean font rendering for Bengali and English mix */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="custom-toggle-styles">
+    /* Custom styling for the Debit/Credit toggle to match the image UI */
+    .toggle-group {
+      display: inline-flex;
+      background-color: #f1f5f9;
+      padding: 4px;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+      width: 100%;
+    }
+    .toggle-option {
+      cursor: pointer;
+      flex: 1; /* Shared space */
+      text-align: center;
+      padding: 12px 16px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: 0.05em;
+    }
+    .toggle-option.active-debit {
+      background-color: white;
+      color: #ef4444; /* Red color from image */
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .toggle-option.active-credit {
+      background-color: white;
+      color: #0055ff;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .toggle-option.inactive {
+      color: #94a3b8;
+    }
+    .toggle-option.inactive:hover {
+      color: #64748b;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
+<!-- BEGIN: TransactionEntryForm -->
+<main class="w-full max-w-md">
+<div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 sm:p-8" data-purpose="form-container">
+<form class="space-y-6" id="transaction-form">
+<!-- Value Date Input -->
+<div data-purpose="input-group">
+<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2" for="value-date">
+            Value Date
+          </label>
+<div class="relative">
+<input class="w-full border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:ring-blue-500 focus:border-blue-500" id="value-date" type="text" value="03/10/2026"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Transaction Description Input -->
+<div data-purpose="input-group">
+<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2" for="description">
+            Transaction Description
+          </label>
+<input class="w-full border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:ring-blue-500 focus:border-blue-500" id="description" type="text" value="Transport"/>
+</div>
+<!-- Settlement Amount Input -->
+<div data-purpose="amount-control-group">
+<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2" for="amount">
+            Settlement Amount
+          </label>
+<input class="w-full border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-right focus:ring-blue-500 focus:border-blue-500" id="amount" type="number" value="240"/>
+</div>
+<!-- Category Dropdown -->
+<div data-purpose="input-group">
+<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2" for="category">
+            Category
+          </label>
+<select class="w-full border-slate-200 rounded-xl py-3 px-4 text-slate-700 focus:ring-blue-500 focus:border-blue-500 bg-white" id="category">
+<option selected="">TRANSPORTATION / যাতায়াত</option>
+<option>FOOD / খাবার</option>
+<option>UTILITIES / ইউটিলিটি</option>
+<option>ENTERTAINMENT / বিনোদন</option>
+</select>
+</div>
+<!-- Debit/Credit Toggle -->
+<div class="pt-2">
+<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">
+            Transaction Type
+          </label>
+<div class="toggle-group" data-purpose="type-toggle">
+<div class="toggle-option active-debit">Debit</div>
+<div class="toggle-option inactive">Credit</div>
+</div>
+</div>
+<!-- Buttons Container -->
+<div class="flex items-center justify-between gap-4 pt-4">
+<button class="flex-1 py-4 rounded-full bg-slate-100 text-slate-900 font-bold text-sm hover:bg-slate-200 transition-colors" type="button">Cancel</button>
+<button class="flex-1 py-4 rounded-full bg-[#0055ff] text-white font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200" type="submit">Post</button>
+</div>
+</form>
+</div>
+</main>
+<!-- END: TransactionEntryForm -->
+<script data-purpose="form-interactivity">
+    // Simple script to handle visual toggle of Debit/Credit
+    document.querySelectorAll('.toggle-option').forEach(option => {
+      option.addEventListener('click', function() {
+        const parent = this.parentElement;
+        parent.querySelectorAll('.toggle-option').forEach(opt => {
+          opt.classList.remove('active-debit', 'active-credit');
+          opt.classList.add('inactive');
+        });
+        
+        this.classList.remove('inactive');
+        if (this.textContent.trim() === 'Debit') {
+          this.classList.add('active-debit');
+        } else {
+          this.classList.add('active-credit');
+        }
+      });
+    });
+
+    // Form submission prevent default for demo
+    document.getElementById('transaction-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      console.log('Transaction Posted');
+    });
+  </script>
+</body></html>

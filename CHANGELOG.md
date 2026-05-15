@@ -3,6 +3,26 @@
 ## 2026-05-15
 
 ### Add
+- Supabase Auth integration — Google OAuth + Email/Password sign-in at `src/services/authService.ts`, `src/components/Login.tsx`
+- Admin panel — user management (create/list/delete) at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
+- JWT auth middleware — validates Supabase tokens server-side at `api/middleware/auth.ts`
+- Multi-tenant data isolation — `user_id` column on all tables, all queries filtered by authenticated user at all route files
+- Setup guide at `GUIDE.md` — step-by-step configuration for Supabase Auth and admin panel
+
+### Change
+- Login — redesigned with both Google OAuth and Email/Password options at `src/components/Login.tsx`
+- API auth — replaced hardcoded basic auth with Supabase JWT validation at `api/index.ts`, `api/middleware/auth.ts`
+- All API routes — added `user_id` filtering for Supabase queries at `api/routes/*.ts`
+- App component — auth check via Supabase session, admin status detection, conditional admin tab at `src/App.tsx`
+- All frontend components — switched from raw `fetch()` to `authService.apiFetch()` which auto-attaches JWT Bearer token
+- Config — added `ADMIN_EMAILS`, `SUPABASE_SERVICE_ROLE_KEY` at `api/config.ts`, `.env`
+- Database — added `supabaseAdmin` client for JWT verification at `api/db.ts`
+
+### Remove
+- Guest login endpoint (`POST /api/login/guest`) — replaced by Supabase Auth
+- Hardcoded login (`POST /api/login`) — replaced by `POST /api/auth/login` JWT validation
+
+### Add
 - Custom DatePicker component — calendar dropdown with day grid, month mode, portal rendering, viewport boundary detection at `src/components/DatePicker.tsx`
 - Custom animated loading screen — sliding progress bar replacing "Loading..." text at `src/components/LoadingScreen.tsx`
 - RenameModal component — styled modal for category renaming at `src/components/RenameModal.tsx`

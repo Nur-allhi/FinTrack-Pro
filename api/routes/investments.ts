@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     if (supabase) {
-      const { data, error } = await supabase.from("investments").select("*, accounts(name)");
+      const { data, error } = await supabase.from("investments").select("*, accounts(name)").eq("user_id", req.user!.id);
       if (error) throw error;
       const formatted = data.map((i: any) => ({
         ...i,
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
     const { account_id, principal, date } = req.body;
     
     if (supabase) {
-      const { data, error } = await supabase.from("investments").insert([{ account_id, principal, date }]).select().single();
+      const { data, error } = await supabase.from("investments").insert([{ account_id, principal, date, user_id: req.user!.id }]).select().single();
       if (error) throw error;
       return res.json(data);
     }

@@ -1,88 +1,71 @@
-# Handoff — 15 May 2026 (Session 2)
+# Handoff — 15 May 2026 (Session 3)
 
 ## Session Summary
 
-Code review-driven cleanup and feature expansion: fixed critical bugs (balance sync, type safety, overflow clipping), added custom DatePicker calendar, guest login, data export/import, category management, and improved mobile layouts with card-based filter panels.
+Replaced hardcoded single-user auth with Supabase Auth (Google OAuth + Email/Password), multi-tenant data isolation via `user_id` column, and admin panel for user management. Removed old basic auth and guest login.
 
 ## Changes
 
-### Bug Fixes (Code Review)
-- **Ledger balance sync** — restored `onUpdate()` calls after save/delete so parent account balances refresh (`src/components/Ledger.tsx`)
-- **TypeScript types** — replaced `[] as any[]` with proper `(Transaction & { runningBalance: number })[]` in running balance reduce (`src/components/Ledger.tsx`)
-- **TransactionForm types** — `newTx` prop typed with `TransactionFormState` interface replacing `any` (`src/components/TransactionForm.tsx`)
-- **Truncation math** — fixed `> 32` → `> 30` to match `slice(0, 30)` (`src/components/Ledger.tsx`)
-- **Category filter reset** — removed `setCategoryFilter(null)` from useEffect to preserve filter across re-fetches (`src/components/Ledger.tsx`)
-- **File sizes** — split Ledger (446→292), Dashboard (368→327), ReportGenerator (350→303). Extracted `AccountCard`, PDF utilities, and `ledgerPdf.ts`
+### Supabase Auth Integration
+- **JWT auth middleware** (`api/middleware/auth.ts`) — verifies Supabase access tokens via `supabaseAdmin.auth.getUser()`, attaches `req.user` with `id` and `email`
+- **`requireAdmin` middleware** — checks `req.user.email` against `ADMIN_EMAILS` config list
+- **Login endpoints** (`api/index.ts`) — `POST /api/auth/login` validates JWT, `GET /api/auth/me` returns user + admin status, `GET /api/auth/config` exposes Supabase URL/key to frontend
+- **Config** (`api/config.ts`) — added `ADMIN_EMAILS` parsing
 
-### Custom DatePicker (`src/components/DatePicker.tsx`)
-- Calendar dropdown with day grid (Su–Mo headers) and month/year navigation
-- Two modes: **date** (day grid) and **month** (4×3 month grid)
-- Portal-rendered to `document.body` with viewport boundary detection (right-edge shift + bottom-edge flip)
-- Click-outside detection using `containerRef` + `portalRef` to prevent premature close
-- Responsive panel width (`Math.min(280, vw - 48)`)
-- Replaced native `<input type="date">` across 6 files: TransactionForm, TransactionModal, TransferModal, InvestmentTracker (×2), ReportGenerator (×2), Ledger (month/date/range modes)
+### Admin Panel
+- **`api/routes/admin.ts`** — `GET /api/admin/users` lists Supabase Auth users, `POST /api/admin/users` creates user (email + password, auto-confirmed), `DELETE /api/admin/users/:id` removes user
+- **`src/components/AdminPanel.tsx`** — User management UI: create user form, user list with provider/date info, delete action
+- Admin tab (`Shield` icon) shown in sidebar only for users whose email is in `ADMIN_EMAILS`
 
-### Select Component (`src/components/Select.tsx`)
-- Portal-based dropdown to prevent `overflow-hidden` parent clipping
-- Fixed positioning tied to button's `getBoundingClientRect()` with viewport boundary checks
-- Click-outside event changed from `mousedown` → `click` to fix premature close bug
+### Multi-Tenant Data Isolation
+- All 5 Supabase tables: added `user_id UUID` column
+- Every Supabase query in all route files now filters by `.eq("user_id", req.user!.id)`
+- Every INSERT includes `user_id: req.user!.id`
+- SQLite fallback remains single-user (no multi-tenancy)
 
-### Guest Login (`src/components/Login.tsx`, `api/index.ts`)
-- "Guest Access" button below sign-in form
-- `POST /api/login/guest` endpoint returns dev session token
+### Frontend Auth
+- **`src/services/authService.ts`** — Supabase client init via `/api/auth/config`, `signInWithGoogle()`, `signInWithPassword()`, `getSession()`, `apiFetch()` helper auto-attaches Bearer token
+- **`src/components/Login.tsx`** — Two-step UI: choose Google OAuth or Email/Password. Handles OAuth redirect, session recovery
+- **`src/App.tsx`** — Auth check via localStorage token + `/api/auth/me` admin status fetch
+- All 9 components that make API calls — switched from `fetch()` to `authService.apiFetch()`
 
-### Ledger UI Overhaul
-- **Desktop toolbar** — consolidated 3 rows (entries header, date filters, category) into 1 compact flex row
-- **Mobile toolbar** — hidden behind "Filters" button with card-based expandable panel
-- **Category rename** — moved from browser `prompt()` to styled `RenameModal` component
+### Database Migration
+- `supabase/migrations/001_add_user_id.sql` — adds `user_id UUID` column + indexes to all 5 tables, with optional RLS policies
 
-### Dashboard Mobile Filters
-- Type filter pills hidden behind "Filters" button on mobile
-- Card-based expandable panel with all 6 filter options
-- Button highlights when any filter is active
-
-### Settings — Data Governance
-- **Export** — `GET /api/export` dumps members, accounts, transactions, investments, investment_returns as JSON
-- **Import** — file picker → `POST /api/import` deletes existing data, bulk-inserts imported records (supports both SQLite and Supabase)
-- **Clear All Data** — double-confirmation → `DELETE /api/export/clear-all` wipes all 5 tables + `localStorage.clear()` + `sessionStorage.clear()`, auto-reloads
-
-### Settings — Categories
-- Lists all categories fetched from `GET /api/transactions/categories`
-- Rename via `RenameModal` → `PATCH /api/transactions/category/rename`
-
-### Sidebar
-- Changed from `md:relative` to `md:fixed` so sidebar stays in place when content scrolls
-- Main content offset with `md:pl-64`
-
-### GroupManager
-- Now receives `lastUpdate` prop to avoid redundant API calls on every navigation
-
-### Loading Screen (`src/components/LoadingScreen.tsx`)
-- Animated sliding progress bar replacing static "Loading..." text and spinner
-- Full-screen mode for auth check, inline mode for lazy-loaded content
+### Old Auth Removed
+- `POST /api/login` (hardcoded admin/password123) — removed
+- `POST /api/login/guest` — removed
+- `AUTH_USERNAME`/`AUTH_PASSWORD`/`AUTH_TOKEN_PREFIX` — demoted to fallback only
+- Guest login button — removed from Login UI
 
 ## New Files
-- `src/components/DatePicker.tsx` — custom calendar date picker
-- `src/components/RenameModal.tsx` — styled rename modal
-- `src/components/LoadingScreen.tsx` — animated loading bar
-- `src/components/AccountCard.tsx` — extracted from Dashboard
-- `src/utils/pdf.ts` — shared PDF render helpers
-- `src/utils/ledgerPdf.ts` — Ledger-specific PDF export
-- `api/routes/export.ts` — export/import/clear-all endpoints
+- `api/middleware/auth.ts` — JWT verification + admin check middleware
+- `api/routes/admin.ts` — admin user management endpoints
+- `src/services/authService.ts` — frontend Supabase Auth client + apiFetch helper
+- `src/components/AdminPanel.tsx` — admin user management UI
+- `src/components/Login.tsx` — rewritten with Google OAuth + Email/Password
+- `supabase/migrations/001_add_user_id.sql` — multi-tenant migration
+- `GUIDE.md` — step-by-step setup guide
 
 ## Files Changed
-- `src/components/Ledger.tsx` — critical fixes, refactor, toolbar, mobile filters, DatePicker
-- `src/components/Select.tsx` — portal-based dropdown
-- `src/components/Dashboard.tsx` — mobile filter card
-- `src/components/TransactionForm.tsx` — DatePicker + typed props
-- `src/components/TransactionModal.tsx` — DatePicker
-- `src/components/TransferModal.tsx` — DatePicker
-- `src/components/InvestmentTracker.tsx` — DatePicker (×2)
-- `src/components/ReportGenerator.tsx` — DatePicker, show-all, PDF utils
-- `src/components/Settings.tsx` — categories, export, import, clear-all
-- `src/components/Login.tsx` — guest login
-- `src/components/GroupManager.tsx` — lastUpdate prop
-- `src/components/layout/Sidebar.tsx` — fixed positioning
-- `src/App.tsx` — loading screen, sidebar offset, GroupManager lastUpdate
-- `api/index.ts` — guest login route, export/import routes
-- `api/routes/transactions.ts` — category rename endpoint
+- `api/config.ts` — added ADMIN_EMAILS config
+- `api/db.ts` — added supabaseAdmin client
+- `api/index.ts` — auth endpoints, admin routes, requireAuth on all data routes
+- `api/routes/members.ts` — user_id filtering
+- `api/routes/accounts.ts` — user_id filtering
+- `api/routes/transactions.ts` — user_id filtering
+- `api/routes/transfers.ts` — user_id filtering
+- `api/routes/investments.ts` — user_id filtering
+- `api/routes/groups.ts` — user_id filtering
+- `api/routes/export.ts` — user_id filtering
+- `src/App.tsx` — auth flow, admin detection, admin tab
+- `src/components/AccountManager.tsx` — authService.apiFetch
+- `src/components/GroupManager.tsx` — authService.apiFetch
+- `src/components/InvestmentTracker.tsx` — authService.apiFetch
+- `src/components/Ledger.tsx` — authService.apiFetch
+- `src/components/MemberManager.tsx` — authService.apiFetch
+- `src/components/ReportGenerator.tsx` — authService.apiFetch
+- `src/components/Settings.tsx` — authService.apiFetch
+- `src/components/TransactionModal.tsx` — authService.apiFetch
+- `src/components/TransferModal.tsx` — authService.apiFetch
+- `.env.example` — added SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS
