@@ -3,6 +3,46 @@
 ## 2026-05-15
 
 ### Add
+- Custom DatePicker component — calendar dropdown with day grid, month mode, portal rendering, viewport boundary detection at `src/components/DatePicker.tsx`
+- Custom animated loading screen — sliding progress bar replacing "Loading..." text at `src/components/LoadingScreen.tsx`
+- RenameModal component — styled modal for category renaming at `src/components/RenameModal.tsx`
+- Guest login button — bypasses credential form on login page at `src/components/Login.tsx`, `api/index.ts`
+- Category management in Settings — list + rename categories at `src/components/Settings.tsx`
+- Data export via API — `GET /api/export` dumps all tables as JSON at `api/routes/export.ts`
+- Data import via API — `POST /api/import` restores from exported JSON with Supabase support at `api/routes/export.ts`
+- Clear All Data option — wipes database + localStorage at `api/routes/export.ts`, `src/components/Settings.tsx`
+
+### Change
+- Select component — portal-based dropdown to prevent overflow clipping at `src/components/Select.tsx`
+- Ledger toolbar — consolidated 3 rows into 1 compact row on desktop, card-based filter panel on mobile at `src/components/Ledger.tsx`
+- Ledger category filter — `prompt()` replaced with RenameModal at `src/components/Ledger.tsx`
+- Ledger category rename — moved to Settings page at `src/components/Ledger.tsx`
+- Ledger date view — custom DatePicker replaces native date inputs at `src/components/Ledger.tsx`
+- Dashboard filters — mobile card-based filter panel behind Filters button at `src/components/Dashboard.tsx`
+- TransactionForm — native date input replaced with DatePicker at `src/components/TransactionForm.tsx`
+- TransactionModal — native date input replaced with DatePicker at `src/components/TransactionModal.tsx`
+- TransferModal — native date input replaced with DatePicker at `src/components/TransferModal.tsx`
+- InvestmentTracker — native date inputs replaced with DatePicker at `src/components/InvestmentTracker.tsx`
+- ReportGenerator — native date inputs replaced with DatePicker at `src/components/ReportGenerator.tsx`
+- GroupManager — now uses `lastUpdate` prop to avoid redundant fetches at `src/components/GroupManager.tsx`
+- Sidebar — fixed positioning on desktop (`md:fixed`) with `md:pl-64` offset at `src/components/layout/Sidebar.tsx`, `src/App.tsx`
+- Settings Data Governance — Export/Import/Clear All in 3-column grid at `src/components/Settings.tsx`
+- All date inputs — replaced with custom DatePicker calendar across 6 files
+- Loading screens — animated sliding bar replaces spinner and "Loading..." text at `src/components/LoadingScreen.tsx`, `src/App.tsx`
+
+### Fix
+- Ledger balance sync — restored `onUpdate()` calls after save/delete at `src/components/Ledger.tsx`
+- Ledger category filter — `setCategoryFilter(null)` removed to preserve filter across re-fetches at `src/components/Ledger.tsx`
+- Select dropdown — `mousedown` → `click` event to prevent premature close with portal at `src/components/Select.tsx`
+- DatePicker navigation — clicks on month/day buttons no longer close calendar (portal ref check) at `src/components/DatePicker.tsx`
+- DatePicker viewport clipping — right-edge and bottom-edge boundary detection + flip at `src/components/DatePicker.tsx`
+- TypeScript types — `any[]` replaced with `(Transaction & { runningBalance: number })[]` at `src/components/Ledger.tsx`
+- TransactionForm props — `newTx` typed with `TransactionFormState` interface at `src/components/TransactionForm.tsx`
+- Truncation math — `> 32` → `> 30` to match `slice(0, 30)` at `src/components/Ledger.tsx`
+- ReportGenerator — added "Show all" toggle for 10-row preview limit at `src/components/ReportGenerator.tsx`
+- Category rename import error — shows server error message in toast at `src/components/Settings.tsx`
+
+### Add
 - Dashboard Quick Tasks widget — todo list with localStorage persistence at `src/components/Dashboard.tsx`
 - Report CSV export — downloadable CSV alongside PDF at `src/components/ReportGenerator.tsx`
 - Report Category column — included in both CSV and PDF exports at `src/components/ReportGenerator.tsx`

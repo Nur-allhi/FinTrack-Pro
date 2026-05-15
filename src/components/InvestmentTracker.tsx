@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Account, Investment, InvestmentReturn } from '../types';
 import { Plus, TrendingUp, ArrowUpRight, ChevronRight, X } from 'lucide-react';
+import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { cn } from '../utils/cn';
@@ -136,8 +137,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
             </div>
             <div className="space-y-1 md:space-y-2">
               <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Date</label>
-              <input type="date" required value={newInv.date} onChange={e => setNewInv({...newInv, date: e.target.value})}
-                className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
+              <DatePicker value={newInv.date} onChange={v => setNewInv({...newInv, date: v})} />
             </div>
             <div className="md:col-span-3 flex justify-end gap-3 md:gap-4 pt-4 md:pt-6">
               <button type="button" onClick={() => setIsAdding(false)} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3">Cancel</button>
@@ -218,7 +218,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
                   <form onSubmit={handleAddReturn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-semantic-up/60 uppercase tracking-widest">Value Date</label>
-                      <input type="date" required value={newReturn.date} onChange={e => setNewReturn({...newReturn, date: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm font-medium" />
+                      <DatePicker value={newReturn.date} onChange={v => setNewReturn({...newReturn, date: v})} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-semantic-up/60 uppercase tracking-widest">Return ({currency})</label>

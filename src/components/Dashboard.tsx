@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Account, Member } from '../types';
 import { cn } from '../utils/cn';
-import { 
-  Wallet, 
-  Building2, 
-  Smartphone, 
-  TrendingUp, 
-  Target, 
-  Home,
-  ChevronRight,
+import AccountCard from './AccountCard';
+import {
+  Wallet,
+  Building2,
+  Smartphone,
+  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   Filter,
@@ -16,7 +14,8 @@ import {
   Plus,
   ArrowLeftRight,
   Check,
-  X
+  X,
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -39,15 +38,6 @@ interface DashboardProps {
   };
 }
 
-const typeIcons: Record<string, any> = {
-  cash: Wallet,
-  bank: Building2,
-  mobile: Smartphone,
-  investment: TrendingUp,
-  purpose: Target,
-  home_exp: Home,
-};
-
 export default function Dashboard({ 
   accounts, 
   members, 
@@ -61,6 +51,7 @@ export default function Dashboard({
 }: DashboardProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<'all' | 'bank' | 'cash' | 'mobile' | 'investment' | 'other'>('all');
+  const [showFilters, setShowFilters] = useState(false);
   const activeAccounts = accounts.filter(a => !a.archived);
 
   const typeFilters: { key: typeof filterType; label: string; icon: any }[] = [
@@ -225,14 +216,27 @@ export default function Dashboard({
       <div className="space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
           <h4 className="text-base md:text-lg font-normal text-ink tracking-tight">Your Portfolio</h4>
-          <div className="flex items-center gap-2 bg-surface-soft p-0.5 rounded-pill border border-hairline">
-            <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'grid' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>Grid</button>
-            <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
+          <div className="flex items-center gap-2">
+            {/* Mobile filter toggle */}
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`md:hidden px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
+                showFilters || filterType !== 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
+              Filters
+            </button>
+            <div className="flex items-center gap-2 bg-surface-soft p-0.5 rounded-pill border border-hairline">
+              <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'grid' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>Grid</button>
+              <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
+            </div>
           </div>
         </div>
 
-        {/* Type filter pills */}
-        <div className="flex flex-wrap gap-1.5">
+        {/* Desktop filter pills */}
+        <div className="hidden md:flex flex-wrap gap-1.5">
           {typeFilters.map(f => {
             const Icon = f.icon;
             const typeColor = settings.typeColors?.[f.key];
@@ -252,6 +256,32 @@ export default function Dashboard({
             );
           })}
         </div>
+
+        {/* Mobile filter card */}
+        {showFilters && (
+          <div className="md:hidden bg-canvas rounded-xl border border-hairline p-3 space-y-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {typeFilters.map(f => {
+                const Icon = f.icon;
+                const typeColor = settings.typeColors?.[f.key];
+                return (
+                  <button key={f.key} onClick={() => setFilterType(f.key)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[10px] font-bold transition-all",
+                      filterType === f.key
+                        ? "text-white shadow-sm"
+                        : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
+                    )}
+                    style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
+                  >
+                    {Icon && <Icon className="w-3.5 h-3.5" />}
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4 md:space-y-6">
           {viewMode === 'grid' ? (
@@ -335,34 +365,4 @@ export default function Dashboard({
   );
 }
 
-function AccountCard({ account, onClick, currency, typeColors }: { account: Account, onClick: () => void, currency: string, typeColors?: Record<string, string>, key?: React.Key }) {
-  const Icon = typeIcons[account.type] || Wallet;
-  const typeColor = typeColors?.[account.type] || '#0052FF';
-  
-  return (
-    <button 
-      onClick={onClick}
-      className="card-xl group hover:border-primary transition-all text-left flex flex-col gap-2 md:gap-3"
-    >
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ backgroundColor: typeColor }}>
-          <Icon className="w-4 h-4 md:w-5 md:h-5" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 md:gap-2">
-            <h5 className="text-sm md:text-base font-semibold text-ink truncate">{account.name}</h5>
-            <span className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-wider shrink-0">{account.type.replace('_', ' ')}</span>
-          </div>
-          <p className="text-[10px] md:text-xs text-muted truncate">{account.member_name || 'General'}</p>
-        </div>
-        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: typeColor }} />
-      </div>
-      <div className="flex items-baseline justify-between">
-        <p className="text-xl md:text-2xl font-normal text-ink financial-number tracking-tighter">
-          {currency}{account.current_balance.toLocaleString()}
-        </p>
-        <span className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-wider">SETTLED</span>
-      </div>
-    </button>
-  );
-}
+

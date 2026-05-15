@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Account } from '../types';
 import { X, Loader2, CheckCircle2 } from 'lucide-react';
+import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
 import DebitCreditToggle from './DebitCreditToggle';
@@ -111,12 +112,9 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
-                    <input 
-                      type="date" 
-                      required
+                    <DatePicker
                       value={tx.date}
-                      onChange={e => setTx({...tx, date: e.target.value})}
-                      className="w-full px-5 py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
+                      onChange={v => setTx({...tx, date: v})}
                     />
                   </div>
                   <div className="space-y-2">

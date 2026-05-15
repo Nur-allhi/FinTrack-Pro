@@ -49,7 +49,7 @@ export default function Sidebar({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-canvas border-r border-hairline transition-transform duration-300 ease-in-out md:relative md:h-screen md:self-start md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-canvas border-r border-hairline transition-transform duration-300 ease-in-out md:fixed md:h-screen md:translate-x-0",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

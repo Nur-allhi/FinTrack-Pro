@@ -8,9 +8,10 @@ import {
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { cn } from '../utils/cn';
+import { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency } from '../utils/pdf';
 import Select from './Select';
+import DatePicker from './DatePicker';
 
 interface ReportGeneratorProps {
   accounts: Account[];
@@ -21,6 +22,7 @@ interface ReportGeneratorProps {
 export default function ReportGenerator({ accounts, members, currency }: ReportGeneratorProps) {
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<Transaction[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const [filters, setFilters] = useState({
     startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
     endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
@@ -30,6 +32,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
 
   const generateReport = async () => {
     setLoading(true);
+    setShowAll(false);
     try {
       const memberAccountIds = filters.memberId
         ? accounts.filter(a => a.member_id === Number(filters.memberId)).map(a => a.id)
@@ -88,58 +91,14 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
     const colWidths = [24, usableW - 24 - 28 - 28 - 28, 28, 28, 28];
     const headers = ['Date', 'Particulars', 'Category', 'Debit', 'Credit'];
     const accountName = filters.accountId ? accounts.find(a => a.id === Number(filters.accountId))?.name : 'All Accounts';
-    const pdfCur = /^[\x00-\x7F]+$/.test(currency) ? currency : 'Tk ';
-    const fm = (n: number) => `${pdfCur}${Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const fm = (n: number) => fmtPdfCurrency(currency, n);
     const totalDebit = reportData.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
     const totalCredit = reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const dateRange = `${filters.startDate} to ${filters.endDate}`;
 
     let pageNum = 1;
 
-    const drawPageHeader = () => {
-      doc.setFillColor(248, 248, 250);
-      doc.rect(0, 0, pageW, 38, 'F');
-      doc.setDrawColor(0, 82, 255);
-      doc.setLineWidth(0.8);
-      doc.line(0, 38, pageW, 38);
-      doc.setLineWidth(0.2);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.setTextColor(0, 82, 255);
-      doc.text('FinTrack Pro', margin, 18);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(80, 80, 80);
-      doc.text('Financial Report', pageW / 2, 18, { align: 'center' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(140, 140, 140);
-      doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy')}`, pageW - margin, 18, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`${accountName}  |  ${filters.startDate} to ${filters.endDate}`, margin, 30);
-    };
-
-    const drawTableHeader = (yPos: number) => {
-      doc.setFillColor(0, 82, 255);
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.rect(margin, yPos, usableW, 7, 'F');
-      let x = margin;
-      headers.forEach((h, i) => {
-        const align = i <= 2 ? 'left' : 'right';
-        doc.text(h, x + (align === 'right' ? colWidths[i] - 3 : 3), yPos + 5, { align });
-        x += colWidths[i];
-      });
-      return yPos + 9;
-    };
-
-    const drawSummary = (yPos: number) => {
+    const drawReportSummary = (yPos: number) => {
       doc.setDrawColor(200, 200, 200);
       doc.line(margin, yPos + 2, margin + usableW, yPos + 2);
       doc.setFont('helvetica', 'bold');
@@ -153,17 +112,10 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
       if (totalCredit > 0) doc.text(fm(totalCredit), creditX - 2, yPos + 8, { align: 'right' });
     };
 
-    const drawFooter = () => {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
-      doc.setTextColor(160, 160, 160);
-      doc.text(`Page ${pageNum}`, pageW / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
-    };
-
-    drawPageHeader();
+    drawPageHeader(doc, 'Financial Report', String(accountName), dateRange);
 
     let y = 44;
-    y = drawTableHeader(y);
+    y = drawTableHeader(doc, headers, colWidths, y, 3);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
@@ -171,13 +123,13 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
 
     reportData.forEach((t, idx) => {
       if (y + 6 > doc.internal.pageSize.getHeight() - 20) {
-        drawSummary(y);
-        drawFooter();
+        drawReportSummary(y);
+        drawFooter(doc, pageNum);
         doc.addPage();
         pageNum++;
-        drawPageHeader();
+        drawPageHeader(doc, 'Financial Report', String(accountName), dateRange);
         y = 44;
-        y = drawTableHeader(y);
+        y = drawTableHeader(doc, headers, colWidths, y, 3);
       }
       if (idx % 2 === 0) {
         doc.setFillColor(252, 252, 252);
@@ -185,12 +137,12 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
       }
       let x = margin;
       const cat = t.category || '';
-      const cells = [
-        { text: t.date, align: 'left' as const },
-        { text: t.particulars, align: 'left' as const },
-        { text: cat.length > 16 ? cat.slice(0, 14) + '..' : cat, align: 'left' as const },
-        { text: t.amount < 0 ? fm(t.amount) : '', align: 'right' as const },
-        { text: t.amount > 0 ? fm(t.amount) : '', align: 'right' as const }
+      const cells: { text: string; align: 'left' | 'right' }[] = [
+        { text: t.date, align: 'left' },
+        { text: t.particulars, align: 'left' },
+        { text: cat.length > 16 ? cat.slice(0, 14) + '..' : cat, align: 'left' },
+        { text: t.amount < 0 ? fm(t.amount) : '', align: 'right' },
+        { text: t.amount > 0 ? fm(t.amount) : '', align: 'right' }
       ];
       cells.forEach((cell, ci) => {
         doc.text(cell.text, x + (cell.align === 'right' ? colWidths[ci] - 2 : 2), y + 4, { align: cell.align });
@@ -199,8 +151,8 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
       y += 6;
     });
 
-    if (reportData.length > 0) drawSummary(y);
-    drawFooter();
+    if (reportData.length > 0) drawReportSummary(y);
+    drawFooter(doc, pageNum);
     doc.save(`FinTrack_Report_${filters.startDate}_${filters.endDate}.pdf`);
   };
 
@@ -220,13 +172,11 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <div className="space-y-1 md:space-y-2">
             <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Start</label>
-            <input type="date" value={filters.startDate} onChange={e => setFilters({...filters, startDate: e.target.value})}
-              className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
+            <DatePicker value={filters.startDate} onChange={v => setFilters({...filters, startDate: v})} />
           </div>
           <div className="space-y-1 md:space-y-2">
             <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">End</label>
-            <input type="date" value={filters.endDate} onChange={e => setFilters({...filters, endDate: e.target.value})}
-              className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
+            <DatePicker value={filters.endDate} onChange={v => setFilters({...filters, endDate: v})} />
           </div>
           <div className="space-y-1 md:space-y-2">
             <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Account</label>
@@ -276,7 +226,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-hairline">
-                  {reportData.slice(0, 10).map(t => (
+                  {(showAll ? reportData : reportData.slice(0, 10)).map(t => (
                     <tr key={t.id} className="hover:bg-surface-soft/30 transition-colors">
                       <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-[10px] md:text-xs text-muted font-medium">{t.date}</td>
                       <td className="px-4 md:px-5 py-2.5 md:py-3 text-[10px] md:text-xs font-semibold text-ink">{t.particulars}</td>
@@ -288,10 +238,12 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
                       </td>
                     </tr>
                   ))}
-                  {reportData.length > 10 && (
+                  {reportData.length > 10 && !showAll && (
                     <tr>
-                      <td colSpan={4} className="px-4 md:px-5 py-3 text-center text-[10px] text-muted font-bold uppercase tracking-widest bg-surface-soft/10">
-                        + {reportData.length - 10} more
+                      <td colSpan={4} className="px-4 md:px-5 py-3 text-center">
+                        <button onClick={() => setShowAll(true)} className="text-[10px] text-primary font-bold uppercase tracking-widest hover:underline">
+                          + Show all {reportData.length} transactions
+                        </button>
                       </td>
                     </tr>
                   )}

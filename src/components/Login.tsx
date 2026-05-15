@@ -42,6 +42,22 @@ export default function Login({ onLogin }: LoginProps) {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/login/guest', { method: 'POST' });
+      const data = await response.json();
+      if (data.success) onLogin(data.token, false);
+      else setError('Guest login unavailable.');
+    } catch {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-canvas p-6 transition-colors relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -152,6 +168,25 @@ export default function Login({ onLogin }: LoginProps) {
                   <span>Authorizing...</span>
                 </div>
               ) : 'Sign In'}
+            </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-hairline" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-canvas px-3 text-muted font-bold tracking-wider">or</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={isLoading}
+              className="w-full h-[56px] text-base font-bold rounded-full border-2 border-hairline text-ink hover:bg-surface-soft hover:border-muted transition-all flex items-center justify-center gap-2"
+            >
+              <User className="w-5 h-5 text-muted" />
+              Guest Access
             </button>
           </form>
 

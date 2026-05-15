@@ -11,6 +11,7 @@ import transactionRoutes from "./routes/transactions.js";
 import investmentRoutes from "./routes/investments.js";
 import transferRoutes from "./routes/transfers.js";
 import groupRoutes from "./routes/groups.js";
+import exportRoutes from "./routes/export.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,12 +44,19 @@ app.post("/api/login", (req, res) => {
   }
 });
 
+app.post("/api/login/guest", (_req, res) => {
+  const { tokenPrefix } = config.auth;
+  res.json({ success: true, token: tokenPrefix + Date.now() });
+});
+
 app.use("/api/members", memberRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/investments", investmentRoutes);
 app.use("/api/transfers", transferRoutes);
 app.use("/api/groups", groupRoutes);
+app.use("/api/export", exportRoutes);
+app.use("/api/import", exportRoutes);
 
 // Serve static files in non-production
 if (process.env.NODE_ENV !== 'production') {

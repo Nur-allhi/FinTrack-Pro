@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Account } from '../types';
 import { X, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
@@ -123,12 +124,9 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
-                    <input 
-                      type="date" 
-                      required
+                    <DatePicker
                       value={transfer.date}
-                      onChange={e => setTransfer({...transfer, date: e.target.value})}
-                      className="w-full px-5 py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
+                      onChange={v => setTransfer({...transfer, date: v})}
                     />
                   </div>
                 </div>

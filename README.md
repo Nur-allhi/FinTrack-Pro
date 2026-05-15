@@ -18,6 +18,12 @@ A comprehensive family financial tracker with multi-account management, investme
 - **Quick Filters** — Filter dashboard by account type (Banks, Cash, Mobile, Investments)
 - **Responsive Design** — Optimized for mobile, tablet, and desktop with card-based layouts
 - **Font Size Scaling** — Adjust base font size (small/normal/large) in Settings
+- **Custom DatePicker** — Calendar UI dropdown for date selection with month/date/range modes
+- **Guest Login** — One-click access without credentials for development
+- **Category Management** — Rename categories via Settings with auto-update across all transactions
+- **Data Export/Import** — Full backup and restore via JSON in Settings
+- **Clear All Data** — Wipe database and local storage from Settings
+- **Animated Loading Screen** — Sliding progress bar for content loading
 
 ## Tech Stack
 
@@ -84,10 +90,11 @@ api/                    # Express backend
 └── routes/
     ├── members.ts      # Member CRUD
     ├── accounts.ts     # Account CRUD
-    ├── transactions.ts # Transaction CRUD
+    ├── transactions.ts # Transaction CRUD + category rename
     ├── transfers.ts    # Inter-account transfers
     ├── investments.ts  # Investment tracking
-    └── groups.ts       # Account groups with accumulated balance
+    ├── groups.ts       # Account groups with accumulated balance
+    └── export.ts       # Data export / import / clear-all
 
 src/                    # React frontend
 ├── App.tsx             # Main app with routing, settings, data fetching
@@ -97,20 +104,23 @@ src/                    # React frontend
 ├── services/
 │   └── cacheService.ts # IndexedDB cache
 ├── utils/
-│   └── cn.ts           # Tailwind class merge utility
+│   ├── cn.ts           # Tailwind class merge utility
+│   ├── pdf.ts          # Shared PDF helpers (page header, table, footer)
+│   └── ledgerPdf.ts    # Ledger-specific PDF export
 └── components/
     ├── layout/
     │   ├── Sidebar.tsx # Navigation sidebar
     │   └── Header.tsx  # Top header with search
+    ├── AccountCard.tsx # Dashboard account card
     ├── Dashboard.tsx   # Main dashboard with filters
     ├── Ledger.tsx      # Transaction ledger per account
     ├── AccountManager.tsx  # Account CRUD with inline editing
     ├── MemberManager.tsx   # Members with account drill-down
     ├── GroupManager.tsx    # Account groups management
     ├── InvestmentTracker.tsx   # Investment positions & returns
-    ├── ReportGenerator.tsx     # PDF report generation
+    ├── ReportGenerator.tsx     # PDF/CSV report generation
     ├── Settings.tsx     # App settings & customization
-    ├── Login.tsx        # Authentication
+    ├── Login.tsx        # Authentication with guest access
     ├── TransactionForm.tsx  # Transaction entry form
     ├── TransactionRow.tsx   # Desktop ledger row
     ├── TransactionCard.tsx  # Mobile ledger card
@@ -118,7 +128,10 @@ src/                    # React frontend
     ├── TransactionModal.tsx # Quick transaction modal
     ├── FloatingActionButton.tsx # FAB for quick actions
     ├── DebitCreditToggle.tsx    # Shared debit/credit toggle
-    ├── Select.tsx           # Custom styled select
+    ├── Select.tsx           # Custom styled select (portal-based)
+    ├── DatePicker.tsx       # Custom calendar date picker
+    ├── RenameModal.tsx      # Rename confirmation modal
+    ├── LoadingScreen.tsx    # Animated loading screen
     └── Toast.tsx            # Toast notification system
 ```
 
@@ -151,5 +164,7 @@ Groups allow you to create parent containers that aggregate child account balanc
 - **Font Size** — Small / Normal / Large base text scaling
 - **Currency** — BDT, USD, EUR, GBP, INR
 - **Account Colors** — Customize colors per account type (Bank, Cash, Mobile, Investment, etc.)
-- **Data Export** — Download all data as JSON
-- **Clear Cache** — Reset local IndexedDB cache
+- **Data Export** — Download all data (members, accounts, transactions, investments) as JSON
+- **Data Import** — Restore from a previously exported JSON file
+- **Clear All Data** — Wipe database and localStorage
+- **Category Management** — Rename transaction categories

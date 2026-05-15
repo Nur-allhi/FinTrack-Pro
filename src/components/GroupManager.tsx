@@ -26,7 +26,7 @@ interface Group {
 
 const colors = ['#0052ff', '#05b169', '#cf202f', '#f59e0b', '#7c828a', '#0a0b0d', '#14B8A6', '#EC4899', '#64748B', '#F97316'];
 
-export default function GroupManager({ onUpdate, currency }: { onUpdate: () => void; currency?: string }) {
+export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpdate: () => void; lastUpdate?: number; currency?: string }) {
   const { toast } = useToast();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function GroupManager({ onUpdate, currency }: { onUpdate: () => v
     }
   };
 
-  useEffect(() => { fetchGroups(); }, []);
+  useEffect(() => { fetchGroups(); }, [lastUpdate]);
 
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

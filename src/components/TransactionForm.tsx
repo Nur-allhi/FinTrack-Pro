@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
 import DebitCreditToggle from './DebitCreditToggle';
 import Select from './Select';
+import DatePicker from './DatePicker';
+
+interface TransactionFormState {
+  date: string;
+  particulars: string;
+  amount: string;
+  isCredit: boolean;
+  category: string;
+}
 
 interface TransactionFormProps {
   onSubmit: (e: React.FormEvent) => void;
-  newTx: any;
-  setNewTx: (tx: any) => void;
+  newTx: TransactionFormState;
+  setNewTx: (tx: TransactionFormState) => void;
   onCancel: () => void;
   availableCategories?: string[];
 }
@@ -39,25 +47,15 @@ export default function TransactionForm({
     <div className="bg-canvas border border-hairline rounded-xl shadow-sm p-6 md:p-8">
       <form onSubmit={onSubmit} className="space-y-6 md:space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-          <div className="md:col-span-2">
-            <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-date">
-              Value Date
-            </label>
-            <div className="relative">
-              <input
-                id="tx-date"
-                type="date"
-                required
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-date">
+                Value Date
+              </label>
+              <DatePicker
                 value={newTx.date}
-                onChange={e => setNewTx({...newTx, date: e.target.value})}
-                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={v => setNewTx({...newTx, date: v})}
               />
-              <div className="w-full flex items-center justify-between gap-2 px-3.5 py-3 bg-surface-soft border border-hairline rounded-pill text-xs font-semibold uppercase tracking-wider text-ink hover:bg-canvas hover:border-muted transition-all pointer-events-none">
-                <span>{newTx.date ? new Date(newTx.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Select date'}</span>
-                <Calendar className="w-3.5 h-3.5 text-muted shrink-0" />
-              </div>
             </div>
-          </div>
           <div className="md:col-span-7">
             <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-particulars">
               Transaction Description

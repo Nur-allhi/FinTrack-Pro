@@ -10,6 +10,7 @@ import {
   Settings as SettingsIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import LoadingScreen from './components/LoadingScreen';
 
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
@@ -140,7 +141,7 @@ export default function App() {
       case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onOpenTransfer={() => setIsTransferModalOpen(true)} onOpenTransaction={() => setIsTransactionModalOpen(true)} onGenerateReport={() => setActiveTab('reports')} settings={settings} />;
       case 'members': return <MemberManager members={members} accounts={accounts} onUpdate={fetchData} onSelectAccount={setSelectedAccountId} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
-      case 'groups': return <GroupManager onUpdate={fetchData} currency={settings.currency} />;
+      case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
       case 'investments': return <InvestmentTracker accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
       case 'settings': return <Settings settings={settings} onUpdateSettings={(s: any) => { setSettings(s); cacheService.setSettings(s); }} onExportData={async () => { const blob = new Blob([JSON.stringify({ members, accounts, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `fintrack-export-${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url); }} onClearCache={async () => { if (confirm("Clear cache?")) { await cacheService.clearCache(); window.location.reload(); } }} />;
@@ -148,7 +149,7 @@ export default function App() {
     }
   };
 
-  if (isAuthenticated === null) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  if (isAuthenticated === null) return <LoadingScreen fullScreen />;
   if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
 
   return (
@@ -160,7 +161,7 @@ export default function App() {
         accounts={accounts} settings={settings} onLogout={handleLogout} navItems={navItems}
       />
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 md:pl-64">
         <Header 
           setIsMobileMenuOpen={setIsMobileMenuOpen} 
           selectedAccountId={selectedAccountId} 
@@ -176,7 +177,7 @@ export default function App() {
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={selectedAccountId || activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-              <Suspense fallback={<div>Loading...</div>}>{renderContent()}</Suspense>
+              <Suspense fallback={<LoadingScreen />}>{renderContent()}</Suspense>
             </motion.div>
           </AnimatePresence>
         </div>

@@ -202,4 +202,28 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.patch("/category/rename", async (req, res) => {
+  try {
+    const { oldName, newName } = req.body;
+    if (!oldName || !newName) {
+      return res.status(400).json({ error: "oldName and newName are required" });
+    }
+
+    if (supabase) {
+      const { error } = await supabase
+        .from("transactions")
+        .update({ category: newName })
+        .eq("category", oldName);
+      if (error) throw error;
+      return res.json({ success: true });
+    }
+
+    db.prepare("UPDATE transactions SET category = ? WHERE category = ?").run(newName, oldName);
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("PATCH /api/transactions/category/rename error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

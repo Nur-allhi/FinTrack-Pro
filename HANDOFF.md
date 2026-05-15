@@ -1,63 +1,88 @@
-# Handoff — 15 May 2026
+# Handoff — 15 May 2026 (Session 2)
 
 ## Session Summary
 
-Redesigned the transaction entry form to match `Design/Desktop_code.html` and `Design/Mobile_code.html` layouts. Updated the Floating Action Button, Dashboard banner, and export system.
+Code review-driven cleanup and feature expansion: fixed critical bugs (balance sync, type safety, overflow clipping), added custom DatePicker calendar, guest login, data export/import, category management, and improved mobile layouts with card-based filter panels.
 
 ## Changes
 
-### Transaction Form (`src/components/TransactionForm.tsx`)
-- Desktop: 2-row 12-column grid layout matching design spec (Date 2col | Description 7col | Amount 3col / Category 5col | Toggle 4col | Buttons 3col)
-- Mobile: stacked layout with "Transaction Type" label above toggle
-- Native `<select>` replaced with the app's custom `Select` component (pill-shaped, consistent with other dropdowns)
-- Date input wrapped in styled container mimicking Select appearance (rounded-pill, bg-surface-soft, Calendar icon overlay)
+### Bug Fixes (Code Review)
+- **Ledger balance sync** — restored `onUpdate()` calls after save/delete so parent account balances refresh (`src/components/Ledger.tsx`)
+- **TypeScript types** — replaced `[] as any[]` with proper `(Transaction & { runningBalance: number })[]` in running balance reduce (`src/components/Ledger.tsx`)
+- **TransactionForm types** — `newTx` prop typed with `TransactionFormState` interface replacing `any` (`src/components/TransactionForm.tsx`)
+- **Truncation math** — fixed `> 32` → `> 30` to match `slice(0, 30)` (`src/components/Ledger.tsx`)
+- **Category filter reset** — removed `setCategoryFilter(null)` from useEffect to preserve filter across re-fetches (`src/components/Ledger.tsx`)
+- **File sizes** — split Ledger (446→292), Dashboard (368→327), ReportGenerator (350→303). Extracted `AccountCard`, PDF utilities, and `ledgerPdf.ts`
+
+### Custom DatePicker (`src/components/DatePicker.tsx`)
+- Calendar dropdown with day grid (Su–Mo headers) and month/year navigation
+- Two modes: **date** (day grid) and **month** (4×3 month grid)
+- Portal-rendered to `document.body` with viewport boundary detection (right-edge shift + bottom-edge flip)
+- Click-outside detection using `containerRef` + `portalRef` to prevent premature close
+- Responsive panel width (`Math.min(280, vw - 48)`)
+- Replaced native `<input type="date">` across 6 files: TransactionForm, TransactionModal, TransferModal, InvestmentTracker (×2), ReportGenerator (×2), Ledger (month/date/range modes)
 
 ### Select Component (`src/components/Select.tsx`)
-- Button padding increased from `py-2` to `py-3` to match input heights
-- Dropdown changed from `overflow-hidden` to `overflow-y-auto` with `max-h-[200px]` for scrollable category lists
+- Portal-based dropdown to prevent `overflow-hidden` parent clipping
+- Fixed positioning tied to button's `getBoundingClientRect()` with viewport boundary checks
+- Click-outside event changed from `mousedown` → `click` to fix premature close bug
 
-### Debit/Credit Toggle (`src/components/DebitCreditToggle.tsx`)
-- Removed `max-w-[220px]` constraint so toggle fills available width
+### Guest Login (`src/components/Login.tsx`, `api/index.ts`)
+- "Guest Access" button below sign-in form
+- `POST /api/login/guest` endpoint returns dev session token
 
-### Floating Action Button (`src/components/FloatingActionButton.tsx`)
-- Both speed-dial items unified to `rounded-pill` with consistent `px-6 py-3.5` padding
-- Main button uses `bg-primary` for both open/closed states (was `bg-surface-dark` on open)
-- Removed broken `-z-10` backdrop, replaced with proper click-outside handler via `useRef` + `mousedown` listener
-- Auto-closes when TransactionModal or TransferModal opens (via `useEffect` watching modal state props)
-- Wrapped in `<div className="md:hidden">` in App.tsx — hidden on desktop, visible on mobile only
+### Ledger UI Overhaul
+- **Desktop toolbar** — consolidated 3 rows (entries header, date filters, category) into 1 compact flex row
+- **Mobile toolbar** — hidden behind "Filters" button with card-based expandable panel
+- **Category rename** — moved from browser `prompt()` to styled `RenameModal` component
 
-### Dashboard (`src/components/Dashboard.tsx`)
-- Removed "Transfer Funds" and "Generate Report" buttons from balance banner
-- Restructured banner layout: left column (Total Balance + Assets/Liabilities below), right column (Quick Tasks widget)
-- Quick Tasks widget: add/check/delete todos persisted to localStorage, pending count badge
-- Added desktop-only action buttons below banner: "New Transaction" (btn-primary) and "Inter-Account Transfer" (btn-pill)
-- Fixed type filter pills: "All" and "Others" now fall back to `#0052FF` color when selected
+### Dashboard Mobile Filters
+- Type filter pills hidden behind "Filters" button on mobile
+- Card-based expandable panel with all 6 filter options
+- Button highlights when any filter is active
 
-### Account Dropdowns
-- ReportGenerator, TransferModal, TransactionModal: account labels now include member name (e.g., "Bkash · John (৳5,000)")
+### Settings — Data Governance
+- **Export** — `GET /api/export` dumps members, accounts, transactions, investments, investment_returns as JSON
+- **Import** — file picker → `POST /api/import` deletes existing data, bulk-inserts imported records (supports both SQLite and Supabase)
+- **Clear All Data** — double-confirmation → `DELETE /api/export/clear-all` wipes all 5 tables + `localStorage.clear()` + `sessionStorage.clear()`, auto-reloads
 
-### PDF / CSV Export
+### Settings — Categories
+- Lists all categories fetched from `GET /api/transactions/categories`
+- Rename via `RenameModal` → `PATCH /api/transactions/category/rename`
 
-#### Ledger (`src/components/Ledger.tsx`)
-- Replaced CSV download with bank-statement PDF using pure jsPDF (no autotable)
-- Columns: Date | Particulars | Debit | Credit | Balance
-- Professional layout: branding header, opening balance card, alternating rows, total summary, closing balance, page numbers
-- Fixed locale (`en-US`) and currency symbol fallback (`Tk ` for non-ASCII)
+### Sidebar
+- Changed from `md:relative` to `md:fixed` so sidebar stays in place when content scrolls
+- Main content offset with `md:pl-64`
 
-#### Report Generator (`src/components/ReportGenerator.tsx`)
-- Added CSV export alongside existing PDF
-- Both PDF and CSV now include Category column (Date | Particulars | Category | Debit | Credit)
-- PDF uses same bank-statement layout as Ledger
-- Fixed locale and currency symbol fallback
+### GroupManager
+- Now receives `lastUpdate` prop to avoid redundant API calls on every navigation
+
+### Loading Screen (`src/components/LoadingScreen.tsx`)
+- Animated sliding progress bar replacing static "Loading..." text and spinner
+- Full-screen mode for auth check, inline mode for lazy-loaded content
+
+## New Files
+- `src/components/DatePicker.tsx` — custom calendar date picker
+- `src/components/RenameModal.tsx` — styled rename modal
+- `src/components/LoadingScreen.tsx` — animated loading bar
+- `src/components/AccountCard.tsx` — extracted from Dashboard
+- `src/utils/pdf.ts` — shared PDF render helpers
+- `src/utils/ledgerPdf.ts` — Ledger-specific PDF export
+- `api/routes/export.ts` — export/import/clear-all endpoints
 
 ## Files Changed
-- `src/components/TransactionForm.tsx` — complete layout rewrite
-- `src/components/Ledger.tsx` — PDF export, smoother optimistic updates
-- `src/components/Dashboard.tsx` — banner restructure, quick tasks, type filter fix
-- `src/components/FloatingActionButton.tsx` — styling, click-outside, auto-close
-- `src/components/Select.tsx` — padding, scrollable dropdown
-- `src/components/DebitCreditToggle.tsx` — removed max-width
-- `src/components/ReportGenerator.tsx` — CSV export, category column, PDF format
-- `src/components/TransferModal.tsx` — member name in account labels
-- `src/components/TransactionModal.tsx` — member name in account labels
-- `src/App.tsx` — FAB hidden on desktop, onOpenTransaction pass-through
+- `src/components/Ledger.tsx` — critical fixes, refactor, toolbar, mobile filters, DatePicker
+- `src/components/Select.tsx` — portal-based dropdown
+- `src/components/Dashboard.tsx` — mobile filter card
+- `src/components/TransactionForm.tsx` — DatePicker + typed props
+- `src/components/TransactionModal.tsx` — DatePicker
+- `src/components/TransferModal.tsx` — DatePicker
+- `src/components/InvestmentTracker.tsx` — DatePicker (×2)
+- `src/components/ReportGenerator.tsx` — DatePicker, show-all, PDF utils
+- `src/components/Settings.tsx` — categories, export, import, clear-all
+- `src/components/Login.tsx` — guest login
+- `src/components/GroupManager.tsx` — lastUpdate prop
+- `src/components/layout/Sidebar.tsx` — fixed positioning
+- `src/App.tsx` — loading screen, sidebar offset, GroupManager lastUpdate
+- `api/index.ts` — guest login route, export/import routes
+- `api/routes/transactions.ts` — category rename endpoint
