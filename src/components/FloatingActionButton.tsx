@@ -13,24 +13,35 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
   const isAnyModalOpen = isTransactionModalOpen || isTransferModalOpen;
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const close = () => {
+    clearTimeout(timerRef.current);
+    setIsOpen(false);
+  };
+
+  const toggle = () => {
+    const next = !isOpen;
+    clearTimeout(timerRef.current);
+    if (next) {
+      timerRef.current = setTimeout(close, 5000);
+    }
+    setIsOpen(next);
+  };
 
   useEffect(() => {
-    if (isAnyModalOpen) setIsOpen(false);
+    if (isAnyModalOpen) close();
   }, [isAnyModalOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
-    const timer = setTimeout(() => setIsOpen(false), 5000);
     const handleClickOutside = (e: PointerEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        close();
       }
     };
     document.addEventListener('pointerdown', handleClickOutside);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('pointerdown', handleClickOutside);
-    };
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, [isOpen]);
 
   return (
@@ -44,7 +55,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
               exit={{ opacity: 0, y: 20, scale: 0.8 }}
               onClick={() => {
                 onNewTransfer();
-                setIsOpen(false);
+                close();
               }}
               className="flex items-center gap-4 px-6 py-3.5 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
             >
@@ -61,7 +72,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
               transition={{ delay: 0.05 }}
               onClick={() => {
                 onNewTransaction();
-                setIsOpen(false);
+                close();
               }}
               className="flex items-center gap-4 px-6 py-3.5 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
             >
@@ -75,7 +86,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
       </AnimatePresence>
 
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggle}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
           isOpen ? 'bg-primary rotate-45' : 'bg-primary hover:scale-110 active:scale-95'
         }`}
