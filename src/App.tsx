@@ -261,7 +261,7 @@ export default function App() {
         selectedAccountId={selectedAccountId} setSelectedAccountId={setSelectedAccountId}
         isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
         settings={settings} onLogout={handleLogout} navItems={navItems}
-        userEmail={userEmail} onOpenProfile={() => { setShowProfile(true); setSelectedAccountId(null); setIsMobileMenuOpen(false); }}
+        userEmail={userEmail} showProfile={showProfile} onOpenProfile={() => { setShowProfile(true); setSelectedAccountId(null); setIsMobileMenuOpen(false); }}
       />
 
       <main className="flex-1 flex flex-col min-w-0 md:pl-64">

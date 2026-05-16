@@ -1,6 +1,6 @@
 import React from 'react';
 import { Wallet, X, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
@@ -14,6 +14,7 @@ interface SidebarProps {
   onLogout: () => void;
   navItems: { id: string; label: string; icon: any }[];
   userEmail?: string;
+  showProfile?: boolean;
   onOpenProfile?: () => void;
 }
 
@@ -28,9 +29,10 @@ export default function Sidebar({
   onLogout,
   navItems,
   userEmail,
+  showProfile,
   onOpenProfile
 }: SidebarProps) {
-  const isActive = (id: string) => activeTab === id && !selectedAccountId;
+  const isActive = (id: string) => activeTab === id && !selectedAccountId && !showProfile;
 
   return (
     <>
@@ -77,49 +79,52 @@ export default function Sidebar({
 
           {/* Navigation cards */}
           <nav className="flex-1 px-3 space-y-1 overflow-y-auto min-h-0">
-            {navItems.map((item) => {
-              const active = isActive(item.id);
-              const Icon = item.icon;
-              return (
-                <motion.button
-                  key={item.id}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setSelectedAccountId(null);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group",
-                    active
-                      ? "bg-primary text-white shadow-md shadow-primary/20"
-                      : "text-muted hover:bg-surface-soft hover:text-ink border border-transparent hover:border-hairline"
-                  )}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute inset-0 bg-primary rounded-xl"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <div className={cn(
-                    "relative z-10 flex items-center gap-3 w-full",
-                    active && "text-white"
-                  )}>
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+            <LayoutGroup>
+              {navItems.map((item) => {
+                const active = isActive(item.id);
+                const Icon = item.icon;
+                return (
+                  <motion.button
+                    key={item.id}
+                    layout
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setSelectedAccountId(null);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group",
                       active
-                        ? "bg-white/15"
-                        : "bg-surface-strong group-hover:bg-canvas"
+                        ? "text-white shadow-md shadow-primary/20"
+                        : "text-muted hover:bg-surface-soft hover:text-ink border border-transparent hover:border-hairline"
+                    )}
+                  >
+                    {active && (
+                      <motion.div
+                        layoutId="activeNav"
+                        className="absolute inset-0 bg-primary rounded-xl"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <div className={cn(
+                      "relative z-10 flex items-center gap-3 w-full",
+                      active && "text-white"
                     )}>
-                      <Icon className={cn("w-4 h-4", active ? "text-white" : "text-muted group-hover:text-ink")} />
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                        active
+                          ? "bg-white/15"
+                          : "bg-surface-strong group-hover:bg-canvas"
+                      )}>
+                        <Icon className={cn("w-4 h-4", active ? "text-white" : "text-muted group-hover:text-ink")} />
+                      </div>
+                      <span className="text-sm font-semibold">{item.label}</span>
                     </div>
-                    <span className="text-sm font-semibold">{item.label}</span>
-                  </div>
-                </motion.button>
-              );
-            })}
+                  </motion.button>
+                );
+              })}
+            </LayoutGroup>
           </nav>
 
           {/* Bottom section */}

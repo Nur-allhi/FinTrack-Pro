@@ -142,7 +142,7 @@ export default function Dashboard({
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {settings.showCurrentAssets && (
                   <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
-                    <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Assets</p>
+                    <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Assets</p>
                     <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
                       {settings.currency}{totalBalance.toLocaleString()}
                     </p>
@@ -150,7 +150,7 @@ export default function Dashboard({
                 )}
                 {settings.showLiabilities && (
                   <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
-                    <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
+                    <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
                     <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
                       {settings.currency}0
                     </p>
@@ -199,30 +199,18 @@ export default function Dashboard({
                   onChange={e => setNewTodo(e.target.value)}
                   className="flex-1 bg-surface-soft border border-hairline rounded-pill px-3 py-1.5 text-xs text-ink placeholder:text-muted outline-none focus:border-primary transition-colors"
                 />
-                <button type="submit" className="btn-primary px-3 py-1.5 text-[10px]">Add</button>
+                <button type="submit" className="btn-primary px-3 py-1.5 text-xs">Add</button>
               </form>
             </div>}
           </div>
         </div>
       )}
 
-      {/* Row 2: Action buttons centered */}
-      <div className="hidden md:flex justify-center gap-3">
-        <button onClick={onOpenTransaction} className="btn-primary px-6 py-3 text-xs md:text-sm">
-          <Plus className="w-4 h-4" />
-          New Transaction
-        </button>
-        <button onClick={onOpenTransfer} className="btn-pill bg-canvas text-ink border border-hairline px-6 py-3 text-xs md:text-sm hover:bg-surface-soft transition-colors">
-          <ArrowLeftRight className="w-4 h-4" />
-          Inter-Account Transfer
-        </button>
-      </div>
-
       {/* Accounts List Section */}
       <div className="space-y-4 md:space-y-6">
-        {/* Row 3: Portfolio heading + filters + Grid/List merged */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="w-44 shrink-0">
+        {/* Controls: Member Select | Actions | Filters | Grid/List */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="w-auto md:w-44 shrink-0 min-w-0">
             <Select
               value={String(filterMemberId)}
               onChange={v => setFilterMemberId(v === 'all' ? 'all' : v === 'general' ? 'general' : Number(v))}
@@ -233,70 +221,68 @@ export default function Dashboard({
               ]}
             />
           </div>
-          <div className="hidden md:flex items-center gap-1.5 flex-wrap justify-center">
-            {typeFilters.map(f => {
-              const Icon = f.icon;
-              const typeColor = settings.typeColors?.[f.key];
-              return (
-                <button key={f.key} onClick={() => setFilterType(f.key)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[10px] md:text-xs font-bold transition-all",
-                    filterType === f.key
-                      ? "text-white shadow-sm"
-                      : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
-                  )}
-                  style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
-                >
-                  {Icon && <Icon className="w-3.5 h-3.5" />}
-                  {f.label}
-                </button>
-              );
-            })}
+          <div className="hidden md:flex items-center justify-center gap-2 flex-1 flex-wrap">
+            <button onClick={onOpenTransaction} className="btn-primary px-5 py-2.5 text-xs md:text-sm">
+              <Plus className="w-4 h-4" />
+              New Transaction
+            </button>
+            <button onClick={onOpenTransfer} className="btn-pill bg-canvas text-ink border border-hairline px-5 py-2.5 text-xs md:text-sm hover:bg-surface-soft transition-colors">
+              <ArrowLeftRight className="w-4 h-4" />
+              Inter-Account Transfer
+            </button>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {/* Mobile filter toggle */}
             <button
-              type="button"
               onClick={() => setShowFilters(!showFilters)}
-              className={`md:hidden px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
+              className={cn(
+                "px-3 py-1.5 rounded-pill text-xs font-bold uppercase tracking-wider transition-all",
                 showFilters || filterType !== 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
-              }`}
+              )}
             >
               <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
               Filters
             </button>
             <div className="flex items-center gap-2 bg-surface-soft p-0.5 rounded-pill border border-hairline">
-              <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'grid' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>Grid</button>
-              <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
+              <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'grid' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>Grid</button>
+              <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
             </div>
           </div>
         </div>
 
-        {/* Mobile filter card */}
-        {showFilters && (
-          <div className="md:hidden bg-canvas rounded-xl border border-hairline p-3 space-y-2">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {typeFilters.map(f => {
-                const Icon = f.icon;
-                const typeColor = settings.typeColors?.[f.key];
-                return (
-                  <button key={f.key} onClick={() => setFilterType(f.key)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[10px] font-bold transition-all",
-                      filterType === f.key
-                        ? "text-white shadow-sm"
-                        : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
-                    )}
-                    style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
-                  >
-                    {Icon && <Icon className="w-3.5 h-3.5" />}
-                    {f.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* Filter pills (toggled by Filters button) */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="bg-canvas rounded-xl border border-hairline p-3">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {typeFilters.map(f => {
+                    const Icon = f.icon;
+                    const typeColor = settings.typeColors?.[f.key];
+                    return (
+                      <button key={f.key} onClick={() => setFilterType(f.key)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-bold transition-all",
+                          filterType === f.key
+                            ? "text-white shadow-sm"
+                            : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
+                        )}
+                        style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
+                      >
+                        {Icon && <Icon className="w-3.5 h-3.5" />}
+                        {f.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.div key={String(filterMemberId) + '-' + viewMode + '-' + filterType} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-4 md:space-y-6">
           {viewMode === 'grid' ? (
@@ -305,12 +291,12 @@ export default function Dashboard({
                 {groupedByMember.map(({ member, accounts }) => (
                   <div key={member.id} className="space-y-3 md:space-y-4">
                     <div className="flex items-center gap-3 md:gap-4">
-                      <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">{member.name}'s Assets</span>
+                      <span className="text-xs font-bold text-muted uppercase tracking-[0.2em]">{member.name}'s Assets</span>
                       <div className="flex-1 h-px bg-hairline" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                       {accounts.map(account => (
-                        <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} currency={settings.currency} typeColors={settings.typeColors} />
+                        <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} currency={settings.currency} typeColors={settings.typeColors} filterMemberId={filterMemberId} />
                       ))}
                     </div>
                   </div>
@@ -319,7 +305,7 @@ export default function Dashboard({
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                 {filteredAccounts.map(account => (
-                  <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} currency={settings.currency} typeColors={settings.typeColors} />
+                  <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} currency={settings.currency} typeColors={settings.typeColors} filterMemberId={filterMemberId} />
                 ))}
               </div>
             )
