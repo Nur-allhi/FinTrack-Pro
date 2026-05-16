@@ -32,10 +32,10 @@ export default function AccountCard({ account, onClick, currency, typeColors }: 
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 md:gap-2">
-            <h5 className="text-sm md:text-base font-semibold text-ink truncate">{account.name}</h5>
-            <span className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-wider shrink-0">{account.type.replace('_', ' ')}</span>
+            <h5 className="text-base md:text-lg font-semibold text-ink truncate">{account.name}</h5>
+            <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider shrink-0">{account.type.replace('_', ' ')}</span>
           </div>
-          <p className="text-[10px] md:text-xs text-muted truncate">{account.member_name || 'General'}</p>
+          <p className="text-xs text-muted truncate">{account.member_name || 'General'}</p>
         </div>
         <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: typeColor }} />
       </div>
@@ -43,7 +43,7 @@ export default function AccountCard({ account, onClick, currency, typeColors }: 
         <p className="text-xl md:text-2xl font-normal text-ink financial-number tracking-tighter">
           {currency}{account.current_balance.toLocaleString()}
         </p>
-        <span className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-wider">SETTLED</span>
+        <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider">SETTLED</span>
       </div>
     </button>
   );

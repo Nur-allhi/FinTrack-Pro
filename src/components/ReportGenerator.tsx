@@ -172,15 +172,15 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <div className="space-y-1 md:space-y-2">
-            <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Start</label>
+            <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Start</label>
             <DatePicker value={filters.startDate} onChange={v => setFilters({...filters, startDate: v})} />
           </div>
           <div className="space-y-1 md:space-y-2">
-            <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">End</label>
+            <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">End</label>
             <DatePicker value={filters.endDate} onChange={v => setFilters({...filters, endDate: v})} />
           </div>
           <div className="space-y-1 md:space-y-2">
-            <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Account</label>
+            <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Account</label>
             <Select
               value={filters.accountId}
               onChange={v => setFilters({...filters, accountId: v})}
@@ -219,7 +219,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
               </div>
               <table className="w-full text-left border-collapse min-w-[400px]">
                 <thead>
-                  <tr className="bg-surface-soft/50 text-muted text-[10px] font-bold uppercase tracking-[0.2em]">
+                  <tr className="bg-surface-soft/50 text-muted text-xs font-bold uppercase tracking-[0.2em]">
                     <th className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap">Date</th>
                     <th className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap">Memo</th>
                     <th className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-right">Debit</th>
@@ -229,12 +229,12 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
                 <tbody className="divide-y divide-hairline">
                   {(showAll ? reportData : reportData.slice(0, 10)).map(t => (
                     <tr key={t.id} className="hover:bg-surface-soft/30 transition-colors">
-                      <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-[10px] md:text-xs text-muted font-medium">{t.date}</td>
-                      <td className="px-4 md:px-5 py-2.5 md:py-3 text-[10px] md:text-xs font-semibold text-ink">{t.particulars}</td>
-                      <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-right text-[10px] md:text-xs font-bold text-semantic-down financial-number">
+                      <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-xs text-muted font-medium">{t.date}</td>
+                      <td className="px-4 md:px-5 py-2.5 md:py-3 text-xs font-semibold text-ink">{t.particulars}</td>
+                      <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-right text-xs font-bold text-semantic-down financial-number">
                         {t.amount < 0 ? `${currency}${Math.abs(t.amount).toLocaleString()}` : '-'}
                       </td>
-                      <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-right text-[10px] md:text-xs font-bold text-semantic-up financial-number">
+                      <td className="px-4 md:px-5 py-2.5 md:py-3 whitespace-nowrap text-right text-xs font-bold text-semantic-up financial-number">
                         {t.amount > 0 ? `${currency}${t.amount.toLocaleString()}` : '-'}
                       </td>
                     </tr>
@@ -258,19 +258,19 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
               <h4 className="text-sm md:text-base font-normal text-ink uppercase tracking-tight mb-4 md:mb-6">Summary</h4>
               <div className="space-y-3 md:space-y-4">
                 <div className="p-4 md:p-5 bg-surface-soft rounded-xl border border-hairline">
-                  <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Inflow</p>
+                  <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Inflow</p>
                   <p className="text-lg md:text-2xl font-bold text-semantic-up financial-number mt-1">
                     {currency}{reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="p-4 md:p-5 bg-surface-soft rounded-xl border border-hairline">
-                  <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Outflow</p>
+                  <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Outflow</p>
                   <p className="text-lg md:text-2xl font-bold text-semantic-down financial-number mt-1">
                     {currency}{Math.abs(reportData.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0)).toLocaleString()}
                   </p>
                 </div>
                 <div className="p-4 md:p-5 bg-surface-soft rounded-xl border border-primary/20">
-                  <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Net</p>
+                  <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Net</p>
                   <p className={cn("text-lg md:text-2xl font-bold financial-number mt-1", reportData.reduce((s, t) => s + t.amount, 0) >= 0 ? "text-primary" : "text-semantic-down")}>
                     {currency}{reportData.reduce((s, t) => s + t.amount, 0).toLocaleString()}
                   </p>

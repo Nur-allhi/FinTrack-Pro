@@ -48,7 +48,7 @@ export default function TransactionForm({
       <form onSubmit={onSubmit} className="space-y-6 md:space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
             <div className="md:col-span-2">
-              <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-date">
+              <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-date">
                 Value Date
               </label>
               <DatePicker
@@ -57,7 +57,7 @@ export default function TransactionForm({
               />
             </div>
           <div className="md:col-span-7">
-            <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-particulars">
+            <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-particulars">
               Transaction Description
             </label>
             <input
@@ -71,7 +71,7 @@ export default function TransactionForm({
             />
           </div>
           <div className="md:col-span-3">
-            <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2 text-left md:text-right" htmlFor="tx-amount">
+            <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2 text-left md:text-right" htmlFor="tx-amount">
               Settlement Amount
             </label>
             <input
@@ -88,7 +88,7 @@ export default function TransactionForm({
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
           <div className="md:col-span-5">
-            <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-category">
+            <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2" htmlFor="tx-category">
               Category
             </label>
             <Select
@@ -125,7 +125,7 @@ export default function TransactionForm({
 
         <div className="md:hidden space-y-3">
           <div>
-            <label className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-3 text-center">
+            <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-3 text-center">
               Transaction Type
             </label>
             <div className="flex justify-center">

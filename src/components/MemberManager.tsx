@@ -67,10 +67,10 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
           </div>
           <div>
             <h3 className="text-lg md:text-2xl font-normal text-ink tracking-tight">{selectedMember.name}</h3>
-            <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{selectedMember.relationship || 'Member'} · {memberAccounts.length} account{memberAccounts.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs font-bold text-muted uppercase tracking-wider">{selectedMember.relationship || 'Member'} · {memberAccounts.length} account{memberAccounts.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-[10px] font-bold text-muted uppercase tracking-wider">Total Balance</p>
+            <p className="text-xs font-bold text-muted uppercase tracking-wider">Total Balance</p>
               <p className="text-xl md:text-2xl font-bold text-ink financial-number">{currency || '৳'}{memberAccounts.reduce((s, a) => s + (a.current_balance || 0), 0).toLocaleString()}</p>
           </div>
         </div>
@@ -86,10 +86,10 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-ink truncate">{acc.name}</span>
+                    <span className="text-base font-semibold text-ink truncate">{acc.name}</span>
                     <span className="text-sm font-bold text-ink financial-number shrink-0">{currency || '৳'}{acc.current_balance.toLocaleString()}</span>
                   </div>
-                  <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
                 </div>
               </button>
             );
@@ -121,12 +121,12 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
           </div>
           <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-1 md:space-y-2">
-              <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Name</label>
+              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Name</label>
               <input type="text" required value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})}
                 placeholder="e.g. John Doe" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
             </div>
             <div className="space-y-1 md:space-y-2">
-              <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Relationship</label>
+              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Relationship</label>
               <input type="text" value={newMember.relationship} onChange={e => setNewMember({...newMember, relationship: e.target.value})}
                 placeholder="e.g. Spouse, Self" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
             </div>
@@ -148,7 +148,7 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="text-base font-semibold text-ink truncate">{member.name}</h4>
-                <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{member.relationship || 'MEMBER'}</p>
+                <p className="text-xs font-bold text-muted uppercase tracking-wider">{member.relationship || 'MEMBER'}</p>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleDelete(member.id); }}
                 className="p-1.5 text-muted hover:text-semantic-down opacity-0 group-hover:opacity-100 transition-all shrink-0">

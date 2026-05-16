@@ -123,7 +123,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
           </div>
           <form onSubmit={handleCreateInv} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div className="space-y-1 md:space-y-2">
-              <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Account</label>
+              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Account</label>
               <Select
                 value={newInv.account_id}
                 onChange={v => setNewInv({...newInv, account_id: v})}
@@ -132,12 +132,12 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
               />
             </div>
             <div className="space-y-1 md:space-y-2">
-              <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Principal</label>
+              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Principal</label>
               <input type="number" required value={newInv.principal} onChange={e => setNewInv({...newInv, principal: e.target.value})}
                 placeholder="0.00" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm financial-number" />
             </div>
             <div className="space-y-1 md:space-y-2">
-              <label className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Date</label>
+              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Date</label>
               <DatePicker value={newInv.date} onChange={v => setNewInv({...newInv, date: v})} />
             </div>
             <div className="md:col-span-3 flex justify-end gap-3 md:gap-4 pt-4 md:pt-6">
@@ -150,7 +150,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-1 space-y-3 md:space-y-4">
-          <h4 className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Portfolio</h4>
+          <h4 className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Portfolio</h4>
           <div className="space-y-3">
             {investments.map(inv => (
               <button
@@ -171,8 +171,8 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
                     <TrendingUp className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h5 className="text-sm font-semibold text-ink truncate">{inv.account_name}</h5>
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-wider">Started {format(new Date(inv.date), 'MMM yyyy')}</p>
+                    <h5 className="text-base font-semibold text-ink truncate">{inv.account_name}</h5>
+                    <p className="text-xs font-bold text-muted uppercase tracking-wider">Started {format(new Date(inv.date), 'MMM yyyy')}</p>
                   </div>
                   <ChevronRight className={cn(
                     "w-4 h-4 transition-transform shrink-0",
@@ -218,15 +218,15 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
                   </div>
                   <form onSubmit={handleAddReturn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-semantic-up/60 uppercase tracking-widest">Value Date</label>
+                      <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Value Date</label>
                       <DatePicker value={newReturn.date} onChange={v => setNewReturn({...newReturn, date: v})} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-semantic-up/60 uppercase tracking-widest">Return ({currency})</label>
+                      <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Return ({currency})</label>
                       <input type="number" required value={newReturn.amount} onChange={e => setNewReturn({...newReturn, amount: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-semantic-up/60 uppercase tracking-widest">Yield %</label>
+                      <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Yield %</label>
                       <input type="number" step="0.01" required value={newReturn.percentage} onChange={e => setNewReturn({...newReturn, percentage: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
                     </div>
                     <div className="md:col-span-3 flex justify-end gap-4 pt-2">
@@ -238,18 +238,18 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-surface-soft rounded-xl border border-hairline">
-                  <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Cumulative Yield</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Cumulative Yield</p>
                   <p className="text-xl font-bold text-semantic-up financial-number mt-1">{currency}{totalReturns.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-surface-soft rounded-xl border border-hairline">
-                  <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Portfolio ROI</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Portfolio ROI</p>
                   <p className="text-xl font-bold text-primary financial-number mt-1">{((totalReturns / selectedInv.principal) * 100).toFixed(2)}%</p>
                 </div>
               </div>
 
               <div className="h-64 w-full p-5 bg-canvas border border-hairline rounded-xl relative overflow-hidden">
                 <div className="absolute top-5 left-5">
-                  <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Yield Velocity</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Yield Velocity</p>
                 </div>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData} margin={{ top: 40, right: 0, left: -20, bottom: 0 }}>
@@ -271,7 +271,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
               </div>
 
               <div className="space-y-6 pt-6">
-                <h5 className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Position Audit History</h5>
+                <h5 className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Position Audit History</h5>
                 <div className="divide-y divide-hairline border-t border-hairline">
                   {returns.map(r => (
                     <div key={r.id} className="py-5 flex items-center justify-between group hover:bg-surface-soft/30 transition-colors px-4 -mx-4 rounded-lg">
@@ -281,7 +281,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-ink tracking-tight">{format(new Date(r.date), 'dd MMMM yyyy')}</p>
-                          <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{r.percentage}% Institutional Return</p>
+                          <p className="text-xs font-bold text-muted uppercase tracking-widest">{r.percentage}% Institutional Return</p>
                         </div>
                       </div>
                       <p className="text-lg font-bold text-semantic-up financial-number">{currency}{r.amount.toLocaleString()}</p>

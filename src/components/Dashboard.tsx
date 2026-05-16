@@ -31,6 +31,7 @@ interface DashboardProps {
     showNetWorth: boolean;
     showCurrentAssets: boolean;
     showLiabilities: boolean;
+    showTodos?: boolean;
     darkMode: boolean;
     fontSize: string;
     currency: string;
@@ -47,8 +48,9 @@ export default function Dashboard({
   onOpenTransfer,
   onOpenTransaction,
   onGenerateReport,
-  settings
-}: DashboardProps) {
+  settings,
+  userName
+}: DashboardProps & { userName?: string }) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<'all' | 'bank' | 'cash' | 'mobile' | 'investment' | 'other'>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -129,7 +131,8 @@ export default function Dashboard({
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
             <div className="space-y-4 md:space-y-6">
               <div>
-                <p className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-[0.3em] mb-2 md:mb-4">Total Balance</p>
+                {userName && <p className="text-sm font-semibold text-ink mb-1 md:mb-2">Welcome back, {userName}</p>}
+                <p className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-2 md:mb-4">Total Balance</p>
                 <h3 className="text-3xl md:text-5xl lg:text-6xl font-normal text-ink tracking-[-0.03em] financial-number">
                   {settings.currency}{totalBalance.toLocaleString()}
                 </h3>
@@ -137,7 +140,7 @@ export default function Dashboard({
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {settings.showCurrentAssets && (
                   <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
-                    <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Assets</p>
+                    <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Assets</p>
                     <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
                       {settings.currency}{totalBalance.toLocaleString()}
                     </p>
@@ -145,7 +148,7 @@ export default function Dashboard({
                 )}
                 {settings.showLiabilities && (
                   <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
-                    <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
+                    <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
                     <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
                       {settings.currency}0
                     </p>
@@ -154,16 +157,16 @@ export default function Dashboard({
               </div>
             </div>
 
-            <div className="bg-canvas/80 backdrop-blur-sm rounded-xl border border-hairline p-4 md:p-5">
+            {settings.showTodos !== false && <div className="bg-canvas/80 backdrop-blur-sm rounded-xl border border-hairline p-4 md:p-5">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Quick Tasks</p>
+                <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Quick Tasks</p>
                 {todos.length > 0 && (
-                  <span className="text-[10px] font-bold text-primary">{todos.filter(t => !t.done).length} pending</span>
+                  <span className="text-xs font-bold text-primary">{todos.filter(t => !t.done).length} pending</span>
                 )}
               </div>
               <div className="space-y-1 mb-3 max-h-[180px] overflow-y-auto">
                 {todos.length === 0 ? (
-                  <p className="text-[11px] text-muted italic">No tasks yet. Add one below.</p>
+                  <p className="text-xs text-muted italic">No tasks yet. Add one below.</p>
                 ) : (
                   todos.map(todo => (
                     <div key={todo.id} className="flex items-center gap-2 group py-0.5">
@@ -196,7 +199,7 @@ export default function Dashboard({
                 />
                 <button type="submit" className="btn-primary px-3 py-1.5 text-[10px]">Add</button>
               </form>
-            </div>
+            </div>}
           </div>
         </div>
       )}
@@ -290,7 +293,7 @@ export default function Dashboard({
                 {groupedByMember.map(({ member, accounts }) => (
                   <div key={member.id} className="space-y-3 md:space-y-4">
                     <div className="flex items-center gap-3 md:gap-4">
-                      <span className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">{member.name}'s Assets</span>
+                      <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">{member.name}'s Assets</span>
                       <div className="flex-1 h-px bg-hairline" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
@@ -314,7 +317,7 @@ export default function Dashboard({
               <div className="hidden md:block bg-canvas border border-hairline rounded-xl shadow-sm overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-surface-soft text-muted text-[10px] font-bold uppercase tracking-[0.2em] border-b border-hairline">
+                    <tr className="bg-surface-soft text-muted text-xs font-bold uppercase tracking-[0.2em] border-b border-hairline">
                       <th className="px-5 py-3 whitespace-nowrap">Account</th>
                       <th className="px-5 py-3 whitespace-nowrap">Type</th>
                       <th className="px-5 py-3 whitespace-nowrap">Member</th>
@@ -327,7 +330,7 @@ export default function Dashboard({
                         <td className="px-5 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: account.color }} />
-                            <span className="text-sm font-semibold text-ink">{account.name}</span>
+                            <span className="text-base font-semibold text-ink">{account.name}</span>
                           </div>
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</td>
@@ -345,13 +348,13 @@ export default function Dashboard({
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: account.color }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-ink truncate">{account.name}</span>
+                        <span className="text-base font-semibold text-ink truncate">{account.name}</span>
                         <span className="text-sm font-bold text-ink financial-number shrink-0">{settings.currency}{account.current_balance.toLocaleString()}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
+                        <span className="text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
                         <span className="text-muted/40">·</span>
-                        <span className="text-[10px] font-medium text-muted">{account.member_name || 'General'}</span>
+                        <span className="text-xs font-medium text-muted">{account.member_name || 'General'}</span>
                       </div>
                     </div>
                   </button>

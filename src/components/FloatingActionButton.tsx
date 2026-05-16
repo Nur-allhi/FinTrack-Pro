@@ -10,12 +10,13 @@ interface FloatingActionButtonProps {
 }
 
 export default function FloatingActionButton({ onNewTransaction, onNewTransfer, isTransactionModalOpen, isTransferModalOpen }: FloatingActionButtonProps) {
+  const isAnyModalOpen = isTransactionModalOpen || isTransferModalOpen;
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsOpen(false);
-  }, [isTransactionModalOpen, isTransferModalOpen]);
+    if (isAnyModalOpen) setIsOpen(false);
+  }, [isAnyModalOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -31,7 +32,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
   return (
     <div ref={containerRef} className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !isAnyModalOpen && (
           <div className="flex flex-col items-end gap-3 mb-2">
             <motion.button
               initial={{ opacity: 0, y: 20, scale: 0.8 }}

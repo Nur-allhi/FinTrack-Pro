@@ -16,44 +16,19 @@ export default function Login({ onLogin }: LoginProps) {
   const [mode, setMode] = useState<'choose' | 'email'>('choose');
 
   useEffect(() => {
+    if (localStorage.getItem('auth_token')) return;
     authService.getSession().then(session => {
       if (session?.access_token) {
-        validateAndLogin(session.access_token);
+        authService.signOut();
       }
-    });
+    }).catch(() => {});
   }, []);
 
-  const validateAndLogin = async (accessToken: string) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: accessToken }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        onLogin(accessToken);
-      } else {
-        setError(data.error || 'Authentication failed');
-        await authService.signOut();
-        setIsLoading(false);
-      }
-    } catch {
-      setError('Failed to connect to server.');
-      setIsLoading(false);
-    }
-  };
-
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    setError('');
     try {
       await authService.signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || 'Google sign-in failed');
-      setIsLoading(false);
+      setError(err?.message || 'Google sign-in failed');
     }
   };
 
@@ -64,13 +39,13 @@ export default function Login({ onLogin }: LoginProps) {
     try {
       const data = await authService.signInWithPassword(email, password);
       if (data.session?.access_token) {
-        await validateAndLogin(data.session.access_token);
+        onLogin(data.session.access_token);
       } else {
         setError('No session returned');
         setIsLoading(false);
       }
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password');
+      setError(err?.message || 'Invalid email or password');
       setIsLoading(false);
     }
   };
@@ -160,7 +135,7 @@ export default function Login({ onLogin }: LoginProps) {
               </button>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Email</label>
+                <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Email</label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-primary transition-colors" />
                   <input
@@ -175,7 +150,7 @@ export default function Login({ onLogin }: LoginProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Password</label>
+                <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-primary transition-colors" />
                   <input

@@ -1,5 +1,6 @@
 import express from "express";
 import { db, supabase } from "../db.js";
+import { requireQuota } from "../middleware/quota.js";
 
 const router = express.Router();
 
@@ -79,7 +80,7 @@ router.get("/:accountId", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireQuota, async (req, res) => {
   try {
     const { account_id, date, particulars, category, amount, type, linked_transaction_id, summary } = req.body;
     if (!account_id || !date || !particulars || amount === undefined) {

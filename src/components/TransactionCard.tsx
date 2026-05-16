@@ -34,7 +34,7 @@ export default function TransactionCard({
     <>
       {isNewDate && (
         <div className="bg-surface-soft/50 px-4 py-2 border-y border-hairline">
-          <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">
+          <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">
             {format(new Date(tx.date), 'EEEE, MMMM dd, yyyy')}
           </p>
         </div>
@@ -63,16 +63,16 @@ export default function TransactionCard({
               </span>
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-mono font-bold text-muted">{format(new Date(tx.date), 'dd MMM').toUpperCase()}</span>
+              <span className="text-xs font-mono font-bold text-muted">{format(new Date(tx.date), 'dd MMM').toUpperCase()}</span>
               <span className={cn(
-                "inline-block px-2 py-0.5 rounded-pill text-[9px] font-bold uppercase tracking-wider",
+                "inline-block px-2 py-0.5 rounded-pill text-[10px] font-bold uppercase tracking-wider",
                 tx.category ? "bg-surface-strong text-muted" : "bg-amber-50 text-amber-600"
               )}>
                 {tx.category || 'PENDING'}
               </span>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted uppercase tracking-wider">
                 Balance: <span className="text-ink font-mono font-bold">{currency}{tx.runningBalance.toLocaleString()}</span>
               </span>
               <div className="flex items-center gap-1">

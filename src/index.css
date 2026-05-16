@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -19,8 +19,7 @@
 }
 
 :root.dark {
-  --color-primary: #3b82f6;
-  --color-primary-active: #60a5fa;
+  --color-primary-active: #3b82f6;
   --color-primary-disabled: #1e3a5f;
   --color-canvas: #0a0b0d;
   --color-surface-soft: #16181c;
@@ -35,10 +34,42 @@
   --color-on-primary: #ffffff;
 }
 
+:root.dark-dim {
+  --color-primary-active: #3b82f6;
+  --color-primary-disabled: #2a3a4f;
+  --color-canvas: #1a1c23;
+  --color-surface-soft: #22242c;
+  --color-surface-strong: #2a2d36;
+  --color-surface-dark: #111218;
+  --color-surface-dark-elevated: #22242c;
+  --color-hairline: #333640;
+  --color-hairline-soft: #2a2d36;
+  --color-ink: #e2e8f0;
+  --color-body: #94a3b8;
+  --color-muted: #64748b;
+  --color-on-primary: #ffffff;
+}
+
+:root.dark-night {
+  --color-primary-active: #3b82f6;
+  --color-primary-disabled: #1a2a3a;
+  --color-canvas: #000000;
+  --color-surface-soft: #0f0f0f;
+  --color-surface-strong: #1a1a1a;
+  --color-surface-dark: #000000;
+  --color-surface-dark-elevated: #0f0f0f;
+  --color-hairline: #1a1a1a;
+  --color-hairline-soft: #0f0f0f;
+  --color-ink: #ffffff;
+  --color-body: #94a3b8;
+  --color-muted: #64748b;
+  --color-on-primary: #ffffff;
+}
+
 @theme {
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-primary: var(--color-primary);
   --color-primary-active: var(--color-primary-active);
   --color-primary-disabled: var(--color-primary-disabled);

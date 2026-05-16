@@ -195,12 +195,12 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         <div className="p-4 md:p-5 flex items-center justify-between bg-primary/5 border-b border-hairline">
           <div>
             <h3 className="text-base md:text-xl font-normal text-ink tracking-tight">{account.name}</h3>
-            <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">{account.type.replace('_', ' ')}</p>
+            <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">{account.type.replace('_', ' ')}</p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 md:gap-2 justify-end mb-0.5 md:mb-1">
               {isSyncing && <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 animate-spin text-primary" />}
-              <p className="text-[9px] md:text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
+              <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
             </div>
             <p className="text-xl md:text-3xl font-normal text-ink financial-number tracking-tighter">
               {currency}{account.current_balance.toLocaleString()}
@@ -211,7 +211,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         {/* Desktop toolbar */}
         <div className="hidden md:block px-5 py-2 border-b border-hairline bg-surface-soft/20">
           <div className="flex items-center gap-x-2">
-            <h4 className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mr-1 shrink-0">Entries</h4>
+            <h4 className="text-xs font-bold text-muted uppercase tracking-[0.2em] mr-1 shrink-0">Entries</h4>
             {(['all', 'month', 'date', 'range'] as const).map(mode => (
               <button
                 key={mode}
@@ -237,7 +237,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
             {dateView === 'range' && (
               <div className="flex items-center gap-1">
                 <DatePicker value={dateRangeStart} onChange={v => setDateRangeStart(v)} className="w-[140px]" />
-                <span className="text-[9px] text-muted font-bold">—</span>
+                <span className="text-[10px] text-muted font-bold">—</span>
                 <DatePicker value={dateRangeEnd} onChange={v => setDateRangeEnd(v)} className="w-[140px]" />
               </div>
             )}
@@ -269,7 +269,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
 
         {/* Mobile toolbar: Entries header + filter toggle */}
         <div className="md:hidden px-4 py-2.5 border-b border-hairline bg-canvas flex items-center justify-between">
-          <h4 className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Entries</h4>
+          <h4 className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Entries</h4>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -319,7 +319,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
               {dateView === 'range' && (
                 <div className="flex items-center gap-2">
                   <DatePicker value={dateRangeStart} onChange={v => setDateRangeStart(v)} className="flex-1" />
-                  <span className="text-[10px] text-muted font-bold">—</span>
+                  <span className="text-xs text-muted font-bold">—</span>
                   <DatePicker value={dateRangeEnd} onChange={v => setDateRangeEnd(v)} className="flex-1" />
                 </div>
               )}
@@ -328,7 +328,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
             {availableCategories.length > 0 && (
               <div className="bg-canvas rounded-xl border border-hairline p-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] shrink-0">Category</span>
+                  <span className="text-xs font-bold text-muted uppercase tracking-[0.2em] shrink-0">Category</span>
                   <Select
                     value={categoryFilter || ''}
                     onChange={v => setCategoryFilter(v || null)}
@@ -366,7 +366,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-soft text-muted text-[10px] font-bold uppercase tracking-[0.2em] border-b border-hairline">
+              <tr className="bg-surface-soft text-muted text-xs font-bold uppercase tracking-[0.2em] border-b border-hairline">
                 <th className="px-4 py-2.5">Date</th>
                 <th className="px-4 py-2.5">Particulars</th>
                 <th className="px-4 py-2.5">Category</th>

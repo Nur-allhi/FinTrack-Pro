@@ -2,7 +2,6 @@ import React from 'react';
 import { Wallet, X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../utils/cn';
-import { Account } from '../../types';
 
 interface SidebarProps {
   activeTab: string;
@@ -11,10 +10,11 @@ interface SidebarProps {
   setSelectedAccountId: (id: number | null) => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
-  accounts: Account[];
   settings: any;
   onLogout: () => void;
   navItems: { id: string; label: string; icon: any }[];
+  userEmail?: string;
+  onOpenProfile?: () => void;
 }
 
 export default function Sidebar({
@@ -24,12 +24,12 @@ export default function Sidebar({
   setSelectedAccountId,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
-  accounts,
   settings,
   onLogout,
-  navItems
+  navItems,
+  userEmail,
+  onOpenProfile
 }: SidebarProps) {
-  const totalNetWorth = accounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0);
   const isActive = (id: string) => activeTab === id && !selectedAccountId;
 
   return (
@@ -63,7 +63,7 @@ export default function Sidebar({
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-ink tracking-tight">FinTrack</h1>
-                  <p className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] leading-none">Institutional</p>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] leading-none">Institutional</p>
                 </div>
               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1.5 text-muted hover:text-ink rounded-lg hover:bg-surface-soft">
@@ -124,13 +124,18 @@ export default function Sidebar({
 
           {/* Bottom section */}
           <div className="p-4 space-y-3 border-t border-hairline shrink-0">
-            {/* Assets card */}
-            <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-              <p className="text-[9px] font-bold text-muted uppercase tracking-[0.2em] mb-1">Total Assets</p>
-              <p className="text-lg font-bold text-ink financial-number tracking-tighter">
-                {settings.currency}{totalNetWorth.toLocaleString()}
-              </p>
-            </div>
+            {/* Profile section */}
+            {userEmail && (
+              <button onClick={onOpenProfile} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-soft border border-hairline hover:bg-surface-strong transition-all text-left">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-sm font-bold text-primary">{userEmail[0].toUpperCase()}</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-ink truncate">{localStorage.getItem('user_name') || userEmail.split('@')[0]}</p>
+                  <p className="text-[10px] text-muted truncate">{userEmail}</p>
+                </div>
+              </button>
+            )}
 
             {/* Sign out */}
             <button

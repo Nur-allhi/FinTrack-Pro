@@ -120,9 +120,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
 
       {/* Summary */}
       <div className="flex items-center gap-4 px-1">
-        <span className="text-[10px] font-bold text-muted uppercase tracking-wider">{groups.length} groups</span>
+        <span className="text-xs font-bold text-muted uppercase tracking-wider">{groups.length} groups</span>
         <span className="w-px h-3 bg-hairline" />
-        <span className="text-[10px] font-bold text-muted uppercase tracking-wider">Total: <span className="text-ink font-mono">{currency || '৳'}{totalAccumulated.toLocaleString()}</span></span>
+        <span className="text-xs font-bold text-muted uppercase tracking-wider">Total: <span className="text-ink font-mono">{currency || '৳'}{totalAccumulated.toLocaleString()}</span></span>
       </div>
 
       {/* Form */}
@@ -136,12 +136,12 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
           </div>
           <form onSubmit={handleCreateOrUpdate} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Group Name</label>
+              <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Group Name</label>
               <input type="text" required value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})}
                 placeholder="e.g. HK Bank" className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-sm font-medium" />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Member</label>
+              <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Member</label>
               <Select
                 value={newGroup.member_id}
                 onChange={v => setNewGroup({...newGroup, member_id: v})}
@@ -152,7 +152,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Color</label>
+              <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Color</label>
               <div className="flex flex-wrap gap-2 pt-1">
                 {colors.map(c => (
                   <button key={c} type="button" onClick={() => setNewGroup({...newGroup, color: c})}
@@ -182,8 +182,8 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                       <Layers className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm font-semibold text-ink truncate">{group.name}</h4>
-                      <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{group.member_name || 'GENERAL'}</p>
+                      <h4 className="text-base font-semibold text-ink truncate">{group.name}</h4>
+                      <p className="text-xs font-bold text-muted uppercase tracking-wider">{group.member_name || 'GENERAL'}</p>
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -192,7 +192,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                   </div>
                 </div>
                 <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-1">{currency || '৳'}{group.accumulated_balance?.toLocaleString() || '0'}</p>
-                <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-3">{group.child_count} account{group.child_count !== 1 ? 's' : ''}</p>
+                <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">{group.child_count} account{group.child_count !== 1 ? 's' : ''}</p>
                 <button onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
                   className="w-full flex items-center justify-between pt-3 border-t border-hairline text-[10px] font-bold text-muted uppercase tracking-wider hover:text-ink transition-colors">
                   <span>{expandedId === group.id ? 'Hide' : 'Show'} accounts</span>
@@ -226,7 +226,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
           <div className="hidden md:block bg-canvas border border-hairline rounded-xl overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-soft text-muted text-[10px] font-bold uppercase tracking-[0.2em] border-b border-hairline">
+                <tr className="bg-surface-soft text-muted text-xs font-bold uppercase tracking-[0.2em] border-b border-hairline">
                   <th className="px-3 py-2.5 whitespace-nowrap">Group</th>
                   <th className="px-3 py-2.5 whitespace-nowrap">Member</th>
                   <th className="px-3 py-2.5 whitespace-nowrap text-right">Accounts</th>
@@ -240,7 +240,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: group.color }} />
-                        <span className="text-sm font-semibold text-ink">{group.name}</span>
+                        <span className="text-base font-semibold text-ink">{group.name}</span>
                       </div>
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-xs font-medium text-muted">{group.member_name || '-'}</td>
@@ -266,13 +266,13 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-ink truncate">{group.name}</span>
+                    <span className="text-base font-semibold text-ink truncate">{group.name}</span>
                     <span className="text-sm font-bold text-ink financial-number shrink-0">{currency || '৳'}{group.accumulated_balance?.toLocaleString() || '0'}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-medium text-muted">{group.member_name || 'General'}</span>
+                    <span className="text-xs font-medium text-muted">{group.member_name || 'General'}</span>
                     <span className="text-muted/40">·</span>
-                    <span className="text-[10px] font-bold text-muted">{group.child_count} account{group.child_count !== 1 ? 's' : ''}</span>
+                    <span className="text-xs font-bold text-muted">{group.child_count} account{group.child_count !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="flex gap-2 mt-1.5">
                     <button onClick={() => startEdit(group)} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>

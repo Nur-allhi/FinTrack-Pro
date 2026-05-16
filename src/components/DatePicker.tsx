@@ -147,7 +147,7 @@ export default function DatePicker({ value, onChange, mode = 'date', placeholder
             <>
               <div className="grid grid-cols-7 mb-1">
                 {dayHeaders.map(d => (
-                  <div key={d} className="text-center text-[9px] font-bold text-muted uppercase tracking-wider py-1">{d}</div>
+                  <div key={d} className="text-center text-[10px] font-bold text-muted uppercase tracking-wider py-1">{d}</div>
                 ))}
               </div>
               <div className="grid grid-cols-7">

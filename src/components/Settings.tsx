@@ -1,51 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, 
   Eye, 
-  EyeOff, 
-  Bell, 
   Moon,
   Sun,
-  Globe, 
-  ShieldCheck,
-  Smartphone,
-  Database,
   Type,
   Pencil,
   Tags,
-  Upload,
-  Loader2
+  Palette,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import Select from './Select';
 import RenameModal from './RenameModal';
 import { authService } from '../services/authService';
-import { useToast } from './Toast';
 
 interface AppSettings {
   showNetWorth: boolean;
   showCurrentAssets: boolean;
   showLiabilities: boolean;
+  showTodos: boolean;
   enableNotifications: boolean;
   darkMode: boolean;
+  darkModeStyle: 'dark' | 'dark-dim' | 'dark-night';
   fontSize: string;
   currency: string;
   typeColors: Record<string, string>;
+  accentColor: string;
 }
 
 interface SettingsProps {
   settings: AppSettings;
   onUpdateSettings: (settings: AppSettings) => void;
-  onExportData: () => void;
-  onClearCache: () => void;
 }
 
-export default function Settings({ settings, onUpdateSettings, onExportData, onClearCache }: SettingsProps) {
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function Settings({ settings, onUpdateSettings }: SettingsProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
-  const [importing, setImporting] = useState(false);
+  const [activeSection, setActiveSection] = useState<'appearance' | 'dashboard' | 'categories'>('appearance');
 
   useEffect(() => {
     authService.apiFetch('/api/transactions/categories')
@@ -66,69 +57,8 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
       });
       if (!res.ok) throw new Error('Rename failed');
       setCategories(categories.map(c => c === oldName ? newName : c));
-      toast(`Category renamed to "${newName}".`, 'success');
     } catch {
-      toast('Failed to rename category.', 'error');
-    }
-  };
-
-  const handleClearAll = async () => {
-    if (!confirm('This will permanently delete ALL data (members, accounts, transactions, investments) and clear local storage. Are you sure?')) return;
-    if (!confirm('Final confirmation: this cannot be undone. Clear everything?')) return;
-    try {
-      const res = await authService.apiFetch('/api/export/clear-all', { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to clear database');
-      localStorage.clear();
-      sessionStorage.clear();
-      toast('All data cleared. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1500);
-    } catch {
-      toast('Failed to clear data.', 'error');
-    }
-  };
-
-  const handleExport = async () => {
-    try {
-      const res = await authService.apiFetch('/api/export');
-      if (!res.ok) throw new Error('Export failed');
-      const data = await res.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `fintrack-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('Data exported successfully.', 'success');
-    } catch {
-      toast('Failed to export data.', 'error');
-    }
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      if (!data.members || !data.accounts) throw new Error('Invalid format');
-      const res = await authService.apiFetch('/api/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Server error (${res.status})`);
-      }
-      toast('Data imported successfully. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Failed to import data.', 'error');
-    } finally {
-      setImporting(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      console.error('Failed to rename category.');
     }
   };
 
@@ -154,313 +84,226 @@ export default function Settings({ settings, onUpdateSettings, onExportData, onC
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-        {/* Dashboard Visibility Section */}
-        <div className="card-xl space-y-5">
-          <div className="flex items-center gap-3">
-            <Smartphone className="w-5 h-5 text-primary" />
-            <h4 className="text-base font-normal text-ink uppercase tracking-tight">Display Hierarchy</h4>
-          </div>
-          
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                  settings.showNetWorth ? "bg-primary/5 text-primary" : "bg-surface-soft text-muted"
-                )}>
-                  <Eye className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Total Balance</p>
-                  <p className="text-xs text-muted">Hero summary visibility</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => toggleSetting('showNetWorth')}
-                className={cn(
-                  "w-12 h-6 rounded-pill transition-all relative",
-                  settings.showNetWorth ? "bg-primary" : "bg-surface-strong"
-                )}
-              >
-                <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all",
-                  settings.showNetWorth ? "left-7" : "left-1"
-                )} />
-              </button>
-            </div>
+      {/* Section Nav */}
+      <div className="flex md:hidden gap-1.5 overflow-x-auto pb-1 -mx-3 px-3">
+        {(['appearance', 'dashboard', 'categories'] as const).map(s => (
+          <button key={s} onClick={() => setActiveSection(s)}
+            className={cn("shrink-0 px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-all",
+              activeSection === s ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted hover:text-ink'
+            )}
+          >
+            {s === 'appearance' ? 'Appearance' : s === 'dashboard' ? 'Dashboard' : 'Categories'}
+          </button>
+        ))}
+      </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                  settings.showCurrentAssets ? "bg-primary/5 text-primary" : "bg-surface-soft text-muted"
-                )}>
-                  <Eye className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Liquid Assets</p>
-                  <p className="text-xs text-muted">Primary asset card visibility</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => toggleSetting('showCurrentAssets')}
-                className={cn(
-                  "w-12 h-6 rounded-pill transition-all relative",
-                  settings.showCurrentAssets ? "bg-primary" : "bg-surface-strong"
+      <div className="flex gap-6">
+        {/* Desktop sidebar nav */}
+        <div className="hidden md:flex flex-col gap-1 w-44 shrink-0">
+          {([
+            { id: 'appearance', label: 'Appearance', icon: Palette },
+            { id: 'dashboard', label: 'Dashboard', icon: Eye },
+            { id: 'categories', label: 'Categories', icon: Tags },
+          ] as const).map(s => {
+            const Icon = s.icon;
+            const active = activeSection === s.id;
+            return (
+              <button key={s.id} onClick={() => setActiveSection(s.id as typeof activeSection)}
+                className={cn("flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all",
+                  active ? 'bg-primary text-white shadow-sm' : 'text-muted hover:bg-surface-soft hover:text-ink'
                 )}
               >
-                <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all",
-                  settings.showCurrentAssets ? "left-7" : "left-1"
-                )} />
+                <Icon className={cn("w-4 h-4", active ? 'text-white' : 'text-muted')} />
+                <span className="text-sm font-semibold">{s.label}</span>
               </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                  settings.showLiabilities ? "bg-primary/5 text-primary" : "bg-surface-soft text-muted"
-                )}>
-                  <Eye className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Total Liabilities</p>
-                  <p className="text-xs text-muted">Debt summary visibility</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => toggleSetting('showLiabilities')}
-                className={cn(
-                  "w-12 h-6 rounded-pill transition-all relative",
-                  settings.showLiabilities ? "bg-primary" : "bg-surface-strong"
-                )}
-              >
-                <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all",
-                  settings.showLiabilities ? "left-7" : "left-1"
-                )} />
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* General Preferences Section */}
-        <div className="card-xl space-y-5">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-primary" />
-            <h4 className="text-base font-normal text-ink uppercase tracking-tight">System Preferences</h4>
-          </div>
-
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-surface-soft flex items-center justify-center text-muted">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Base Currency</p>
-                  <p className="text-xs text-muted">Global audit symbol</p>
-                </div>
-              </div>
-              <Select
-                value={settings.currency}
-                onChange={v => onUpdateSettings({...settings, currency: v})}
-                options={[
-                  { value: '৳', label: 'BDT (৳)' },
-                  { value: '$', label: 'USD ($)' },
-                  { value: '€', label: 'EUR (€)' },
-                  { value: '£', label: 'GBP (£)' },
-                  { value: '₹', label: 'INR (₹)' }
-                ]}
-                className="w-auto"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                  settings.enableNotifications ? "bg-primary/5 text-primary" : "bg-surface-soft text-muted"
-                )}>
-                  <Bell className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Audit Alerts</p>
-                  <p className="text-xs text-muted">Real-time sync notifications</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => toggleSetting('enableNotifications')}
-                className={cn(
-                  "w-12 h-6 rounded-pill transition-all relative",
-                  settings.enableNotifications ? "bg-primary" : "bg-surface-strong"
-                )}
-              >
-                <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all",
-                  settings.enableNotifications ? "left-7" : "left-1"
-                )} />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                  settings.darkMode ? "bg-surface-dark text-on-dark" : "bg-surface-soft text-muted"
-                )}>
-                  {settings.darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Dark Mode</p>
-                  <p className="text-xs text-muted">Institutional dark theme</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => toggleSetting('darkMode')}
-                className={cn(
-                  "w-12 h-6 rounded-pill transition-all relative",
-                  settings.darkMode ? "bg-primary" : "bg-surface-strong"
-                )}
-              >
-                <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all",
-                  settings.darkMode ? "left-7" : "left-1"
-                )} />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-surface-soft flex items-center justify-center text-muted">
-                  <Type className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Font Size</p>
-                  <p className="text-xs text-muted">Base text scaling</p>
-                </div>
-              </div>
-              <Select
-                value={settings.fontSize}
-                onChange={v => onUpdateSettings({...settings, fontSize: v})}
-                options={[
-                  { value: 'small', label: 'Small' },
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'large', label: 'Large' }
-                ]}
-                className="w-auto"
-              />
-            </div>
-
-          </div>
-        </div>
-
-        {/* Type Colors Section */}
-        <div className="card-xl space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-primary" />
-            </div>
-            <h4 className="text-base font-normal text-ink uppercase tracking-tight">Account Colors</h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.entries(settings.typeColors || {}).map(([type, color]) => (
-              <div key={type} className="flex items-center justify-between p-3 bg-surface-soft rounded-xl border border-hairline">
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          {activeSection === 'appearance' && (
+            <div className="space-y-4">
+              <div className="card-xl space-y-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-xs font-bold text-ink uppercase tracking-wider">{type.replace('_', ' ')}</span>
+                  <Moon className="w-5 h-5 text-primary" />
+                  <h4 className="text-base font-normal text-ink uppercase tracking-tight">Theme</h4>
                 </div>
-                <input
-                  type="color"
-                  value={color}
-                  onChange={e => onUpdateSettings({ ...settings, typeColors: { ...settings.typeColors, [type]: e.target.value } })}
-                  className="w-8 h-8 rounded-lg border border-hairline cursor-pointer bg-transparent p-0.5"
-                />
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                        settings.darkMode ? "bg-surface-dark text-on-dark" : "bg-surface-soft text-muted"
+                      )}>
+                        {settings.darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-ink">Dark Mode</p>
+                        <p className="text-xs text-muted">Institutional dark theme</p>
+                      </div>
+                    </div>
+                    <button onClick={() => toggleSetting('darkMode')}
+                      className={cn("w-12 h-6 rounded-pill transition-all relative", settings.darkMode ? "bg-primary" : "bg-surface-strong")}
+                    >
+                      <div className={cn("absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all", settings.darkMode ? "left-7" : "left-1")} />
+                    </button>
+                  </div>
+                  {settings.darkMode && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-ink">Theme Style</span>
+                      <div className="flex items-center gap-1 bg-surface-strong p-0.5 rounded-pill border border-hairline">
+                        {(['dark', 'dark-dim', 'dark-night'] as const).map(style => (
+                          <button key={style} onClick={() => onUpdateSettings({ ...settings, darkModeStyle: style })}
+                            className={cn("px-3 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all",
+                              settings.darkModeStyle === style ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-ink'
+                            )}
+                          >{style === 'dark' ? 'Deep' : style === 'dark-dim' ? 'Dim' : 'Night'}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Categories Section */}
-        <div className="card-xl space-y-4">
-          <div className="flex items-center gap-3">
-            <Tags className="w-5 h-5 text-primary" />
-            <h4 className="text-base font-normal text-ink uppercase tracking-tight">Categories</h4>
-          </div>
-          {categories.length === 0 ? (
-            <p className="text-xs text-muted">No categories found.</p>
-          ) : (
-            <div className="space-y-1.5 max-h-[240px] overflow-y-auto">
-              {categories.map(cat => (
-                <div key={cat} className="flex items-center justify-between px-3 py-2 bg-surface-soft rounded-xl border border-hairline">
-                  <span className="text-xs font-semibold text-ink">{cat}</span>
-                  <button
-                    type="button"
-                    onClick={() => setRenameTarget(cat)}
-                    className="p-1.5 text-muted hover:text-ink hover:bg-surface-strong rounded-full transition-all"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
+              <div className="card-xl space-y-4">
+                <div className="flex items-center gap-3">
+                  <Palette className="w-5 h-5 text-primary" />
+                  <h4 className="text-base font-normal text-ink uppercase tracking-tight">Accent Color</h4>
                 </div>
-              ))}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-surface-soft rounded-xl border border-hairline">
+                    <span className="text-xs font-bold text-ink uppercase tracking-wider">Primary</span>
+                    <input type="color" value={settings.accentColor}
+                      onChange={e => onUpdateSettings({ ...settings, accentColor: e.target.value })}
+                      className="w-10 h-10 rounded-lg border border-hairline cursor-pointer bg-transparent p-0.5" />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {['#0052FF', '#05b169', '#cf202f', '#f59e0b', '#8B5CF6', '#14B8A6', '#EC4899', '#F97316', '#0A0B0D', '#64748B'].map(color => (
+                      <button key={color} type="button" onClick={() => onUpdateSettings({ ...settings, accentColor: color })}
+                        className={`w-8 h-8 rounded-full transition-all border-2 ${settings.accentColor === color ? 'border-ink scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                        style={{ backgroundColor: color }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-xl space-y-5">
+                <div className="flex items-center gap-3">
+                  <Type className="w-5 h-5 text-primary" />
+                  <h4 className="text-base font-normal text-ink uppercase tracking-tight">Text</h4>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Font Size</p>
+                    <p className="text-xs text-muted">Base text scaling</p>
+                  </div>
+                  <Select value={settings.fontSize}
+                    onChange={v => onUpdateSettings({...settings, fontSize: v})}
+                    options={[
+                      { value: 'small', label: 'Small' },
+                      { value: 'normal', label: 'Normal' },
+                      { value: 'large', label: 'Large' }
+                    ]} className="w-auto" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Base Currency</p>
+                    <p className="text-xs text-muted">Global audit symbol</p>
+                  </div>
+                  <Select value={settings.currency}
+                    onChange={v => onUpdateSettings({...settings, currency: v})}
+                    options={[
+                      { value: '৳', label: 'BDT (৳)' }, { value: '$', label: 'USD ($)' },
+                      { value: '€', label: 'EUR (€)' }, { value: '£', label: 'GBP (£)' },
+                      { value: '₹', label: 'INR (₹)' }
+                    ]} className="w-auto" />
+                </div>
+              </div>
+
+              <div className="card-xl space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-primary" />
+                  </div>
+                  <h4 className="text-base font-normal text-ink uppercase tracking-tight">Account Colors</h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(settings.typeColors || {}).map(([type, color]) => (
+                    <div key={type} className="flex items-center justify-between p-3 bg-surface-soft rounded-xl border border-hairline">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-xs font-bold text-ink uppercase tracking-wider">{type.replace('_', ' ')}</span>
+                      </div>
+                      <input type="color" value={color}
+                        onChange={e => onUpdateSettings({ ...settings, typeColors: { ...settings.typeColors, [type]: e.target.value } })}
+                        className="w-8 h-8 rounded-lg border border-hairline cursor-pointer bg-transparent p-0.5" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Data Management Section */}
-        <div className="card-xl md:col-span-2 space-y-4">
-          <div className="flex items-center gap-3">
-            <Database className="w-5 h-5 text-primary" />
-            <h4 className="text-base font-normal text-ink uppercase tracking-tight">Data Governance</h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <button 
-              onClick={handleExport}
-              className="p-4 bg-surface-soft border border-hairline rounded-xl text-left hover:bg-canvas hover:border-primary transition-all group"
-            >
+          {activeSection === 'dashboard' && (
+            <div className="card-xl space-y-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-canvas flex items-center justify-center border border-hairline group-hover:border-primary transition-colors shrink-0">
-                  <Database className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Export</p>
-                  <p className="text-xs text-muted">Download all data as JSON</p>
-                </div>
+                <Eye className="w-5 h-5 text-primary" />
+                <h4 className="text-base font-normal text-ink uppercase tracking-tight">Dashboard Banner</h4>
               </div>
-            </button>
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
-              className="p-4 bg-surface-soft border border-hairline rounded-xl text-left hover:bg-canvas hover:border-primary transition-all group"
-            >
+              <div className="space-y-5">
+                {([
+                  { key: 'showNetWorth' as const, label: 'Total Balance', desc: 'Hero summary visibility' },
+                  { key: 'showCurrentAssets' as const, label: 'Liquid Assets', desc: 'Primary asset card visibility' },
+                  { key: 'showLiabilities' as const, label: 'Total Liabilities', desc: 'Debt summary visibility' },
+                  { key: 'showTodos' as const, label: 'Quick Tasks', desc: 'Todo widget visibility' },
+                ]).map(item => (
+                  <div key={item.key} className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                        settings[item.key] ? "bg-primary/5 text-primary" : "bg-surface-soft text-muted"
+                      )}>
+                        <Eye className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-ink">{item.label}</p>
+                        <p className="text-xs text-muted">{item.desc}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => toggleSetting(item.key)}
+                      className={cn("w-12 h-6 rounded-pill transition-all relative", settings[item.key] ? "bg-primary" : "bg-surface-strong")}
+                    >
+                      <div className={cn("absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all", settings[item.key] ? "left-7" : "left-1")} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'categories' && (
+            <div className="card-xl space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-canvas flex items-center justify-center border border-hairline group-hover:border-primary transition-colors shrink-0">
-                  {importing ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Upload className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">Import</p>
-                  <p className="text-xs text-muted">Restore from a JSON backup</p>
-                </div>
+                <Tags className="w-5 h-5 text-primary" />
+                <h4 className="text-base font-normal text-ink uppercase tracking-tight">Categories</h4>
               </div>
-              <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
-            </button>
-            <button 
-              onClick={handleClearAll}
-              className="p-4 bg-semantic-down/5 border border-semantic-down/10 rounded-xl text-left hover:bg-semantic-down/10 transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-canvas flex items-center justify-center border border-semantic-down/10 shrink-0">
-                  <Database className="w-4 h-4 text-semantic-down" />
+              {categories.length === 0 ? (
+                <p className="text-xs text-muted">No categories found.</p>
+              ) : (
+                <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
+                  {categories.map(cat => (
+                    <div key={cat} className="flex items-center justify-between px-3 py-2 bg-surface-soft rounded-xl border border-hairline">
+                      <span className="text-xs font-semibold text-ink">{cat}</span>
+                      <button type="button" onClick={() => setRenameTarget(cat)}
+                        className="p-1.5 text-muted hover:text-ink hover:bg-surface-strong rounded-full transition-all">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-semantic-down">Clear All Data</p>
-                  <p className="text-xs text-semantic-down/60">Wipes database + local storage</p>
-                </div>
-              </div>
-            </button>
-          </div>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
 

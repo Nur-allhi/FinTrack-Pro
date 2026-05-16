@@ -101,7 +101,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Target Account</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Target Account</label>
                   <Select
                     value={tx.account_id}
                     onChange={v => setTx({...tx, account_id: v})}
@@ -112,20 +112,20 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
+                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
                     <DatePicker
                       value={tx.date}
                       onChange={v => setTx({...tx, date: v})}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Audit Type</label>
+                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Audit Type</label>
                     <DebitCreditToggle isCredit={tx.isCredit} onChange={v => setTx({...tx, isCredit: v})} />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Settlement Amount ({currency})</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Settlement Amount ({currency})</label>
                   <input 
                     type="number" 
                     required
@@ -137,7 +137,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Category</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Category</label>
                   <div className="flex flex-col gap-2">
                     <Select
                       value={isCustomCategory ? '__new__' : (categories.includes(tx.category) ? tx.category : '')}
@@ -164,7 +164,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Transaction Description</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Transaction Description</label>
                   <input 
                     type="text" 
                     required

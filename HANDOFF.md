@@ -1,71 +1,98 @@
-# Handoff — 15 May 2026 (Session 3)
+# Handoff — 16 May 2026 (Session 4)
 
 ## Session Summary
 
-Replaced hardcoded single-user auth with Supabase Auth (Google OAuth + Email/Password), multi-tenant data isolation via `user_id` column, and admin panel for user management. Removed old basic auth and guest login.
+PWA support, dark mode overhaul, settings reorganization, User Profile page, admin panel enhancements, and extensive UX stability improvements. Branch `dev` ready for merge to `main`.
 
 ## Changes
 
-### Supabase Auth Integration
-- **JWT auth middleware** (`api/middleware/auth.ts`) — verifies Supabase access tokens via `supabaseAdmin.auth.getUser()`, attaches `req.user` with `id` and `email`
-- **`requireAdmin` middleware** — checks `req.user.email` against `ADMIN_EMAILS` config list
-- **Login endpoints** (`api/index.ts`) — `POST /api/auth/login` validates JWT, `GET /api/auth/me` returns user + admin status, `GET /api/auth/config` exposes Supabase URL/key to frontend
-- **Config** (`api/config.ts`) — added `ADMIN_EMAILS` parsing
+### PWA & Offline
+- **Service worker** (`sw.ts`, `vite.config.ts`) — switched to `injectManifest` strategy with `skipWaiting()` + `clients.claim()`
+- **Web manifest** — icons at all sizes, theme color, standalone display
+- **Offline service** (`src/services/offlineService.ts`) — online/offline detection, sync queue for pending writes
+- **OfflineIndicator** (`src/components/OfflineIndicator.tsx`) — banner when offline
+- **App icons** — SVG + 192px/512px PNG generated from logo via `sharp`
+
+### Dark Mode
+- **Flash fix** (`index.html`) — inline script reads localStorage + critical CSS before first paint
+- **3 variants** (`src/index.css`) — `dark` (Deep), `dark-dim`, `dark-night` with custom CSS classes
+- **Style selector** (`src/components/Settings.tsx`) — pill selector visible when dark mode on
+- **Accent color** (`src/App.tsx`, `src/components/Settings.tsx`) — custom primary color, 10 presets, updates CSS variables + theme-color meta tag
+- **Persistence** — `darkModeStyle` saved to localStorage + IndexedDB
+
+### Settings & Profile
+- **Settings reorganized** (`src/components/Settings.tsx`) — sub-navigation with 3 sections: Appearance, Dashboard, Categories. Desktop sidebar nav, mobile pill tabs.
+- **User Profile page** (`src/components/UserProfile.tsx`) — Account Info (name, email), Security (change password), Data (export/import/refresh/clear)
+- **Export/Import moved** — from Settings to Profile page
+- **Dead toggle removed** — "Audit Alerts" removed (no notification backend)
+- **Quick Tasks toggle** — `showTodos` setting controls dashboard todo widget visibility
+- **Sidebar profile card** — clickable entire card opens User Profile, shows name + email, no separate Settings link
 
 ### Admin Panel
-- **`api/routes/admin.ts`** — `GET /api/admin/users` lists Supabase Auth users, `POST /api/admin/users` creates user (email + password, auto-confirmed), `DELETE /api/admin/users/:id` removes user
-- **`src/components/AdminPanel.tsx`** — User management UI: create user form, user list with provider/date info, delete action
-- Admin tab (`Shield` icon) shown in sidebar only for users whose email is in `ADMIN_EMAILS`
+- **Storage usage** — per-user MB/KB display with progress bar at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
+- **Storage limits** — 5MB default, admin override per user, quota check on transaction POST at `api/middleware/quota.ts`
+- **One-time password** — password shown in modal on creation, not stored. Reset Password flow with new endpoint at `api/routes/admin.ts`
+- **Name field + email validation** on user creation at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
+- **Admin check cached** — `is_admin` in localStorage, Admin Panel nav appears instantly on refresh
+- **Database summary** — `GET /api/admin/storage/summary` shows total DB size at top of Users page
+- **Renamed** "Users" → "Admin Panel", moved below Settings in nav
 
-### Multi-Tenant Data Isolation
-- All 5 Supabase tables: added `user_id UUID` column
-- Every Supabase query in all route files now filters by `.eq("user_id", req.user!.id)`
-- Every INSERT includes `user_id: req.user!.id`
-- SQLite fallback remains single-user (no multi-tenancy)
+### Login
+- **Removed backend validation step** — `validateAndLogin` eliminated, token trusted directly from Supabase (was adding 2-5s delay)
+- **Stale session cleanup** — Supabase sessions without matching `auth_token` are cleared on mount
+- **Timeout safety** — 30s AbortController on all auth calls, "Request timed out" error shown
 
-### Frontend Auth
-- **`src/services/authService.ts`** — Supabase client init via `/api/auth/config`, `signInWithGoogle()`, `signInWithPassword()`, `getSession()`, `apiFetch()` helper auto-attaches Bearer token
-- **`src/components/Login.tsx`** — Two-step UI: choose Google OAuth or Email/Password. Handles OAuth redirect, session recovery
-- **`src/App.tsx`** — Auth check via localStorage token + `/api/auth/me` admin status fetch
-- All 9 components that make API calls — switched from `fetch()` to `authService.apiFetch()`
+### Auth & Config
+- **Removed dead credentials** — `AUTH_USERNAME`/`AUTH_PASSWORD`/`AUTH_TOKEN_PREFIX` deleted from `api/config.ts` and `.env.example`
+- **Service worker auto-update** — SW registration in `main.tsx` sends `SKIP_WAITING`, reloads on activate
 
-### Database Migration
-- `supabase/migrations/001_add_user_id.sql` — adds `user_id UUID` column + indexes to all 5 tables, with optional RLS policies
-
-### Old Auth Removed
-- `POST /api/login` (hardcoded admin/password123) — removed
-- `POST /api/login/guest` — removed
-- `AUTH_USERNAME`/`AUTH_PASSWORD`/`AUTH_TOKEN_PREFIX` — demoted to fallback only
-- Guest login button — removed from Login UI
+### UI Audit
+- **Typography standardized** — all `text-[10px]`/`text-[11px]` changed to `text-xs` (12px) across 16 components
+- **Card titles** — bumped from `text-sm` to `text-base` for better readability
+- **FAB** — fixed sticky options after modal close with `isAnyModalOpen` render guard
 
 ## New Files
-- `api/middleware/auth.ts` — JWT verification + admin check middleware
-- `api/routes/admin.ts` — admin user management endpoints
-- `src/services/authService.ts` — frontend Supabase Auth client + apiFetch helper
-- `src/components/AdminPanel.tsx` — admin user management UI
-- `src/components/Login.tsx` — rewritten with Google OAuth + Email/Password
-- `supabase/migrations/001_add_user_id.sql` — multi-tenant migration
-- `GUIDE.md` — step-by-step setup guide
+- `sw.ts` — custom service worker with precaching + skipWaiting
+- `src/components/UserProfile.tsx` — user profile page
+- `src/components/OfflineIndicator.tsx` — offline banner
+- `src/services/offlineService.ts` — offline detection + sync queue
+- `api/middleware/quota.ts` — storage quota check middleware
+- `USER_MANUAL.md` — comprehensive user documentation
 
 ## Files Changed
-- `api/config.ts` — added ADMIN_EMAILS config
-- `api/db.ts` — added supabaseAdmin client
-- `api/index.ts` — auth endpoints, admin routes, requireAuth on all data routes
-- `api/routes/members.ts` — user_id filtering
-- `api/routes/accounts.ts` — user_id filtering
-- `api/routes/transactions.ts` — user_id filtering
-- `api/routes/transfers.ts` — user_id filtering
-- `api/routes/investments.ts` — user_id filtering
-- `api/routes/groups.ts` — user_id filtering
-- `api/routes/export.ts` — user_id filtering
-- `src/App.tsx` — auth flow, admin detection, admin tab
-- `src/components/AccountManager.tsx` — authService.apiFetch
-- `src/components/GroupManager.tsx` — authService.apiFetch
-- `src/components/InvestmentTracker.tsx` — authService.apiFetch
-- `src/components/Ledger.tsx` — authService.apiFetch
-- `src/components/MemberManager.tsx` — authService.apiFetch
-- `src/components/ReportGenerator.tsx` — authService.apiFetch
-- `src/components/Settings.tsx` — authService.apiFetch
-- `src/components/TransactionModal.tsx` — authService.apiFetch
-- `src/components/TransferModal.tsx` — authService.apiFetch
-- `.env.example` — added SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS
+- `index.html` — PWA meta tags, inline dark mode script + critical CSS, manifest link
+- `vite.config.ts` — VitePWA plugin with injectManifest
+- `src/App.tsx` — showProfile state, UserProfile render, accent color effect, admin cache, dark mode style
+- `src/main.tsx` — SW registration with SKIP_WAITING + auto-reload
+- `src/index.css` — dark-dim + dark-night CSS classes, removed JetBrains Mono
+- `src/components/layout/Sidebar.tsx` — profile card as clickable button, removed Total Assets
+- `src/components/Settings.tsx` — sub-navigation, 3 sections, removed export/import, removed audit alerts
+- `src/components/Dashboard.tsx` — showTodos toggle support
+- `src/components/FloatingActionButton.tsx` — isAnyModalOpen render guard
+- `src/components/Login.tsx` — simplified flow, stale session cleanup
+- `src/components/AdminPanel.tsx` — storage display, password modal, reset password, name field, responsive
+- `src/components/AccountCard.tsx` — bumped title size
+- `src/components/AccountManager.tsx` — bumped title size
+- `src/components/GroupManager.tsx` — bumped title size
+- `src/components/MemberManager.tsx` — bumped title size
+- `src/components/InvestmentTracker.tsx` — bumped title size
+- `api/config.ts` — removed dead auth credentials
+- `api/routes/admin.ts` — storage endpoint, reset password, name field, PATCH user metadata
+- `api/routes/transactions.ts` — quota middleware on POST
+- `.env.example` — removed old AUTH_USERNAME/PASSWORD
+- `supabase/migrations/001_add_user_id.sql` — added `IF NOT EXISTS` for idempotent re-runs
+
+## Environment
+- `SUPABASE_SERVICE_ROLE_KEY` required for admin features (user management, storage queries)
+- Admin users set via `ADMIN_EMAILS` env var
+- Supabase migration must be run: `supabase/migrations/001_add_user_id.sql`
+
+### Latest (2026-05-16 cont.)
+- **User name display** — name from Profile shown on sidebar card + Dashboard welcome greeting
+- **Nav routing fix** — `useEffect([activeTab])` clears `showProfile` so nav items work after visiting Profile
+- **Page animation** — Profile now has the same fade/slide transition as other pages
+- **Sidebar profile card** — reads `localStorage.getItem('user_name')` with email prefix fallback
+
+## Branch
+- Current: `dev`
+- Ready to merge to `main`

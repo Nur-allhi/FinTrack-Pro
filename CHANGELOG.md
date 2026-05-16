@@ -1,54 +1,50 @@
 # Changelog
 
-## 2026-05-15
+## 2026-05-16
 
 ### Add
-- Supabase Auth integration — Google OAuth + Email/Password sign-in at `src/services/authService.ts`, `src/components/Login.tsx`
-- Admin panel — user management (create/list/delete) at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
-- JWT auth middleware — validates Supabase tokens server-side at `api/middleware/auth.ts`
-- Multi-tenant data isolation — `user_id` column on all tables, all queries filtered by authenticated user at all route files
-- Setup guide at `GUIDE.md` — step-by-step configuration for Supabase Auth and admin panel
+- PWA support — service worker with offline caching, web manifest, installable app at `vite.config.ts`, `sw.ts`, `index.html`
+- SVG + PNG app icons with white background at all required sizes at `public/icons/`
+- Offline indicator banner + offline service with sync queue at `src/components/OfflineIndicator.tsx`, `src/services/offlineService.ts`
+- Dark mode flash prevention — inline script + critical CSS in `<head>` at `index.html`
+- Three dark mode variants — Deep, Dim, Night with per-variant CSS variables at `src/index.css`
+- Accent color picker — custom primary color with 10 presets, applies globally via CSS variables at `src/components/Settings.tsx`, `src/App.tsx`
+- User Profile page — account info, name, password change, data export/import at `src/components/UserProfile.tsx`
+- Settings reorganization — sidebar sub-navigation with 3 sections (Appearance, Dashboard, Categories) at `src/components/Settings.tsx`
+- Quick Tasks visibility toggle — show/hide todo widget from Dashboard Banner settings at `src/components/Settings.tsx`, `src/components/Dashboard.tsx`
+- Admin panel storage display — per-user usage bar + total database size at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
+- Storage limit enforcement — 5MB default, admin override per user, quota check on writes at `api/middleware/quota.ts`, `api/routes/transactions.ts`
+- One-time password modal + Reset Password action at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
+- Name field + email validation on user creation at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
+- Admin check cached in localStorage — Admin Panel nav item appears instantly on refresh at `src/App.tsx`
+- Data refresh button with toast feedback in User Profile at `src/components/UserProfile.tsx`
+- User name shown on sidebar profile card + dashboard welcome greeting at `src/components/layout/Sidebar.tsx`, `src/components/Dashboard.tsx`
 
 ### Change
-- Login — redesigned with both Google OAuth and Email/Password options at `src/components/Login.tsx`
-- API auth — replaced hardcoded basic auth with Supabase JWT validation at `api/index.ts`, `api/middleware/auth.ts`
-- All API routes — added `user_id` filtering for Supabase queries at `api/routes/*.ts`
-- App component — auth check via Supabase session, admin status detection, conditional admin tab at `src/App.tsx`
-- All frontend components — switched from raw `fetch()` to `authService.apiFetch()` which auto-attaches JWT Bearer token
-- Config — added `ADMIN_EMAILS`, `SUPABASE_SERVICE_ROLE_KEY` at `api/config.ts`, `.env`
-- Database — added `supabaseAdmin` client for JWT verification at `api/db.ts`
+- Login flow — removed redundant backend token validation (Supabase → dashboard direct), 30s timeout with AbortController
+- Login — stale Supabase sessions cleared on refresh (no more auto-spinning buttons)
+- Font — removed JetBrains Mono, Inter used everywhere with `tabular-nums` for numbers at `src/index.css`
+- Typography audit — all `text-[10px]`/`text-[11px]` labels bumped to `text-xs` across 16 components
+- Card titles — bumped from `text-sm` to `text-base` across Dashboard, AccountCard, AccountManager, GroupManager, MemberManager, InvestmentTracker
+- Sidebar — removed Total Assets counter, profile card is now clickable leading to UserProfile at `src/components/layout/Sidebar.tsx`
+- Admin nav item — renamed "Users" → "Admin Panel", placed below Settings at `src/App.tsx`
+- Settings — removed dead "Audit Alerts" toggle, removed Export & Import section (moved to Profile) at `src/components/Settings.tsx`
+- FAB — fixed race condition where options persisted after closing modal at `src/components/FloatingActionButton.tsx`
+- Dark mode — removed `--color-primary` override, accent color persists across themes at `src/index.css`
+- PWA SW — switched to `injectManifest` with `skipWaiting()` + `clients.claim()` for immediate updates at `vite.config.ts`, `sw.ts`
+- Auth config — removed dead legacy auth credentials (`password123`) from code at `api/config.ts`, `.env.example`
 
-### Remove
-- Guest login endpoint (`POST /api/login/guest`) — replaced by Supabase Auth
-- Hardcoded login (`POST /api/login`) — replaced by `POST /api/auth/login` JWT validation
-
-### Add
-- Custom DatePicker component — calendar dropdown with day grid, month mode, portal rendering, viewport boundary detection at `src/components/DatePicker.tsx`
-- Custom animated loading screen — sliding progress bar replacing "Loading..." text at `src/components/LoadingScreen.tsx`
-- RenameModal component — styled modal for category renaming at `src/components/RenameModal.tsx`
-- Guest login button — bypasses credential form on login page at `src/components/Login.tsx`, `api/index.ts`
-- Category management in Settings — list + rename categories at `src/components/Settings.tsx`
-- Data export via API — `GET /api/export` dumps all tables as JSON at `api/routes/export.ts`
-- Data import via API — `POST /api/import` restores from exported JSON with Supabase support at `api/routes/export.ts`
-- Clear All Data option — wipes database + localStorage at `api/routes/export.ts`, `src/components/Settings.tsx`
-
-### Change
-- Select component — portal-based dropdown to prevent overflow clipping at `src/components/Select.tsx`
-- Ledger toolbar — consolidated 3 rows into 1 compact row on desktop, card-based filter panel on mobile at `src/components/Ledger.tsx`
-- Ledger category filter — `prompt()` replaced with RenameModal at `src/components/Ledger.tsx`
-- Ledger category rename — moved to Settings page at `src/components/Ledger.tsx`
-- Ledger date view — custom DatePicker replaces native date inputs at `src/components/Ledger.tsx`
-- Dashboard filters — mobile card-based filter panel behind Filters button at `src/components/Dashboard.tsx`
-- TransactionForm — native date input replaced with DatePicker at `src/components/TransactionForm.tsx`
-- TransactionModal — native date input replaced with DatePicker at `src/components/TransactionModal.tsx`
-- TransferModal — native date input replaced with DatePicker at `src/components/TransferModal.tsx`
-- InvestmentTracker — native date inputs replaced with DatePicker at `src/components/InvestmentTracker.tsx`
-- ReportGenerator — native date inputs replaced with DatePicker at `src/components/ReportGenerator.tsx`
-- GroupManager — now uses `lastUpdate` prop to avoid redundant fetches at `src/components/GroupManager.tsx`
-- Sidebar — fixed positioning on desktop (`md:fixed`) with `md:pl-64` offset at `src/components/layout/Sidebar.tsx`, `src/App.tsx`
-- Settings Data Governance — Export/Import/Clear All in 3-column grid at `src/components/Settings.tsx`
-- All date inputs — replaced with custom DatePicker calendar across 6 files
-- Loading screens — animated sliding bar replaces spinner and "Loading..." text at `src/components/LoadingScreen.tsx`, `src/App.tsx`
+### Fix
+- Dark mode white flash — multi-layer: inline localStorage script + critical CSS + SW auto-reload at `index.html`, `src/main.tsx`
+- FAB options not closing after modal dismiss — added `!isAnyModalOpen` render guard at `src/components/FloatingActionButton.tsx`
+- Admin panel mobile layout — responsive padding, text size, button sizing at `src/components/AdminPanel.tsx`
+- Storage display not showing — per-table error handling in storage endpoint at `api/routes/admin.ts`
+- Accent color crash on existing users — fallback for cached settings without `accentColor` at `src/App.tsx`
+- Auto data fetch on login — moved fetch to `handleLogin` + `[isAuthenticated]` effect at `src/App.tsx`
+- Admin check on auth change — admin tab appears without page refresh at `src/App.tsx`
+- Settings page crash — fixed duplicate state declarations, unused props cleanup at `src/components/Settings.tsx`
+- Profile page blocking navigation — added `useEffect([activeTab])` to reset `showProfile` at `src/App.tsx`
+- Profile page missing page transition — added `showProfile` to motion key at `src/App.tsx`
 
 ### Fix
 - Ledger balance sync — restored `onUpdate()` calls after save/delete at `src/components/Ledger.tsx`

@@ -5,7 +5,8 @@ A comprehensive family financial tracker with multi-account management, investme
 ## Features
 
 - **Multi-User Auth** — Sign in with Google OAuth or Email/Password via Supabase Auth; each user has isolated data
-- **Admin Panel** — Designated admins can create/manage user accounts from the app UI
+- **Admin Panel** — Designated admins can create/manage user accounts, set storage limits, view usage
+- **PWA Support** — Installable as app, works offline with cached data, service worker auto-updates
 - **Multi-Account Management** — Track Cash, Bank, Mobile Wallets, and Investments in one place
 - **Member-Based Tracking** — Organize accounts and transactions by family members
 - **Account Groups** — Group accounts under parent groups with accumulated balance
@@ -14,14 +15,14 @@ A comprehensive family financial tracker with multi-account management, investme
 - **Report Generation** — Generate PDF & CSV financial reports with transaction summaries
 - **Bank Statement PDF** — Export ledger as professionally formatted PDF with opening/closing balance
 - **Quick Tasks** — Built-in todo list widget on the dashboard with localStorage persistence
-- **Dark Mode** — Institutional dark theme with CSS variable system
-- **Type Color Customization** — System-wide colors per account type
+- **Dark Mode** — 3 variants (Deep, Dim, Night) with custom accent color picker
+- **Customizable Appearance** — Accent color, dark mode style, font size, type colors
 - **Global Search** — Search accounts and members from the header
-- **Quick Filters** — Filter dashboard by account type
 - **Responsive Design** — Optimized for mobile, tablet, and desktop
 - **Custom DatePicker** — Calendar UI dropdown for date selection
 - **Category Management** — Rename categories via Settings
-- **Data Export/Import** — Full backup and restore via JSON in Settings
+- **Data Export/Import** — Full backup and restore via JSON in Profile
+- **Storage Limits** — Per-user quotas with admin override
 - **Animated Loading Screen** — Sliding progress bar for content loading
 
 ## Tech Stack
@@ -86,10 +87,11 @@ The app will be available at `http://localhost:3001`.
 ```
 api/                    # Express backend
 ├── db.ts               # Database setup (Supabase + SQLite fallback)
-├── config.ts           # Auth + admin configuration
+├── config.ts           # Admin configuration
 ├── index.ts            # Server entry point
 ├── middleware/
-│   └── auth.ts         # JWT verification + admin check middleware
+│   ├── auth.ts         # JWT verification + admin check middleware
+│   └── quota.ts        # Storage quota check middleware
 └── routes/
     ├── admin.ts        # Admin user management (create/list/delete)
     ├── members.ts      # Member CRUD
@@ -161,12 +163,12 @@ Login (Google OAuth or Email/Password)
 
 ## Settings
 
-- **Display** — Toggle visibility of total balance, assets, and liabilities cards
-- **Dark Mode** — Toggle institutional dark theme
-- **Font Size** — Small / Normal / Large base text scaling
-- **Currency** — BDT, USD, EUR, GBP, INR
-- **Account Colors** — Customize colors per account type
-- **Data Export** — Download all data as JSON
-- **Data Import** — Restore from a previously exported JSON file
-- **Clear All Data** — Wipe database and localStorage
-- **Category Management** — Rename transaction categories
+- **Appearance** — Dark Mode (3 style variants), Accent Color (custom + 10 presets), Font Size, Currency, Account Colors
+- **Dashboard Banner** — Toggle visibility of total balance, assets, liabilities, and quick tasks
+- **Categories** — Rename transaction categories
+
+## Profile
+
+- **Account Info** — View email, edit display name
+- **Security** — Change password
+- **Data** — Refresh, Export JSON, Import JSON, Clear All Data

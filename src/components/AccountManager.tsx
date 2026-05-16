@@ -127,12 +127,12 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
       </div>
       <form onSubmit={handleCreateOrUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Name</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Name</label>
           <input type="text" required value={newAcc.name} onChange={e => setNewAcc({...newAcc, name: e.target.value})}
             placeholder="Account name" className="w-full px-3.5 py-2.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-sm font-medium" />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Type</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Type</label>
           <Select value={newAcc.type} onChange={v => setNewAcc({...newAcc, type: v as any})}
             options={[
               { value: 'cash', label: 'Cash' }, { value: 'bank', label: 'Bank' },
@@ -141,22 +141,22 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
             ]} />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Member</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Member</label>
           <Select value={newAcc.member_id} onChange={v => setNewAcc({...newAcc, member_id: v})}
             options={[{ value: '', label: 'None' }, ...members.map(m => ({ value: m.id, label: m.name }))]} />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Group</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Group</label>
           <Select value={newAcc.parent_id} onChange={v => setNewAcc({...newAcc, parent_id: v})}
             options={[{ value: '', label: 'None' }, ...groups.map(g => ({ value: String(g.id), label: g.name }))]} />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Opening Balance</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Opening Balance</label>
           <input type="number" value={newAcc.initial_balance} onChange={e => setNewAcc({...newAcc, initial_balance: e.target.value})}
             placeholder="0.00" className="w-full px-3.5 py-2.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-sm financial-number" />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Color</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Color</label>
           <div className="flex flex-wrap gap-2 pt-1">
             {colors.map(c => (
               <button key={c} type="button" onClick={() => setNewAcc({...newAcc, color: c})}
@@ -203,13 +203,13 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
 
       {/* Summary Strip */}
       <div className="flex items-center gap-4 px-1">
-        <span className="text-[10px] font-bold text-muted uppercase tracking-wider">{filteredAccounts.length} accounts</span>
+        <span className="text-xs font-bold text-muted uppercase tracking-wider">{filteredAccounts.length} accounts</span>
         <span className="w-px h-3 bg-hairline" />
-        <span className="text-[10px] font-bold text-muted uppercase tracking-wider">Balance: <span className="text-ink font-mono">{currency}{totalBalance.toLocaleString()}</span></span>
+        <span className="text-xs font-bold text-muted uppercase tracking-wider">Balance: <span className="text-ink font-mono">{currency}{totalBalance.toLocaleString()}</span></span>
         {filteredAccounts.filter(a => a.archived).length > 0 && (
           <>
             <span className="w-px h-3 bg-hairline" />
-            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">{filteredAccounts.filter(a => a.archived).length} archived</span>
+            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">{filteredAccounts.filter(a => a.archived).length} archived</span>
           </>
         )}
       </div>
@@ -248,22 +248,22 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
                         <Icon className="w-4 h-4" />
                       </div>
                             <div className="min-w-0">
-                              <h4 className="text-sm font-semibold text-ink truncate">{acc.name}</h4>
-                              <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
+                              <h4 className="text-base font-semibold text-ink truncate">{acc.name}</h4>
+                              <p className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
                             </div>
                           </div>
                           <div className="flex gap-1 shrink-0">
-                            {acc.archived && <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded-pill">Archived</span>}
+                            {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded-pill">Archived</span>}
                           </div>
                         </div>
                         <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-3">{currency}{acc.current_balance.toLocaleString()}</p>
                         <div className="flex items-center justify-between pt-3 border-t border-hairline">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[10px] font-bold text-muted uppercase tracking-wider">{acc.member_name || 'GENERAL'}</span>
+                            <span className="text-xs font-bold text-muted uppercase tracking-wider">{acc.member_name || 'GENERAL'}</span>
                             {acc.parent_name && (
                               <>
                                 <span className="text-muted/40">/</span>
-                                <span className="text-[10px] font-bold text-primary uppercase tracking-wider truncate">{acc.parent_name}</span>
+                                <span className="text-xs font-bold text-primary uppercase tracking-wider truncate">{acc.parent_name}</span>
                               </>
                             )}
                           </div>
@@ -291,7 +291,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
           <div className="hidden md:block bg-canvas border border-hairline rounded-xl overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-soft text-muted text-[10px] font-bold uppercase tracking-[0.2em] border-b border-hairline">
+                <tr className="bg-surface-soft text-muted text-xs font-bold uppercase tracking-[0.2em] border-b border-hairline">
                   <th className="px-3 py-2.5 whitespace-nowrap">Account</th>
                   <th className="px-3 py-2.5 whitespace-nowrap">Type</th>
                   <th className="px-3 py-2.5 whitespace-nowrap">Member</th>
@@ -308,8 +308,8 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
                       <td className="px-3 py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: acc.color }} />
-                          <span className="text-sm font-semibold text-ink">{acc.name}</span>
-                          {acc.archived && <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">Archived</span>}
+                          <span className="text-base font-semibold text-ink">{acc.name}</span>
+                          {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">Archived</span>}
                         </div>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
@@ -357,20 +357,20 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-ink truncate">{acc.name}</span>
+                      <span className="text-base font-semibold text-ink truncate">{acc.name}</span>
                       <span className="text-sm font-bold text-ink financial-number shrink-0">{currency}{acc.current_balance.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</span>
+                      <span className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</span>
                       <span className="text-muted/40">·</span>
-                      <span className="text-[10px] font-medium text-muted">{acc.member_name || 'General'}</span>
+                      <span className="text-xs font-medium text-muted">{acc.member_name || 'General'}</span>
                       {acc.parent_name && (
                         <>
                           <span className="text-muted/40">·</span>
-                          <span className="text-[10px] font-medium text-primary">{acc.parent_name}</span>
+                          <span className="text-xs font-medium text-primary">{acc.parent_name}</span>
                         </>
                       )}
-                      {acc.archived && <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">A</span>}
+                      {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">A</span>}
                     </div>
                     <div className="flex gap-2 mt-1.5">
                       <button onClick={() => startEdit(acc)} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>

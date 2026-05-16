@@ -87,7 +87,7 @@ export default function Header({
             onChange={e => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             placeholder="Search..."
-            className="bg-transparent border-none outline-none text-[11px] md:text-xs text-ink font-medium py-2 pr-2 w-24 md:w-36 lg:w-48 placeholder:text-muted/60"
+            className="bg-transparent border-none outline-none text-xs text-ink font-medium py-2 pr-2 w-24 md:w-36 lg:w-48 placeholder:text-muted/60"
           />
           {query && (
             <button onClick={() => { setQuery(''); setResults([]); }} className="p-1 text-muted hover:text-ink mr-1">
@@ -110,14 +110,14 @@ export default function Header({
                 )}
               >
                 <span className={cn(
-                  "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0",
+                  "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0",
                   r.type === 'account' ? "bg-primary/5 text-primary" : "bg-surface-strong text-muted"
                 )}>
                   {r.type === 'account' ? 'ACC' : 'MEM'}
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-ink truncate">{r.label}</p>
-                  <p className="text-[10px] text-muted truncate">{r.sublabel}</p>
+                  <p className="text-xs text-muted truncate">{r.sublabel}</p>
                 </div>
               </button>
             ))}

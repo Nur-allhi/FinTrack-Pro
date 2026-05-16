@@ -86,7 +86,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 gap-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Source Account</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Source Account</label>
                   <Select
                     value={transfer.from_account_id}
                     onChange={v => setTransfer({...transfer, from_account_id: v})}
@@ -102,7 +102,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Destination Account</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Destination Account</label>
                   <Select
                     value={transfer.to_account_id}
                     onChange={v => setTransfer({...transfer, to_account_id: v})}
@@ -113,7 +113,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Amount ({currency})</label>
+                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Amount ({currency})</label>
                     <input 
                       type="number" 
                       required
@@ -124,7 +124,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
+                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
                     <DatePicker
                       value={transfer.date}
                       onChange={v => setTransfer({...transfer, date: v})}
@@ -133,7 +133,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Transaction Description</label>
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Transaction Description</label>
                   <input 
                     type="text" 
                     required
