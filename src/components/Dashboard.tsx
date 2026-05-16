@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Account, Member } from '../types';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import AccountCard from './AccountCard';
+import Select from './Select';
 import {
   Wallet,
   Building2,
@@ -204,7 +206,8 @@ export default function Dashboard({
         </div>
       )}
 
-      <div className="hidden md:flex items-center gap-3">
+      {/* Row 2: Action buttons centered */}
+      <div className="hidden md:flex justify-center gap-3">
         <button onClick={onOpenTransaction} className="btn-primary px-6 py-3 text-xs md:text-sm">
           <Plus className="w-4 h-4" />
           New Transaction
@@ -217,9 +220,40 @@ export default function Dashboard({
 
       {/* Accounts List Section */}
       <div className="space-y-4 md:space-y-6">
-        <div className="flex items-center justify-between">
-          <h4 className="text-base md:text-lg font-normal text-ink tracking-tight">Your Portfolio</h4>
-          <div className="flex items-center gap-2">
+        {/* Row 3: Portfolio heading + filters + Grid/List merged */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="w-44 shrink-0">
+            <Select
+              value={String(filterMemberId)}
+              onChange={v => setFilterMemberId(v === 'all' ? 'all' : v === 'general' ? 'general' : Number(v))}
+              options={[
+                { value: 'all', label: 'All Members' },
+                { value: 'general', label: 'General' },
+                ...members.map(m => ({ value: String(m.id), label: m.name }))
+              ]}
+            />
+          </div>
+          <div className="hidden md:flex items-center gap-1.5 flex-wrap justify-center">
+            {typeFilters.map(f => {
+              const Icon = f.icon;
+              const typeColor = settings.typeColors?.[f.key];
+              return (
+                <button key={f.key} onClick={() => setFilterType(f.key)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[10px] md:text-xs font-bold transition-all",
+                    filterType === f.key
+                      ? "text-white shadow-sm"
+                      : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
+                  )}
+                  style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
+                >
+                  {Icon && <Icon className="w-3.5 h-3.5" />}
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             {/* Mobile filter toggle */}
             <button
               type="button"
@@ -236,28 +270,6 @@ export default function Dashboard({
               <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-[10px] md:text-xs font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
             </div>
           </div>
-        </div>
-
-        {/* Desktop filter pills */}
-        <div className="hidden md:flex flex-wrap gap-1.5">
-          {typeFilters.map(f => {
-            const Icon = f.icon;
-            const typeColor = settings.typeColors?.[f.key];
-            return (
-              <button key={f.key} onClick={() => setFilterType(f.key)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[10px] md:text-xs font-bold transition-all",
-                  filterType === f.key
-                    ? "text-white shadow-sm"
-                    : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
-                )}
-                style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
-              >
-                {Icon && <Icon className="w-3.5 h-3.5" />}
-                {f.label}
-              </button>
-            );
-          })}
         </div>
 
         {/* Mobile filter card */}
@@ -286,7 +298,7 @@ export default function Dashboard({
           </div>
         )}
 
-        <div className="space-y-4 md:space-y-6">
+        <motion.div key={String(filterMemberId) + '-' + viewMode + '-' + filterType} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-4 md:space-y-6">
           {viewMode === 'grid' ? (
             filterMemberId === 'all' ? (
               <>
@@ -362,7 +374,7 @@ export default function Dashboard({
               </div>
             </>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
