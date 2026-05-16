@@ -1,4 +1,4 @@
-# Handoff — 16 May 2026 (Session 4)
+# Handoff — 16 May 2026 (Session 7)
 
 ## Session Summary
 
@@ -124,5 +124,24 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
 - `src/components/ErrorBoundary.tsx` — catches render errors gracefully
 
 ## Branch
-- `main` — merged from `dev` (Session 5 + 6)
-- `dev` — current, up to date with `main`
+- `main` — merged from `dev` (Sessions 5-7)
+- `dev` — ahead of `main`, ready for next session
+
+---
+
+## Session 7 — 16 May 2026 (dashboard polish)
+
+### Changes
+- **Dashboard controls** — single row: Member Select | Transactions (hidden on mobile) | Filters | Grid/List
+- **Quick filters** — moved behind toggle button with smooth scale+fade animation (open/close)
+- **AccountCard redesign** — removed redundant dot, SETTLED label, type tag from name row; added group name with Folder icon on the right; member name animates in/out based on filter selection
+- **Sidebar nav animation** — `LayoutGroup` + `layout` for spring-animated active tab switching; auto-deselect when profile opens
+- **Global button press** — enhanced `active:scale` from 0.98 to 0.96 on all btn-* classes, global `:where(button):active` rule for un-styled buttons
+- **Text sizes** — all `text-[10px]` changed to `text-xs` (rem-based, scales with font-size setting)
+
+### Files Changed
+- `src/components/Dashboard.tsx` — layout rework, filter animation, text fixes
+- `src/components/AccountCard.tsx` — full redesign with motion layout, props update
+- `src/components/layout/Sidebar.tsx` — LayoutGroup, showProfile support
+- `src/App.tsx` — pass showProfile to Sidebar
+- `src/index.css` — global button active rule, enhanced btn scale, transform transition
