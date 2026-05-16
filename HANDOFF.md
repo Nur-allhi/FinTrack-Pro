@@ -109,6 +109,20 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
   - Added `console.warn` logging for the admin check failure
   - Added auto-retry after 3 seconds on failure
 
+---
+
+## Session 6 — 16 May 2026 (polish + merge)
+
+### Changes
+- **FAB** — auto-close after 5s, fixed outside tap for mobile (`pointerdown`), ref-based timer for reliable cleanup
+- **Modal animations** — open: backdrop fades in, card slides up; close: both fade out together via internal `closing` state + `setTimeout(onClose, 200)`
+- **Dashboard layout** — Row 2: action buttons centered; Row 3: merged filters + Grid/List toggle; replaced "Your Portfolio" heading with member `Select` dropdown
+- **Dashboard filter animation** — single `motion.div` wrapper with key change on filter, fades content in/out without affecting card sizes
+- **Mobile keyboard** — amount fields use `inputMode="decimal"` (shows numeric keypad with decimal)
+
+### New Files
+- `src/components/ErrorBoundary.tsx` — catches render errors gracefully
+
 ## Branch
-- Current: `dev`
-- Ready to merge to `main`
+- `main` — merged from `dev` (Session 5 + 6)
+- `dev` — current, up to date with `main`
