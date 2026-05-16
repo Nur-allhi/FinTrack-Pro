@@ -14,6 +14,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
 import OfflineIndicator from './components/OfflineIndicator';
 import UserProfile from './components/UserProfile';
+import FloatingActionButton from './components/FloatingActionButton';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
@@ -37,7 +39,6 @@ const Settings = lazy(() => import('./components/Settings'));
 const GroupManager = lazy(() => import('./components/GroupManager'));
 const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
-const FloatingActionButton = lazy(() => import('./components/FloatingActionButton'));
 const Login = lazy(() => import('./components/Login'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
 
@@ -125,11 +126,15 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     loadFromCache();
-    authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
+    const checkAdmin = () => authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.user?.email) setUserEmail(d.user.email);
       if (d.isAdmin) { setIsAdmin(true); localStorage.setItem('is_admin', '1'); }
       else { localStorage.removeItem('is_admin'); }
-    }).catch(() => {});
+    }).catch((err) => {
+      console.warn('Admin check failed, retrying in 3s:', err);
+      setTimeout(checkAdmin, 3000);
+    });
+    checkAdmin();
     if (offlineService.isOnline()) {
       fetchData();
     } else {
@@ -282,11 +287,19 @@ export default function App() {
         </div>
       </main>
 
-      <Suspense fallback={null}>
-        {isTransferModalOpen && <TransferModal accounts={accounts} onClose={() => setIsTransferModalOpen(false)} onUpdate={fetchData} currency={settings.currency} />}
-        {isTransactionModalOpen && <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />}
-        <div className="md:hidden"><FloatingActionButton onNewTransaction={() => setIsTransactionModalOpen(true)} onNewTransfer={() => setIsTransferModalOpen(true)} isTransactionModalOpen={isTransactionModalOpen} isTransferModalOpen={isTransferModalOpen} /></div>
-      </Suspense>
+      <ErrorBoundary>
+        {isTransferModalOpen && (
+          <Suspense fallback={null}>
+            <TransferModal accounts={accounts} onClose={() => setIsTransferModalOpen(false)} onUpdate={fetchData} currency={settings.currency} />
+          </Suspense>
+        )}
+        {isTransactionModalOpen && (
+          <Suspense fallback={null}>
+            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
+          </Suspense>
+        )}
+      </ErrorBoundary>
+      <div className="md:hidden"><FloatingActionButton onNewTransaction={() => setIsTransactionModalOpen(true)} onNewTransfer={() => setIsTransferModalOpen(true)} isTransactionModalOpen={isTransactionModalOpen} isTransferModalOpen={isTransferModalOpen} /></div>
     </div>
   );
 }

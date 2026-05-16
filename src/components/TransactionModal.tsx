@@ -127,7 +127,8 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Settlement Amount ({currency})</label>
                   <input 
-                    type="number" 
+                    type="text"
+                    inputMode="decimal"
                     required
                     value={tx.amount}
                     onChange={e => setTx({...tx, amount: e.target.value})}

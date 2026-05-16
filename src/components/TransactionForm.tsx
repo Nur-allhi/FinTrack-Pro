@@ -76,7 +76,8 @@ export default function TransactionForm({
             </label>
             <input
               id="tx-amount"
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="0.00"
               required
               value={newTx.amount}

@@ -115,7 +115,8 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Amount ({currency})</label>
                     <input 
-                      type="number" 
+                      type="text"
+                      inputMode="decimal"
                       required
                       value={transfer.amount}
                       onChange={e => setTransfer({...transfer, amount: e.target.value})}

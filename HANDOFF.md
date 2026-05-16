@@ -93,6 +93,22 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
 - **Page animation** — Profile now has the same fade/slide transition as other pages
 - **Sidebar profile card** — reads `localStorage.getItem('user_name')` with email prefix fallback
 
+---
+
+## Session 5 — 16 May 2026 (fixes)
+
+### Vercel Deployment Fixes
+
+- **FAB white screen crash** (root cause: `FloatingActionButton`, `TransactionModal`, `TransferModal` shared one `<Suspense fallback={null}>` — lazy-loading a modal would replace ALL children with `null`, and any chunk-load error crashed the whole app since there was no error boundary)
+  - Imported `FloatingActionButton` **eagerly** (it's tiny, no need for lazy)
+  - Wrapped each modal in its own `<Suspense>` boundary
+  - Wrapped modals in `<ErrorBoundary>` to catch chunk-load failures gracefully
+  - Moved FAB outside the modal Suspense boundaries entirely
+- **ErrorBoundary** (`src/components/ErrorBoundary.tsx`) — class-based boundary that logs errors and renders fallback instead of crashing the React tree
+- **Admin panel not showing** (root cause: `/api/auth/me` API call fails silently on Vercel cold start, `.catch(() => {})` swallows errors, `isAdmin` stays `false`)
+  - Added `console.warn` logging for the admin check failure
+  - Added auto-retry after 3 seconds on failure
+
 ## Branch
 - Current: `dev`
 - Ready to merge to `main`
