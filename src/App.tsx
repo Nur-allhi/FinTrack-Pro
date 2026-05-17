@@ -78,10 +78,12 @@ export default function App() {
 
   const [members, setMembers] = useState<Member[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [dataLoading, setDataLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
 
   const fetchData = async (showToast = false) => {
     if (!offlineService.isOnline()) { if (showToast) toast("Cannot refresh while offline.", 'error'); return; }
+    setDataLoading(true);
     setLastUpdate(Date.now());
     try {
       const [membersRes, accountsRes] = await Promise.all([authService.apiFetch('/api/members'), authService.apiFetch('/api/accounts')]);
@@ -98,6 +100,8 @@ export default function App() {
     } catch (error) {
       console.error("Fetch failed:", error);
       if (showToast) toast("Failed to refresh data.", 'error');
+    } finally {
+      setDataLoading(false);
     }
   };
 
@@ -118,10 +122,52 @@ export default function App() {
     if (stored) {
       setIsAuthenticated(true);
       if (localStorage.getItem('is_admin') === '1') setIsAdmin(true);
+      const savedTab = sessionStorage.getItem('activeTab');
+      const savedAccountId = sessionStorage.getItem('selectedAccountId');
+      if (savedTab) setActiveTab(savedTab as any);
+      if (savedAccountId) setSelectedAccountId(Number(savedAccountId));
     } else {
       setIsAuthenticated(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    sessionStorage.setItem('activeTab', activeTab);
+    if (selectedAccountId) {
+      sessionStorage.setItem('selectedAccountId', String(selectedAccountId));
+    } else {
+      sessionStorage.removeItem('selectedAccountId');
+    }
+  }, [isAuthenticated, activeTab, selectedAccountId]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    window.history.replaceState({ app: true }, '');
+    window.history.pushState({ app: true }, '');
+    const handlePopState = () => {
+      window.history.pushState({ app: true }, '');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      if (offlineService.isOnline()) fetchData();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const handleFocus = () => {
+      if (offlineService.isOnline()) fetchData();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -139,6 +185,7 @@ export default function App() {
       fetchData();
     } else {
       setIsOnline(false);
+      setDataLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -194,8 +241,8 @@ export default function App() {
   const handleLogin = (token: string) => {
     localStorage.setItem('auth_token', token);
     setIsAuthenticated(true);
-    loadFromCache().catch(() => {});
-    fetchData().catch(() => {});
+    setDataLoading(true);
+    toast("Login successful.", 'success');
   };
 
   const handleLogout = async () => {
@@ -239,7 +286,7 @@ export default function App() {
     }
 
     switch (activeTab) {
-      case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onOpenTransfer={() => setIsTransferModalOpen(true)} onOpenTransaction={() => setIsTransactionModalOpen(true)} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} />;
+      case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onOpenTransfer={() => setIsTransferModalOpen(true)} onOpenTransaction={() => setIsTransactionModalOpen(true)} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} dataLoading={dataLoading} />;
       case 'members': return <MemberManager members={members} accounts={accounts} onUpdate={fetchData} onSelectAccount={setSelectedAccountId} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
@@ -261,7 +308,7 @@ export default function App() {
         selectedAccountId={selectedAccountId} setSelectedAccountId={setSelectedAccountId}
         isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
         settings={settings} onLogout={handleLogout} navItems={navItems}
-        userEmail={userEmail} showProfile={showProfile} onOpenProfile={() => { setShowProfile(true); setSelectedAccountId(null); setIsMobileMenuOpen(false); }}
+        userEmail={userEmail} showProfile={showProfile} onOpenProfile={() => { setShowProfile(true); setSelectedAccountId(null); setIsMobileMenuOpen(false); }} setShowProfile={setShowProfile}
       />
 
       <main className="flex-1 flex flex-col min-w-0 md:pl-64">

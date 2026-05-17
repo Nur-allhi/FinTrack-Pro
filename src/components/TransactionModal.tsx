@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { useToast } from './Toast';
 import DebitCreditToggle from './DebitCreditToggle';
 import { authService } from '../services/authService';
+import { offlineService } from '../services/offlineService';
 import Select from './Select';
 
 interface TransactionModalProps {
@@ -40,8 +41,8 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
 
   useEffect(() => {
     authService.apiFetch('/api/transactions/categories')
-      .then(res => res.json())
-      .then(setCategories)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => { if (Array.isArray(data)) setCategories(data); })
       .catch(() => {});
   }, []);
 
@@ -52,8 +53,24 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
       return;
     }
 
+    if (!navigator.onLine) {
+      offlineService.queueAction({
+        type: 'create',
+        endpoint: '/api/transactions',
+        body: {
+          account_id: Number(tx.account_id),
+          date: tx.date,
+          particulars: tx.particulars,
+          category: tx.category || 'Uncategorized',
+          amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
+        }
+      });
+      toast("Transaction queued for sync when online.", 'success');
+      handleClose();
+      return;
+    }
+
     setLoading(true);
-    onUpdate();
     try {
       const amount = parseFloat(tx.amount) * (tx.isCredit ? 1 : -1);
       const res = await authService.apiFetch('/api/transactions', {
@@ -76,8 +93,23 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
       setTimeout(handleClose, 1500);
     } catch (error) {
       console.error("Save failed:", error);
-      toast("Failed to save transaction.", 'error');
-      onUpdate();
+      if (error instanceof TypeError) {
+        offlineService.queueAction({
+          type: 'create',
+          endpoint: '/api/transactions',
+          body: {
+            account_id: Number(tx.account_id),
+            date: tx.date,
+            particulars: tx.particulars,
+            category: tx.category || 'Uncategorized',
+            amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
+          }
+        });
+        toast("Transaction queued for sync when online.", 'success');
+        handleClose();
+      } else {
+        toast("Failed to save transaction.", 'error');
+      }
     } finally {
       setLoading(false);
     }

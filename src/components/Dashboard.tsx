@@ -17,7 +17,8 @@ import {
   ArrowLeftRight,
   Check,
   X,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Loader2
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -39,6 +40,7 @@ interface DashboardProps {
     currency: string;
     typeColors?: Record<string, string>;
   };
+  dataLoading?: boolean;
 }
 
 export default function Dashboard({ 
@@ -51,7 +53,8 @@ export default function Dashboard({
   onOpenTransaction,
   onGenerateReport,
   settings,
-  userName
+  userName,
+  dataLoading
 }: DashboardProps & { userName?: string }) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<'all' | 'bank' | 'cash' | 'mobile' | 'investment' | 'other'>('all');
@@ -139,6 +142,12 @@ export default function Dashboard({
                   {settings.currency}{totalBalance.toLocaleString()}
                 </h3>
               </div>
+              {dataLoading && accounts.length === 0 && (
+                <div className="flex items-center gap-2 text-muted">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span className="text-xs font-semibold">Loading your data...</span>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {settings.showCurrentAssets && (
                   <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
@@ -301,6 +310,19 @@ export default function Dashboard({
                     </div>
                   </div>
                 ))}
+                {unassignedAccounts.length > 0 && (
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <span className="text-xs font-bold text-muted uppercase tracking-[0.2em]">General Accounts</span>
+                      <div className="flex-1 h-px bg-hairline" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+                      {unassignedAccounts.map(account => (
+                        <AccountCard key={account.id} account={account} onClick={() => onSelectAccount(account.id)} currency={settings.currency} typeColors={settings.typeColors} filterMemberId={filterMemberId} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">

@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
+import { offlineService } from '../services/offlineService';
 import Select from './Select';
 
 interface TransferModalProps {
@@ -41,6 +42,23 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
       return;
     }
 
+    if (!navigator.onLine) {
+      offlineService.queueAction({
+        type: 'create',
+        endpoint: '/api/transfers',
+        body: {
+          from_account_id: Number(transfer.from_account_id),
+          to_account_id: Number(transfer.to_account_id),
+          amount: parseFloat(transfer.amount),
+          particulars: transfer.particulars,
+          date: transfer.date
+        }
+      });
+      toast("Transfer queued for sync when online.", 'success');
+      handleClose();
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authService.apiFetch('/api/transfers', {
@@ -61,7 +79,23 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
       onUpdate();
     } catch (error) {
       console.error("Transfer failed:", error);
-      toast("Transfer failed. Please check your balance.", 'error');
+      if (error instanceof TypeError) {
+        offlineService.queueAction({
+          type: 'create',
+          endpoint: '/api/transfers',
+          body: {
+            from_account_id: Number(transfer.from_account_id),
+            to_account_id: Number(transfer.to_account_id),
+            amount: parseFloat(transfer.amount),
+            particulars: transfer.particulars,
+            date: transfer.date
+          }
+        });
+        toast("Transfer queued for sync when online.", 'success');
+        handleClose();
+      } else {
+        toast("Transfer failed. Please check your balance.", 'error');
+      }
     } finally {
       setLoading(false);
     }

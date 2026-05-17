@@ -13,6 +13,7 @@ import { cacheService } from '../services/cacheService';
 import { exportLedgerPDF } from '../utils/ledgerPdf';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
+import { offlineService } from '../services/offlineService';
 import Select from './Select';
 import DatePicker from './DatePicker';
 
@@ -85,10 +86,18 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     };
     load();
     authService.apiFetch('/api/transactions/categories')
-      .then(res => res.json())
-      .then(setAllCategories)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => { if (Array.isArray(data)) setAllCategories(data); })
       .catch(() => {});
-  }, [account.id, lastUpdate]);
+  }, [account.id]);
+
+  useEffect(() => {
+    if (!account?.id) return;
+    const interval = setInterval(() => {
+      if (offlineService.isOnline()) fetchTransactions(false);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [account.id]);
 
   const handleAddOrUpdateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +125,16 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     setEditingTx(null);
     setNewTx({ date: format(new Date(), 'yyyy-MM-dd'), particulars: '', amount: '', isCredit: false, category: '' });
 
+    if (!navigator.onLine) {
+      offlineService.queueAction({
+        type: editingTx ? 'update' : 'create',
+        endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
+        body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, summary }
+      });
+      toast("Transaction queued for sync when online.", 'success');
+      return;
+    }
+
     try {
       const method = editingTx ? 'PATCH' : 'POST';
       const url = editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions';
@@ -129,8 +148,17 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       onUpdate();
     } catch (error) {
       console.error(error);
-      setTransactions(prev);
-      toast("Failed to save transaction.", 'error');
+      if (error instanceof TypeError) {
+        offlineService.queueAction({
+          type: editingTx ? 'update' : 'create',
+          endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
+          body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, summary }
+        });
+        toast("Transaction queued for sync when online.", 'success');
+      } else {
+        setTransactions(prev);
+        toast("Failed to save transaction.", 'error');
+      }
     }
   };
 
@@ -400,7 +428,14 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
             ))}
           </AnimatePresence>
         </div>
-        {filteredTxs.length === 0 && (
+        {loading ? (
+          <div className="px-6 md:px-12 py-16 md:py-32 text-center bg-canvas">
+            <div className="w-12 md:w-20 h-12 md:h-20 bg-surface-soft rounded-full flex items-center justify-center mx-auto mb-4 md:mb-8 border border-hairline">
+              <Loader2 className="w-6 md:w-10 h-6 md:h-10 text-muted animate-spin" />
+            </div>
+            <p className="text-base md:text-xl font-normal text-ink mb-1 md:mb-2">Loading entries...</p>
+          </div>
+        ) : filteredTxs.length === 0 && (
           <div className="px-6 md:px-12 py-16 md:py-32 text-center bg-canvas">
             <div className="w-12 md:w-20 h-12 md:h-20 bg-surface-soft rounded-full flex items-center justify-center mx-auto mb-4 md:mb-8 border border-hairline">
               <Plus className="w-6 md:w-10 h-6 md:h-10 text-muted" />

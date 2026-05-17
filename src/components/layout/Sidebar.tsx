@@ -16,6 +16,7 @@ interface SidebarProps {
   userEmail?: string;
   showProfile?: boolean;
   onOpenProfile?: () => void;
+  setShowProfile?: (show: boolean) => void;
 }
 
 export default function Sidebar({
@@ -30,7 +31,8 @@ export default function Sidebar({
   navItems,
   userEmail,
   showProfile,
-  onOpenProfile
+  onOpenProfile,
+  setShowProfile
 }: SidebarProps) {
   const isActive = (id: string) => activeTab === id && !selectedAccountId && !showProfile;
 
@@ -92,6 +94,7 @@ export default function Sidebar({
                       setActiveTab(item.id);
                       setSelectedAccountId(null);
                       setIsMobileMenuOpen(false);
+                      if (setShowProfile) setShowProfile(false);
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group",

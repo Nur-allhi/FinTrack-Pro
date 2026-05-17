@@ -40,8 +40,8 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
 
   useEffect(() => {
     authService.apiFetch('/api/transactions/categories')
-      .then(r => r.json())
-      .then(setCategories)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setCategories(data); })
       .catch(() => {});
   }, []);
 

@@ -82,6 +82,35 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
 - `.env.example` — removed old AUTH_USERNAME/PASSWORD
 - `supabase/migrations/001_add_user_id.sql` — added `IF NOT EXISTS` for idempotent re-runs
 
+---
+
+## Session 8 — 17 May 2026 (QA fixes + UX polish)
+
+### Changes
+- **Auto-refetch** — 30s polling interval + window focus refetch so mobile sees desktop-ledgered data automatically, at `src/App.tsx`
+- **Route persistence** — `activeTab`/`selectedAccountId` saved to `sessionStorage`, restored on refresh, at `src/App.tsx`
+- **Back gesture prevention** — History API interceptor stops mobile back gesture from closing the app, at `src/App.tsx`
+- **Offline queue fix** — `navigator.onLine` is unreliable; catch block now checks `error instanceof TypeError` (network failure) and falls back to `offlineService.queueAction()` in `TransactionModal`, `Ledger`, `TransferModal`
+- **Categories crash fix** — `categories.includes()` threw when API returned 401 (error object, not array). Now checks `res.ok` + `Array.isArray()` in `TransactionModal`, `Ledger`, `Settings`
+- **Service Worker no longer intercepts `/api/*`** — removed `registerRoute` for API cache which caused `net::ERR_FAILED` and `no-response` SW errors on all API calls, at `sw.ts`
+- **Login flow UX** — "Login successful" toast, dashboard shows immediately with "Loading your data..." spinner, data loads in background, at `App.tsx`, `Dashboard.tsx`
+- **Ledger loading indicator** — spinning "Loading entries..." shown while initial transaction fetch is in progress (was showing empty "No records found" misleadingly), at `src/components/Ledger.tsx`
+- **Profile → nav navigation fix** — clicking sidebar nav items now correctly closes profile even when `activeTab` doesn't change, at `src/components/layout/Sidebar.tsx`
+- **"All Members" grid includes General accounts** — unassigned accounts section added below member groups, at `src/components/Dashboard.tsx`
+
+### Files Changed
+- `src/App.tsx` — dataLoading state, handleLogin toast, polling, focus refetch, sessionStorage, history API
+- `src/components/Dashboard.tsx` — dataLoading prop, loading indicator, General accounts section
+- `src/components/Ledger.tsx` — loading spinner, offline queue fallback in catch, categories safe parse, removed lastUpdate trigger
+- `src/components/TransactionModal.tsx` — offline queue (navigator.onLine + TypeError fallback), categories safe parse, removed duplicate onUpdate
+- `src/components/TransferModal.tsx` — offline queue (navigator.onLine + TypeError fallback)
+- `src/components/Settings.tsx` — categories safe parse
+- `src/components/layout/Sidebar.tsx` — setShowProfile prop, close profile on nav click
+- `sw.ts` — removed API route interception
+
+### Environment
+- Service worker no longer caches API responses — ensure previous SW registration is cleared in browser on first load after deploy
+
 ## Environment
 - `SUPABASE_SERVICE_ROLE_KEY` required for admin features (user management, storage queries)
 - Admin users set via `ADMIN_EMAILS` env var

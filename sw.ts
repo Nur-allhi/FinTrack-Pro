@@ -1,6 +1,6 @@
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst } from 'workbox-strategies';
+import { NetworkFirst } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -19,11 +19,6 @@ self.addEventListener('activate', () => {
 });
 
 precacheAndRoute(self.__WB_MANIFEST);
-
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
-  new NetworkFirst({ cacheName: 'api-cache' })
-);
 
 registerRoute(
   ({ request }) => request.destination === 'document',
