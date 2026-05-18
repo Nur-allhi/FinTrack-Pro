@@ -65,29 +65,29 @@
 
 ---
 
-## Phase 6: Settings Reorganization & Recycle Bin (Current)
+## Phase 6: Settings Reorganization ✅
 
-### Step 1: Settings Sub-Navigation
-- [ ] **6.1.1** Add vertical sidebar nav inside Settings page (desktop) + scrollable pill tabs (mobile)
-- [ ] **6.1.2** Section: **Appearance** — Dark Mode, Theme Style, Accent Color, Font Size, Account Colors
-- [ ] **6.1.3** Section: **Dashboard Banner** — 3 visibility toggles (Total Balance, Assets, Liabilities)
-- [ ] **6.1.4** Section: **Categories** — category list with rename (same as current)
-- [ ] **6.1.5** Section: **Export & Import** — Refresh, Export JSON, Import JSON, Clear All Data
-- [ ] **6.1.6** Remove dead "Audit Alerts" toggle
+### Step 1: Settings Sub-Navigation (Completed in Sessions 7-8)
+- [x] **6.1.1** Add vertical sidebar nav inside Settings page (desktop) + scrollable pill tabs (mobile)
+- [x] **6.1.2** Section: **Appearance** — Dark Mode, Theme Style, Accent Color, Font Size, Account Colors
+- [x] **6.1.3** Section: **Dashboard Banner** — 3 visibility toggles (Total Balance, Assets, Liabilities)
+- [x] **6.1.4** Section: **Categories** — category list with rename
+- [x] **6.1.5** Section: **Export & Import** moved to Profile page
+- [x] **6.1.6** Remove dead "Audit Alerts" toggle
 
-### Step 2: Recycle Bin Backend
-- [ ] **6.2.1** Add `deleted_at TEXT` column to `transactions`, `accounts`, `members` tables (Supabase migration + SQLite)
-- [ ] **6.2.2** Change DELETE routes to soft-delete (set `deleted_at` timestamp) instead of hard-delete
-- [ ] **6.2.3** Update GET routes to filter out soft-deleted items (`WHERE deleted_at IS NULL`)
-- [ ] **6.2.4** New endpoint: `GET /api/recycle-bin` — list all soft-deleted items grouped by table
-- [ ] **6.2.5** New endpoint: `POST /api/recycle-bin/:table/:id/restore` — restore item (clear `deleted_at`)
-- [ ] **6.2.6** New endpoint: `DELETE /api/recycle-bin/:table/:id` — permanent hard-delete
+### Step 2: Recycle Bin Backend (Backlog)
+- [ ] **6.2.1** Add `deleted_at TEXT` column to tables
+- [ ] **6.2.2** Soft-delete instead of hard-delete
+- [ ] **6.2.3** Filter out soft-deleted items in GET routes
+- [ ] **6.2.4** GET /api/recycle-bin endpoint
+- [ ] **6.2.5** POST restore endpoint
+- [ ] **6.2.6** DELETE permanent endpoint
 
-### Step 3: Recycle Bin Frontend
-- [ ] **6.3.1** Build RecycleBin component with 3 tabs (Transactions, Accounts, Members)
-- [ ] **6.3.2** Each item shows: name, type, deleted date, Restore + Permanent Delete buttons
-- [ ] **6.3.3** Confirmation dialogs for permanent delete
-- [ ] **6.3.4** Auto-purge stale items after 30 days (backend cron on list)
+### Step 3: Recycle Bin Frontend (Backlog)
+- [ ] **6.3.1** Build RecycleBin component
+- [ ] **6.3.2** Item display with actions
+- [ ] **6.3.3** Confirmation dialogs
+- [ ] **6.3.4** Auto-purge stale items
 
 ---
 
@@ -112,5 +112,5 @@
 | Phase 3: UI Redesign | ✅ Mostly done (6/8 items) |
 | Phase 4: PWA & UX Stability | ✅ Done (6 items) |
 | Phase 5: Admin & UX | ✅ Done (7 items) |
-| Phase 6: Settings & Recycle Bin | 🔄 In progress |
-| Phase 7: Future | 📋 Backlog |
+| Phase 6: Settings Reorganization | ✅ Done (6 items) |
+| Phase 7: Future (Recycle Bin + Backlog) | 📋 Backlog |

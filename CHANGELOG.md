@@ -1,147 +1,152 @@
 # Changelog
 
-## 2026-05-18
-### Add
-- Person loan support — borrower_name free text field, type toggle in create form at `src/components/LoanManager.tsx`, `api/routes/loans.ts`
-- Partial settlement — settle modal with amount input, remaining balance tracking for both loan types at `api/routes/loans.ts`
-- Settlement edit reversal — PATCH /api/transactions/:id recalculates loan remaining when loan_settle amount changes at `api/routes/transactions.ts`
-- Loan settlements table — `loan_settlements` with transaction_id for reliable reverse on delete at `api/db.ts`, `supabase/migrations/004_add_loan_person_fields.sql`, `006_transaction_id_on_settlements.sql`
-- Inter-account loan_settlements records — settlements now tracked in loan_settlements table for consistent lookup at `api/routes/loans.ts`
+All the changes made to FinTrack Pro, written in plain English.
 
-### Fix
-- DELETE /api/transactions/:id now checks linked_transaction_id fallback when reversing loan settlements (handles debit-side inter-account deletion) at `api/routes/transactions.ts`
-- Inter-account settle changed from always-full to partial-support (remaining adjusts dynamically, status only settled when remaining ≤ 0) at `api/routes/loans.ts`
-- Settlement recalculation uses Math.abs(amount) to handle debit-side negative amounts at `api/routes/transactions.ts`
-- PATCH /api/transactions/:id now syncs linked transaction amount for loan_settle type (was transfer-only) at `api/routes/transactions.ts`
+---
 
-## 2026-05-16
+## May 18, 2026 — Loan Module (Part 2): Person Loans & Flexible Settlements
 
-### Add
-- PWA support — service worker with offline caching, web manifest, installable app at `vite.config.ts`, `sw.ts`, `index.html`
-- SVG + PNG app icons with white background at all required sizes at `public/icons/`
-- Offline indicator banner + offline service with sync queue at `src/components/OfflineIndicator.tsx`, `src/services/offlineService.ts`
-- Dark mode flash prevention — inline script + critical CSS in `<head>` at `index.html`
-- Three dark mode variants — Deep, Dim, Night with per-variant CSS variables at `src/index.css`
-- Accent color picker — custom primary color with 10 presets, applies globally via CSS variables at `src/components/Settings.tsx`, `src/App.tsx`
-- User Profile page — account info, name, password change, data export/import at `src/components/UserProfile.tsx`
-- Settings reorganization — sidebar sub-navigation with 3 sections (Appearance, Dashboard, Categories) at `src/components/Settings.tsx`
-- Quick Tasks visibility toggle — show/hide todo widget from Dashboard Banner settings at `src/components/Settings.tsx`, `src/components/Dashboard.tsx`
-- Admin panel storage display — per-user usage bar + total database size at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
-- Storage limit enforcement — 5MB default, admin override per user, quota check on writes at `api/middleware/quota.ts`, `api/routes/transactions.ts`
-- One-time password modal + Reset Password action at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
-- Name field + email validation on user creation at `src/components/AdminPanel.tsx`, `api/routes/admin.ts`
-- Admin check cached in localStorage — Admin Panel nav item appears instantly on refresh at `src/App.tsx`
-- Data refresh button with toast feedback in User Profile at `src/components/UserProfile.tsx`
-- User name shown on sidebar profile card + dashboard welcome greeting at `src/components/layout/Sidebar.tsx`, `src/components/Dashboard.tsx`
+**What's new:**
+- You can now lend money to people outside the system (Person Loans). Just type their name — no need to create an account for them.
+- When you settle a loan, you can pay any amount, not just the full balance. The system tracks how much is still owed.
+- If you edit or delete a settlement transaction from the ledger, the loan balance updates automatically. No more mismatched records.
+- Inter-account loans now also record settlement history, just like person loans.
 
-### Change
-- Login flow — removed redundant backend token validation (Supabase → dashboard direct), 30s timeout with AbortController
-- Login — stale Supabase sessions cleared on refresh (no more auto-spinning buttons)
-- Font — removed JetBrains Mono, Inter used everywhere with `tabular-nums` for numbers at `src/index.css`
-- Typography audit — all `text-[10px]`/`text-[11px]` labels bumped to `text-xs` across 16 components
-- Card titles — bumped from `text-sm` to `text-base` across Dashboard, AccountCard, AccountManager, GroupManager, MemberManager, InvestmentTracker
-- Sidebar — removed Total Assets counter, profile card is now clickable leading to UserProfile at `src/components/layout/Sidebar.tsx`
-- Admin nav item — renamed "Users" → "Admin Panel", placed below Settings at `src/App.tsx`
-- Settings — removed dead "Audit Alerts" toggle, removed Export & Import section (moved to Profile) at `src/components/Settings.tsx`
-- FAB — fixed race condition where options persisted after closing modal at `src/components/FloatingActionButton.tsx`
-- Dark mode — removed `--color-primary` override, accent color persists across themes at `src/index.css`
-- PWA SW — switched to `injectManifest` with `skipWaiting()` + `clients.claim()` for immediate updates at `vite.config.ts`, `sw.ts`
-- Auth config — removed dead legacy auth credentials (`password123`) from code at `api/config.ts`, `.env.example`
+**Bugs fixed:**
+- Deleting a settlement transaction now correctly finds and reverses the linked transaction in all cases.
+- When editing a settlement amount, the linked transaction on the other account stays in sync.
+- Numbers are handled with absolute values to prevent negative balance bugs.
 
-### Fix
-- Dark mode white flash — multi-layer: inline localStorage script + critical CSS + SW auto-reload at `index.html`, `src/main.tsx`
-- FAB options not closing after modal dismiss — added `!isAnyModalOpen` render guard at `src/components/FloatingActionButton.tsx`
-- Admin panel mobile layout — responsive padding, text size, button sizing at `src/components/AdminPanel.tsx`
-- Storage display not showing — per-table error handling in storage endpoint at `api/routes/admin.ts`
-- Accent color crash on existing users — fallback for cached settings without `accentColor` at `src/App.tsx`
-- Auto data fetch on login — moved fetch to `handleLogin` + `[isAuthenticated]` effect at `src/App.tsx`
-- Admin check on auth change — admin tab appears without page refresh at `src/App.tsx`
-- Settings page crash — fixed duplicate state declarations, unused props cleanup at `src/components/Settings.tsx`
-- Profile page blocking navigation — added `useEffect([activeTab])` to reset `showProfile` at `src/App.tsx`
-- Profile page missing page transition — added `showProfile` to motion key at `src/App.tsx`
+---
 
-### Fix
-- Ledger balance sync — restored `onUpdate()` calls after save/delete at `src/components/Ledger.tsx`
-- Ledger category filter — `setCategoryFilter(null)` removed to preserve filter across re-fetches at `src/components/Ledger.tsx`
-- Select dropdown — `mousedown` → `click` event to prevent premature close with portal at `src/components/Select.tsx`
-- DatePicker navigation — clicks on month/day buttons no longer close calendar (portal ref check) at `src/components/DatePicker.tsx`
-- DatePicker viewport clipping — right-edge and bottom-edge boundary detection + flip at `src/components/DatePicker.tsx`
-- TypeScript types — `any[]` replaced with `(Transaction & { runningBalance: number })[]` at `src/components/Ledger.tsx`
-- TransactionForm props — `newTx` typed with `TransactionFormState` interface at `src/components/TransactionForm.tsx`
-- Truncation math — `> 32` → `> 30` to match `slice(0, 30)` at `src/components/Ledger.tsx`
-- ReportGenerator — added "Show all" toggle for 10-row preview limit at `src/components/ReportGenerator.tsx`
-- Category rename import error — shows server error message in toast at `src/components/Settings.tsx`
+## May 17, 2026 — Quality of Life Fixes
 
-### Add
-- Dashboard Quick Tasks widget — todo list with localStorage persistence at `src/components/Dashboard.tsx`
-- Report CSV export — downloadable CSV alongside PDF at `src/components/ReportGenerator.tsx`
-- Report Category column — included in both CSV and PDF exports at `src/components/ReportGenerator.tsx`
-- Account member context dropdowns — member name shown in all account selectors at `src/components/ReportGenerator.tsx`, `src/components/TransferModal.tsx`, `src/components/TransactionModal.tsx`
+**What got better:**
+- Dashboard data refreshes every 30 seconds and when you switch back to the browser tab — so mobile users see desktop changes automatically.
+- If you refresh the page, your last viewed tab and account are remembered.
+- Mobile back gesture no longer closes the app by accident.
+- Offline mode is now more reliable. When a network error happens, the app catches it and queues the action for later instead of crashing.
+- Categories no longer crash the app when the server returns an error.
+- Service worker no longer intercepts API calls (was causing random network errors).
+- Login feels smoother — you see a "successful" toast and the dashboard loads with a spinner while data loads in the background.
+- The ledger now shows a "Loading entries..." spinner instead of an empty "No records found" message.
+- Clicking sidebar nav items correctly closes the profile page.
+- The "All Members" filter on the Dashboard now includes unassigned (general) accounts.
 
-### Change
-- TransactionForm — redesigned with desktop 2-row 12-col grid and mobile stacked layout matching `Design/` spec at `src/components/TransactionForm.tsx`
-- TransactionForm date input — styled to match Select component (rounded-pill, bg-surface-soft, Calendar icon) at `src/components/TransactionForm.tsx`
-- DebitCreditToggle — removed max-width cap, fills available space at `src/components/DebitCreditToggle.tsx`
-- Select button padding — `py-2` → `py-3` to match input heights at `src/components/Select.tsx`
-- Select dropdown — `overflow-hidden` → `overflow-y-auto` with `max-h-[200px]` at `src/components/Select.tsx`
-- FAB — unified speed-dial styling, click-outside auto-close, auto-close on modal open at `src/components/FloatingActionButton.tsx`
-- FAB — hidden on desktop (`md:hidden`), visible on mobile only at `src/App.tsx`
-- Dashboard banner — removed Transfer Funds / Generate Report buttons at `src/components/Dashboard.tsx`
-- Dashboard quick filters — fallback color for "All" and "Others" pills at `src/components/Dashboard.tsx`
-- Ledger — replaced CSV download with bank-statement PDF (pure jsPDF) at `src/components/Ledger.tsx`
-- Ledger — smoother optimistic updates, removed full re-fetch on save/delete at `src/components/Ledger.tsx`
-- Report PDF — bank-statement format with proper locale and currency fallback at `src/components/ReportGenerator.tsx`
+**Files touched:** App.tsx, Dashboard, Ledger, TransactionModal, TransferModal, Settings, Sidebar, sw.ts
 
-### Fix
-- PDF numbers not in English — forced `en-US` locale on all `toLocaleString()` calls
-- PDF currency symbol `ó` — ASCII-safe fallback `Tk ` for non-ASCII symbols in jsPDF Helvetica
-- FAB not closing after posting — click-outside handler + modal state watcher at `src/components/FloatingActionButton.tsx`
+---
 
-## 2026-05-14
+## May 16, 2026 — PWA, Dark Mode, Admin Tools & Design Polish
 
-### Fix
-- Dashboard "Transfer Funds" and "Generate Report" buttons — wired onClick handlers at `src/components/Dashboard.tsx`
-- Settings export data — implemented JSON export at `src/App.tsx`
-- Ledger download button — wired CSV export at `src/components/Ledger.tsx`
-- Report Generator — applied `memberId` filter to report data at `src/components/ReportGenerator.tsx`
-- Dashboard liabilities card — removed hardcoded 0, hidden behind `showLiabilities` setting at `src/components/Dashboard.tsx`
-- Dashboard visibility toggles — wired `showCurrentAssets` and `showLiabilities` at `src/components/Dashboard.tsx`
-- Dashboard Grid/List toggle — made functional with grid/list view switch at `src/components/Dashboard.tsx`
-- Gemini model name — moved to `GEMINI_MODEL` env var at `src/services/geminiService.ts`
-- TransactionForm — fixed missing `cn` import at `src/components/TransactionForm.tsx`
-- `other` quick filter — fixed inverted logic on Dashboard at `src/components/Dashboard.tsx`
-- Duplicate Liabilities card — removed duplicate hero section block at `src/components/Dashboard.tsx`
-- Empty state button alignment — centered "Add Transaction" button at `src/components/Ledger.tsx`
+### Major Additions
 
-### Add
-- Toast notification system — `ToastProvider` + `useToast` hook replacing all `alert()` calls at `src/components/Toast.tsx`
-- Loading states — `saving` state on submit buttons in AccountManager and MemberManager
-- Dark mode — CSS variable system with Settings toggle at `src/index.css`, `src/components/Settings.tsx`
-- Account Groups feature — parent/child account hierarchy with dedicated Groups page at `api/routes/groups.ts`, `src/components/GroupManager.tsx`
-- Groups nav item — `Layers` icon in sidebar between Accounts and Investments at `src/App.tsx`
-- Parent group assignment — group dropdown in account create/edit form at `src/components/AccountManager.tsx`
-- Custom Select component — styled dropdown replacing native `<select>` elements at `src/components/Select.tsx`
-- Delete group — DELETE endpoint + UI button with confirmation at `api/routes/groups.ts`, `src/components/GroupManager.tsx`
-- Inline edit forms — edit form replaces card in place with motion animation at `src/components/AccountManager.tsx`
-- Mobile card views — all list views now show compact cards on mobile instead of horizontal scroll at `src/components/Dashboard.tsx`, `src/components/AccountManager.tsx`, `src/components/GroupManager.tsx`
-- Responsive sizing — all components optimized per screen size (mobile/tablet/desktop) across all pages
-- Font size setting — small/normal/large base font scaling in Settings at `src/App.tsx`, `src/components/Settings.tsx`
-- Working search — global search for accounts and members with results dropdown at `src/components/layout/Header.tsx`
-- Dashboard quick filters — type filter pills (All/Banks/Cash/Mobile/Investments/Others) at `src/components/Dashboard.tsx`
-- Interactive Members page — click member to see accounts + balances, click account to open ledger at `src/components/MemberManager.tsx`
-- Sidebar backdrop — animated overlay on mobile menu open at `src/components/layout/Sidebar.tsx`
-- Account type colors — system-wide color customization in Settings with color pickers at `src/components/Settings.tsx`, applied across Dashboard, AccountManager, MemberManager
+**PWA (Progressive Web App)**
+- Install FinTrack Pro as an app on your phone or desktop.
+- Works offline — you can browse cached data without internet.
+- An "Offline" banner shows when you lose connection, and data syncs automatically when you're back online.
+- Service worker auto-updates when a new version is deployed.
 
-### Change
-- Sidebar redesigned — card-based nav items with gradient active state and motion animation at `src/components/layout/Sidebar.tsx`
-- Account cards — compact design with type icons and left color accent bar at `src/components/AccountManager.tsx`
-- Dashboard AccountCard — type-colored icon backgrounds, responsive sizing at `src/components/Dashboard.tsx`
-- Color palette — aligned with DESIGN.md Coinbase spec at `src/index.css`
-- Dropdown selectors — pill shape, hover states, focus ring at `src/index.css`
-- Font loading — added weight 300 for Inter at `src/index.css`
-- .card-xl — reduced padding from 2rem to 1.25rem globally at `src/index.css`
-- Database schema — added `parent_id` column to accounts at `api/db.ts`
-- API — accounts route excludes `type='group'`, accepts `parent_id` at `api/routes/accounts.ts`
+**Dark Mode (3 variants)**
+- Choose between Deep, Dim, or Night themes.
+- Pick from 10 accent colors or set a custom one.
+- No white flash when loading — the theme applies before the page renders.
 
-### Remove
-- AI integration — removed `geminiService.ts`, `@google/genai` dependency, all AI categorization and insights
+**User Profile Page**
+- View your account info (name, email).
+- Change your password.
+- Export, import, refresh, or clear all your data.
+- Your name shows on the sidebar and dashboard greeting.
+
+**Settings Reorganization**
+- Settings now has sub-navigation: Appearance, Dashboard, Categories.
+- Quick Tasks can be hidden from the Dashboard banner settings.
+- Dead "Audit Alerts" toggle removed (no notification system exists).
+
+**Admin Panel Upgrades**
+- View storage usage per user with a progress bar (in MB/KB).
+- Set custom storage limits per user (default 5MB).
+- One-time password shown on user creation (shown once, then gone).
+- Reset passwords for any user.
+- Name field and email validation on user creation.
+- Admin check is cached — the Admin Panel nav item shows instantly on refresh.
+- Database summary shows total size at the top of the panel.
+
+**Login Improvements**
+- Login is faster — removed an unnecessary backend validation step that added 2-5 seconds delay.
+- Stale sessions are cleaned up automatically.
+- 30-second timeout on all auth calls (shows "Request timed out" if something hangs).
+
+### Design Polish
+- All tiny text (`text-[10px]`/`text-[11px]`) bumped to `text-xs` (12px) across 16 components.
+- Card titles are now larger (`text-sm` → `text-base`).
+- FAB (Floating Action Button) no longer sticks open after closing a modal.
+- Sidebar profile card is clickable — opens your profile page.
+- Removed "Total Assets" from sidebar (was redundant).
+- Removed JetBrains Mono font (Inter used everywhere).
+
+### Housekeeping
+- Removed old legacy auth credentials (`password123`) from code.
+- Cleaned up environment variables.
+
+---
+
+## May 14, 2026 — Bug Fixes, Toast System, Dark Mode, Groups & Mobile Views
+
+### Bug Fixes
+- Dashboard "Transfer Funds" and "Generate Report" buttons now actually work (were missing click handlers).
+- Settings "Export" button now downloads your data as JSON.
+- Ledger "Download" button exports transactions as CSV.
+- Report Generator now filters by the selected member.
+- Liabilities card was showing a hardcoded "0" — now hidden behind a setting toggle.
+- Dashboard visibility toggles (showCurrentAssets, showLiabilities) actually work now.
+- Grid/List toggle on Dashboard now switches views correctly.
+- Gemini AI model name is now configurable via environment variable.
+- Fixed missing `cn` import in TransactionForm.
+- Fixed inverted "other" quick filter logic on Dashboard.
+- Removed duplicate Liabilities card in dashboard hero section.
+- Centered "Add Transaction" button in empty ledger state.
+
+### What's New
+- **Toast Notifications** — A proper notification system replaces all `alert()` popups.
+- **Loading States** — Buttons show a "saving..." state while submitting (AccountManager, MemberManager).
+- **Dark Mode** — Full dark theme with CSS variables and a toggle in Settings.
+- **Account Groups** — Create parent groups for your accounts (e.g., "Savings" or "Joint Accounts"). Groups show accumulated balance. Navigate via new Groups page.
+- **Custom Select Component** — Styled dropdown replacing native `<select>` elements everywhere.
+- **Inline Edit Forms** — Edit accounts directly on the page with smooth animations (no page jump).
+- **Mobile Card Views** — All list views show compact cards on mobile instead of horizontal scroll.
+- **Responsive Design** — All pages optimized for mobile, tablet, and desktop.
+- **Font Size Setting** — Choose small, normal, or large text in Settings.
+- **Global Search** — Search for accounts and members from the header; results show in a dropdown.
+- **Dashboard Quick Filters** — Filter accounts by type: All, Banks, Cash, Mobile, Investments, Others.
+- **Interactive Members Page** — Click a member to see their accounts and balances; click an account to open its ledger.
+- **Sidebar Backdrop** — Mobile menu now has a dark overlay when open.
+- **Account Type Colors** — Customize colors for each account type in Settings.
+
+### Design Changes
+- Sidebar redesigned with card-style nav items and gradient active states.
+- Account cards are more compact with type icons and color accents.
+- Dashboard AccountCards have type-colored icon backgrounds.
+- Color palette follows the Coinbase-inspired DESIGN.md spec.
+- All dropdowns are pill-shaped with hover states and focus rings.
+- Card padding reduced for a tighter layout.
+- Database schema updated: `parent_id` column added to accounts for groups.
+- API now excludes `type='group'` accounts from regular account lists.
+
+### Removed
+- AI integration (Gemini service, AI categorization, insights) — removed entirely.
+
+---
+
+## Earlier Development
+
+Earlier work includes:
+- Initial project setup with React + Vite + Express
+- SQLite database with Supabase support
+- Basic account, member, and transaction CRUD
+- Investment tracking
+- Report generation (PDF + CSV)
+- Data export/import
+- Session 1-4 foundational features
+
+See git log or HANDOFF.md for full historical details.

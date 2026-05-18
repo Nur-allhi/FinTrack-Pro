@@ -1,0 +1,334 @@
+{
+  "/home/eftynurpc/projects/FinTrack-Pro/vite.config.ts": {
+    "mtime": 1778922564.5231273,
+    "hash": "f9bac12e6bc9e9ae985bb20152a52a60"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/sw.ts": {
+    "mtime": 1779031887.3484247,
+    "hash": "dc447807f8d1043ed05aebbd53605e38"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/scripts/migrate-supabase.ts": {
+    "mtime": 1779113130.076113,
+    "hash": "5b3511730000c5a5791fb76462e431c6"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/App.tsx": {
+    "mtime": 1779113130.076113,
+    "hash": "89562afb267154e46e0e0e9c0ab6bc6b"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/types.ts": {
+    "mtime": 1779113130.076113,
+    "hash": "aacbabb700790438250c42766fba961d"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/main.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "5284bef7712c8fe09419c9306a0cc756"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/utils/cn.ts": {
+    "mtime": 1778771740.362761,
+    "hash": "8595c2f874aa1ff8c7cc28df2999f354"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/utils/ledgerPdf.ts": {
+    "mtime": 1778840299.8698127,
+    "hash": "86ff7feb039ed05c87ec026036f76ebd"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/utils/pdf.ts": {
+    "mtime": 1778840299.8698127,
+    "hash": "74801ba5160cfaff5c3369639c9b8f66"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/TransactionCard.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "91199961b34a223a0695fa081cabb46b"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/ErrorBoundary.tsx": {
+    "mtime": 1778943084.8519628,
+    "hash": "ba897825fabca2ff1d80c797b751e6a5"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/LoadingScreen.tsx": {
+    "mtime": 1778840299.8698127,
+    "hash": "14ea831885947f08547ddf7a3962f06a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/Ledger.tsx": {
+    "mtime": 1779031887.3484247,
+    "hash": "438c7d761e9bef0cfa38eb2d3e17873b"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/AdminPanel.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "1687c60a57a509df8dccfd969639f3a1"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/OfflineIndicator.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "16cb5828ebdabb4573aed083edfbc59a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/TransferModal.tsx": {
+    "mtime": 1779031887.3484247,
+    "hash": "a433d4e3c1ccbcd1c8fdc00459694aa1"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/Dashboard.tsx": {
+    "mtime": 1779031887.3484247,
+    "hash": "4ba6d797501db5430a3e8560e7922ea9"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/LoanManager.tsx": {
+    "mtime": 1779113130.076113,
+    "hash": "0d77373b8a959ee9e13464f8d54c8342"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/FloatingActionButton.tsx": {
+    "mtime": 1778943084.8519628,
+    "hash": "3310aeb22c5a421504c25ccc155c6679"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/ReportGenerator.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "2a118656634bb816cff6135586946b7d"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/TransactionModal.tsx": {
+    "mtime": 1779031887.3484247,
+    "hash": "6a068825f220fe45c560bd756d43098c"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/TransactionRow.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "bcce9af6ab536fc5fbdab4746f8bbd10"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/DatePicker.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "6b248515747fc406e7a8ee3aae7c617f"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/MemberManager.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "76e26f068de0001fa268c3dfd5e10e8f"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/GroupManager.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "d5b4277112a638b2b5500ff3bae9096b"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/Settings.tsx": {
+    "mtime": 1779031887.3484247,
+    "hash": "cf835d44a99dab60cdb169d872e8ad26"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/Login.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "73a0ea1d97cc733bcd94833dd4efb4fb"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/Toast.tsx": {
+    "mtime": 1778781471.991031,
+    "hash": "7e93a198d6eec411b068d2927abc3e6e"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/AccountManager.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "380a0034cf2476407868325ba355ab2a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/AccountCard.tsx": {
+    "mtime": 1778948391.5759678,
+    "hash": "d72aea0b031db13a35d7b4f87fbf629f"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/InvestmentTracker.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "49a3e83073d3606905329cf0be6295c6"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/Select.tsx": {
+    "mtime": 1778840299.8698127,
+    "hash": "72cc7da6940a4bdf00d7cbcbf387d3af"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/TransactionForm.tsx": {
+    "mtime": 1778943084.8519628,
+    "hash": "4efb6f32c3f0456ab8af502f4a438b5d"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/RenameModal.tsx": {
+    "mtime": 1778840299.8698127,
+    "hash": "de60178e5905bb9933ca787e02fcc837"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/DebitCreditToggle.tsx": {
+    "mtime": 1778829148.4199202,
+    "hash": "a585a803507adca6e9e1f308e0b6404f"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/UserProfile.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "a7b1fd4a3323e43b687f7149eff41861"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/layout/Sidebar.tsx": {
+    "mtime": 1779031887.3484247,
+    "hash": "73afad7f98fc96ead0bd6141ee39d70e"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/components/layout/Header.tsx": {
+    "mtime": 1778922564.5231273,
+    "hash": "f22adbf195b02ba48f1d23bb76fc7916"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/services/offlineService.ts": {
+    "mtime": 1778922564.5231273,
+    "hash": "79c51afe8b6414abde41f0058c55e9cd"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/services/authService.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "3cbaf5cb805f02f77e36f0559c68d733"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/src/services/cacheService.ts": {
+    "mtime": 1778771740.358761,
+    "hash": "f642e2f0d2a22be770ebcdb4cb06cdf7"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/supabase/migrations/001_add_user_id.sql": {
+    "mtime": 1778922564.5231273,
+    "hash": "969390050893936706ae216be4d35457"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/supabase/migrations/006_transaction_id_on_settlements.sql": {
+    "mtime": 1779113130.076113,
+    "hash": "1d8a6dd2d9fddc42cfc2c16c0ec636a1"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/supabase/migrations/003_add_loans_rls.sql": {
+    "mtime": 1779113130.076113,
+    "hash": "8dc9a70579fa9eeca11bebe3ac499e26"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/supabase/migrations/005_borrower_account_nullable.sql": {
+    "mtime": 1779113130.076113,
+    "hash": "2257709a72593953e0bf53a5a139b50b"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/supabase/migrations/004_add_loan_person_fields.sql": {
+    "mtime": 1779113130.076113,
+    "hash": "096c8a8e1c3ab7d4b650623706e0db2a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/supabase/migrations/002_add_loans.sql": {
+    "mtime": 1779113130.076113,
+    "hash": "3bce7434431fc2f59a3a64c6dc6cf3df"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/config.ts": {
+    "mtime": 1778922564.5191271,
+    "hash": "f1d7e6bed03b5562fb0bac0912d6963a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/index.ts": {
+    "mtime": 1779113130.076113,
+    "hash": "814aa5430aa84c36074f96dddcc5e819"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/db.ts": {
+    "mtime": 1779113130.076113,
+    "hash": "666953ed8ab5bc79fd4bf0e3cd62b62e"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/transfers.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "3083104de8ea2c72e64f36aa319a0cad"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/members.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "f22e4caee99970049160dee5ffe61014"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/accounts.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "eab72b140d1d2be056345cb1be56f3e7"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/export.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "870ff29ac2d7b8c6d73b0bacb6eae0f2"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/admin.ts": {
+    "mtime": 1778922564.5191271,
+    "hash": "1147f2e2fe0055d717a186d8a45c180f"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/groups.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "f4fd098e544a74608219c7114d15dbf4"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/transactions.ts": {
+    "mtime": 1779113130.076113,
+    "hash": "71e7ee29055815e652a83b34675cc450"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/loans.ts": {
+    "mtime": 1779113130.076113,
+    "hash": "756c6d8eb8e403a4cc844e75bee7fe92"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/routes/investments.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "83920b3117ade61225ac53ee86667570"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/middleware/auth.ts": {
+    "mtime": 1778867481.3124075,
+    "hash": "e29f77a40ebdcecfa007bbb0a36633a5"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/api/middleware/quota.ts": {
+    "mtime": 1778922564.5191271,
+    "hash": "5ba25d9e21c1bd2a3b96287b3a02857a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/index.html": {
+    "mtime": 1778922564.5191271,
+    "hash": "97d356cb083ee060bca7f078dfbc26f1"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/GUIDE.md": {
+    "mtime": 1778867481.3124075,
+    "hash": "d6af4deda53c193dc5228e500aaf7f79"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/USER_MANUAL.md": {
+    "mtime": 1779116361.9173708,
+    "hash": "9367116b76b1029e3e5b8ac7a5eefe42"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/AGENTS.md": {
+    "mtime": 1778781477.4790385,
+    "hash": "ea2214c00a9a20513072082fd4279285"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/README.md": {
+    "mtime": 1779116240.793375,
+    "hash": "c8638fbc2efc9684ef4ef92bf634c3da"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/DESIGN.md": {
+    "mtime": 1778771740.346761,
+    "hash": "461f7e31be8e1ac137f4ed981da9ce75"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/CHANGELOG.md": {
+    "mtime": 1779116275.9853747,
+    "hash": "7fc0581abdda5525cdc5f3d28d618b64"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/HANDOFF.md": {
+    "mtime": 1779116374.5373745,
+    "hash": "7e910f6cafe33ac5f3c534d2e7d9e455"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/PROJECTPLAN.md": {
+    "mtime": 1779116390.2133753,
+    "hash": "8eccc15f47b421d23e18d1b267d08e5a"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/ERROR.md": {
+    "mtime": 1779113130.072113,
+    "hash": "4453514a11715909f8c9b49861520d12"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/Design/Desktop_code.html": {
+    "mtime": 1778867481.3084073,
+    "hash": "bea5180e8c8437fce65a1c0a036254aa"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/Design/Mobile_code.html": {
+    "mtime": 1778867481.3084073,
+    "hash": "e88744d1ca9888d8db4525b0ece7c491"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/Design/screen.png": {
+    "mtime": 1778867481.3124075,
+    "hash": "1b204eeb413b432fe6f068aa02de5efc"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/screenshot/ReportGenearationUi.png": {
+    "mtime": 1778771740.358761,
+    "hash": "d0dd01b9cbb7e33150a4a8547a0a3459"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/screenshot/SettingsUi.png": {
+    "mtime": 1778771740.358761,
+    "hash": "3438b0220f8e2de65c6f03819c12736b"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/screenshot/DashboradUi.png": {
+    "mtime": 1778771740.3547611,
+    "hash": "fc0e240130ec9e7a6022b672a19331e7"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/screenshot/MembersUi.png": {
+    "mtime": 1778771740.3547611,
+    "hash": "821d7262e46efbe53e584d1cc0919080"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/screenshot/AccountsUi.png": {
+    "mtime": 1778771740.3547611,
+    "hash": "4098d0f33ef473260a9f7833024336bd"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/screenshot/InvestmentsUi.png": {
+    "mtime": 1778771740.3547611,
+    "hash": "3d275caefd3ff1b5461a9c42c5172a72"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/public/icons/icon.svg": {
+    "mtime": 1778922564.5231273,
+    "hash": "41e7488e37d18e139f2b26e35bcfdd85"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/public/icons/icon-192.png": {
+    "mtime": 1778922564.5231273,
+    "hash": "7eb80008f03a9fe2e0ee4c0fb5912bb9"
+  },
+  "/home/eftynurpc/projects/FinTrack-Pro/public/icons/icon-512.png": {
+    "mtime": 1778922564.5231273,
+    "hash": "ccfdb205790239838f43fa702550d241"
+  }
+}

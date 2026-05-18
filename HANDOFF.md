@@ -230,5 +230,23 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
 - `api/index.ts` — wired /api/loans route
 
 ### Pending
-- Supabase migrations `005` and `006` must be run in Supabase Dashboard SQL Editor before person loans or settlement transaction tracking work on Supabase
+- Supabase migrations `002` through `006` must be run in Supabase Dashboard SQL Editor for loans features to work on Supabase
 - Pre-existing TS error at `src/components/FloatingActionButton.tsx(16,20)` — unrelated
+
+---
+
+## Session 11 — 18 May 2026 (Documentation Overhaul)
+
+### Changes
+- **README.md** — rewritten with complete feature list, up-to-date project structure (added Loans, Groups, PWA sections), friendly easy English, full database schema, tech stack table, and navigation reference
+- **CHANGELOG.md** — rewritten in plain, conversational English with clear "What's new" + "Bugs fixed" sections. Organized by date with descriptive headings instead of raw change lists
+- **USER_MANUAL.md** — expanded to 16 sections (added Loans, User Profile, Offline Mode & PWA chapters). Added Loan module explanation covering person vs inter-account loans, partial settlement flow, settlement edit reversal behavior. Updated Settings, Admin Panel, and Troubleshooting sections. Written in friendly easy English throughout
+- **HANDOFF.md** — appended Session 11 summary
+- **PROJECTPLAN.md** — marked Phase 6 Settings Reorganization as complete (was done in Sessions 7-8 but not marked)
+
+### Files Changed
+- `README.md` — full rewrite
+- `CHANGELOG.md` — full rewrite in plain English
+- `USER_MANUAL.md` — expanded with Loans, Profile, PWA sections; all sections updated
+- `HANDOFF.md` — appended this session
+- `PROJECTPLAN.md` — Phase 6 status update

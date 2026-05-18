@@ -13,7 +13,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
   const isAnyModalOpen = isTransactionModalOpen || isTransferModalOpen;
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined as any);
 
   const close = () => {
     clearTimeout(timerRef.current);

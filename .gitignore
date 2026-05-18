@@ -8,3 +8,16 @@ coverage/
 !.env.example
 *.db
 graphify-out/cache/
+
+# Orphaned design mockups
+Design/
+
+# Unreferenced UI screenshots
+screenshot/
+
+# Standalone utility scripts (not wired into any workflow)
+scripts/
+
+# AI agent framework files (not consumed by project code)
+.agent/
+.codex/
