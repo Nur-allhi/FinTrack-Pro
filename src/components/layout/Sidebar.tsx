@@ -141,6 +141,7 @@ export default function Sidebar({
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-ink truncate">{localStorage.getItem('user_name') || userEmail.split('@')[0]}</p>
                   <p className="text-[10px] text-muted truncate">{userEmail}</p>
+                  <p className="text-[9px] text-muted/40 mt-0.5">v{process.env.APP_VERSION}</p>
                 </div>
               </button>
             )}

@@ -197,7 +197,8 @@ export default function Login({ onLogin }: LoginProps) {
             </form>
           )}
 
-          <div className="mt-12 text-center pt-8 border-t border-hairline">
+          <div className="mt-12 pt-8 border-t border-hairline flex items-center justify-between">
+            <span className="text-[10px] font-medium text-muted">v{process.env.APP_VERSION}</span>
             <p className="text-xs font-medium text-muted uppercase tracking-widest">
               Secured by <span className="text-ink font-bold">Institutional Flow</span>
             </p>
