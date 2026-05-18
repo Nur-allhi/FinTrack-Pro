@@ -45,3 +45,20 @@ export interface InvestmentReturn {
   amount: number;
   percentage: number;
 }
+
+export interface Loan {
+  id: number;
+  lender_account_id: number;
+  borrower_account_id: number | null;
+  lender_name?: string;
+  borrower_name?: string | null;
+  borrower_account_name?: string;
+  amount: number;
+  remaining: number;
+  date_given: string;
+  due_date: string | null;
+  interest_rate: number | null;
+  particulars: string;
+  status: 'active' | 'settled' | 'defaulted';
+  settled_date: string | null;
+}

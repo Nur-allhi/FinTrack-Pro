@@ -1,5 +1,5 @@
 import express from "express";
-import { db, supabase } from "../db.js";
+import { db, supabase, supabaseAdmin } from "../db.js";
 import { requireQuota } from "../middleware/quota.js";
 
 const router = express.Router();
@@ -124,10 +124,61 @@ router.patch("/:id", async (req, res) => {
 
       if (transaction && transaction.linked_transaction_id) {
         const linkedUpdate: any = { ...update };
-        if (amount !== undefined && transaction.type === 'transfer') {
+        if (amount !== undefined && (transaction.type === 'transfer' || transaction.type === 'loan_settle')) {
           linkedUpdate.amount = -amount;
         }
         await supabase.from("transactions").update(linkedUpdate).eq("id", transaction.linked_transaction_id).eq("user_id", req.user!.id);
+      }
+
+      if (transaction && transaction.type === 'loan_settle' && amount !== undefined && supabaseAdmin) {
+        let settlement: any = null;
+
+        const { data: settlementsByTx } = await supabaseAdmin
+          .from("loan_settlements")
+          .select("id, loan_id, amount")
+          .eq("transaction_id", transaction.id)
+          .limit(1);
+        settlement = settlementsByTx?.[0] ?? null;
+
+        if (!settlement && transaction.linked_transaction_id) {
+          const { data: settlementsByLinked } = await supabaseAdmin
+            .from("loan_settlements")
+            .select("id, loan_id, amount")
+            .eq("transaction_id", transaction.linked_transaction_id)
+            .limit(1);
+          settlement = settlementsByLinked?.[0] ?? null;
+        }
+
+        if (settlement) {
+          const absAmount = Math.abs(amount);
+          const { data: settlements } = await supabaseAdmin
+            .from("loan_settlements")
+            .select("amount")
+            .eq("loan_id", settlement.loan_id);
+          const oldTotalSettled = (settlements ?? []).reduce((sum: number, s: any) => sum + s.amount, 0);
+          const newTotalSettled = oldTotalSettled - settlement.amount + absAmount;
+
+          await supabaseAdmin.from("loan_settlements").update({ amount: absAmount }).eq("id", settlement.id);
+
+          const { data: loan } = await supabaseAdmin
+            .from("loans")
+            .select("id, amount, remaining, status")
+            .eq("id", settlement.loan_id)
+            .single();
+
+          if (loan) {
+            const newRemaining = Math.max(0, loan.amount - newTotalSettled);
+            const updateData: any = { remaining: newRemaining };
+            if (newRemaining <= 0) {
+              updateData.status = 'settled';
+              updateData.settled_date = new Date().toISOString().split('T')[0];
+            } else if (loan.status === 'settled') {
+              updateData.status = 'active';
+              updateData.settled_date = null;
+            }
+            await supabaseAdmin.from("loans").update(updateData).eq("id", loan.id);
+          }
+        }
       }
 
       return res.json({ success: true });
@@ -149,7 +200,7 @@ router.patch("/:id", async (req, res) => {
 
       if (transaction.linked_transaction_id) {
         let linkedAmount = undefined;
-        if (amount !== undefined && transaction.type === 'transfer') {
+        if (amount !== undefined && (transaction.type === 'transfer' || transaction.type === 'loan_settle')) {
           linkedAmount = -amount;
         }
         db.prepare(`
@@ -165,6 +216,35 @@ router.patch("/:id", async (req, res) => {
     });
 
     updateTx();
+
+    if (transaction.type === 'loan_settle' && amount !== undefined) {
+      let settlement: any = db.prepare("SELECT * FROM loan_settlements WHERE transaction_id = ?").get(transaction.id);
+
+      if (!settlement && transaction.linked_transaction_id) {
+        settlement = db.prepare("SELECT * FROM loan_settlements WHERE transaction_id = ?").get(transaction.linked_transaction_id);
+      }
+
+      if (settlement) {
+        const absAmount = Math.abs(amount);
+        const oldTotalSettled = db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM loan_settlements WHERE loan_id = ?").get(settlement.loan_id).total;
+        const newTotalSettled = oldTotalSettled - settlement.amount + absAmount;
+
+        db.prepare("UPDATE loan_settlements SET amount = ? WHERE id = ?").run(absAmount, settlement.id);
+
+        const loan: any = db.prepare("SELECT * FROM loans WHERE id = ?").get(settlement.loan_id);
+        if (loan) {
+          const newRemaining = Math.max(0, loan.amount - newTotalSettled);
+          if (newRemaining <= 0) {
+            db.prepare("UPDATE loans SET remaining = 0, status = 'settled', settled_date = date('now') WHERE id = ?").run(loan.id);
+          } else if (loan.status === 'settled') {
+            db.prepare("UPDATE loans SET remaining = ?, status = 'active', settled_date = NULL WHERE id = ?").run(newRemaining, loan.id);
+          } else {
+            db.prepare("UPDATE loans SET remaining = ? WHERE id = ?").run(newRemaining, loan.id);
+          }
+        }
+      }
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     console.error("PATCH /api/transactions error:", err);
@@ -181,6 +261,64 @@ router.delete("/:id", async (req, res) => {
         throw fetchError;
       }
 
+      if (transaction && transaction.type === 'loan_settle' && supabaseAdmin) {
+        let settlement: any = null;
+
+        const { data: settlementsByTx } = await supabaseAdmin
+          .from("loan_settlements")
+          .select("id, loan_id, amount")
+          .eq("transaction_id", transaction.id)
+          .limit(1);
+        settlement = settlementsByTx?.[0] ?? null;
+
+        if (!settlement && transaction.linked_transaction_id) {
+          const { data: settlementsByLinked } = await supabaseAdmin
+            .from("loan_settlements")
+            .select("id, loan_id, amount")
+            .eq("transaction_id", transaction.linked_transaction_id)
+            .limit(1);
+          settlement = settlementsByLinked?.[0] ?? null;
+        }
+
+        if (!settlement) {
+          const { data: loans } = await supabaseAdmin
+            .from("loans")
+            .select("id, remaining, status")
+            .eq("lender_account_id", transaction.account_id)
+            .gte("remaining", 0);
+          for (const loan of loans ?? []) {
+            const { data: matches } = await supabaseAdmin
+              .from("loan_settlements")
+              .select("id, amount")
+              .eq("loan_id", loan.id)
+              .eq("amount", transaction.amount)
+              .limit(1);
+            if (matches?.[0]) {
+              settlement = { ...matches[0], loan_id: loan.id };
+              break;
+            }
+          }
+        }
+
+        if (settlement) {
+          const { data: loan } = await supabaseAdmin
+            .from("loans")
+            .select("id, remaining, status")
+            .eq("id", settlement.loan_id)
+            .single();
+          if (loan) {
+            const newRemaining = loan.remaining + settlement.amount;
+            const updateData: any = { remaining: newRemaining };
+            if (loan.status === 'settled') {
+              updateData.status = 'active';
+              updateData.settled_date = null;
+            }
+            await supabaseAdmin.from("loans").update(updateData).eq("id", loan.id);
+            await supabaseAdmin.from("loan_settlements").delete().eq("id", settlement.id);
+          }
+        }
+      }
+
       if (transaction && transaction.linked_transaction_id) {
         await supabase.from("transactions").delete().eq("id", transaction.linked_transaction_id).eq("user_id", req.user!.id);
       }
@@ -191,6 +329,36 @@ router.delete("/:id", async (req, res) => {
 
     const transaction: any = db.prepare("SELECT * FROM transactions WHERE id = ?").get(req.params.id);
     if (!transaction) return res.json({ success: true });
+
+    if (transaction.type === 'loan_settle') {
+      let settlement: any = db.prepare("SELECT * FROM loan_settlements WHERE transaction_id = ?").get(transaction.id);
+
+      if (!settlement && transaction.linked_transaction_id) {
+        settlement = db.prepare("SELECT * FROM loan_settlements WHERE transaction_id = ?").get(transaction.linked_transaction_id);
+      }
+
+      if (!settlement) {
+        settlement = db.prepare(`
+          SELECT ls.* FROM loan_settlements ls
+          JOIN loans l ON ls.loan_id = l.id
+          WHERE l.lender_account_id = ? AND ls.amount = ?
+          LIMIT 1
+        `).get(transaction.account_id, transaction.amount);
+      }
+
+      if (settlement) {
+        const loan: any = db.prepare("SELECT * FROM loans WHERE id = ?").get(settlement.loan_id);
+        if (loan) {
+          const newRemaining = loan.remaining + settlement.amount;
+          if (loan.status === 'settled') {
+            db.prepare("UPDATE loans SET remaining = ?, status = 'active', settled_date = NULL WHERE id = ?").run(newRemaining, loan.id);
+          } else {
+            db.prepare("UPDATE loans SET remaining = ? WHERE id = ?").run(newRemaining, loan.id);
+          }
+          db.prepare("DELETE FROM loan_settlements WHERE id = ?").run(settlement.id);
+        }
+      }
+    }
 
     const deleteTx = db.transaction(() => {
       if (transaction.linked_transaction_id) {

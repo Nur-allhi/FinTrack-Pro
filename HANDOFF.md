@@ -174,3 +174,61 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
 - `src/components/layout/Sidebar.tsx` — LayoutGroup, showProfile support
 - `src/App.tsx` — pass showProfile to Sidebar
 - `src/index.css` — global button active rule, enhanced btn scale, transform transition
+
+---
+
+## Session 9 — 17 May 2026 (Loan Module)
+
+### Changes
+- **Loan Manager** (`src/components/LoanManager.tsx`) — full CRUD component with desktop table + mobile cards, status filter (All/Active/Settled), create form with lender/borrower Select, settle action, delete confirmation
+- **Loans API** (`api/routes/loans.ts`) — GET /api/loans (list with account names), POST (create), PATCH (update), POST /:id/settle, DELETE
+- **DB schema** — `loans` table added to SQLite (auto-created) + Supabase migration `002_add_loans.sql`
+- **Nav** — "Loans" tab between Investments and Reports with Handshake icon
+- **Type** — `Loan` interface added to `src/types.ts`
+
+### New Files
+- `src/components/LoanManager.tsx` — loan tracking UI
+- `api/routes/loans.ts` — loan CRUD endpoints
+- `supabase/migrations/002_add_loans.sql` — loans table for Supabase
+
+### Files Changed
+- `src/types.ts` — added Loan interface
+- `api/db.ts` — loans table CREATE IF NOT EXISTS
+- `api/index.ts` — wired /api/loans route
+- `src/App.tsx` — added nav item, lazy import, activeTab case
+
+---
+
+## Session 10 — 18 May 2026 (Loan Module: Person Loans + Partial Settlement + Edit Reversal)
+
+### Changes
+- **Person loans** — `borrower_name` (free text), `remaining` tracking, partial settlement via modal amount input
+- **Inter-account loans** — now also creates `loan_settlements` record for consistent settlement tracking
+- **Partial settlement** — settle modal opens for both loan types; user enters amount; remaining adjusts; only marks settled when remaining ≤ 0; amount validation prevents over-settlement
+- **Settlement edit reversal** — `PATCH /api/transactions/:id` now recalculates `loan.remaining` from `SUM(loan_settlements)` when a `loan_settle` transaction amount changes; reverts status to `active` if no longer fully settled; syncs linked transaction amount (negated) for inter-account pairs
+- **DELETE reversal fix** — `DELETE /api/transactions/:id` now also checks `linked_transaction_id` when looking up settlements (handles debit-side inter-account deletion)
+- **`loan_settlements.transaction_id`** — stored on all settlement records; used for reliable lookup on edit/delete
+- **Inter-account settle rewrite** — changed from `settleAmount ?? loan.amount` (always full settle) to `settleAmount ?? loan.remaining` with dynamic remaining calc and conditional settled status
+- **Frontend settle modal** — removed `borrower_name` guard; inter-account now opens the same settle modal (borrower display name resolves from `borrower_name` or `borrower_account_name`)
+- **Absolute value fix** — `Math.abs(amount)` used in settlement recalculation to handle debit-side negative transaction amounts
+
+### New Files
+- `src/components/LoanManager.tsx` — (untracked, added in Session 9 but not committed)
+- `api/routes/loans.ts` — (untracked, added in Session 9 but not committed)
+- `supabase/migrations/002_add_loans.sql` — (untracked)
+- `supabase/migrations/003_add_loans_rls.sql` — (untracked)
+- `supabase/migrations/004_add_loan_person_fields.sql` — borrower_name, remaining columns + loan_settlements table
+- `supabase/migrations/005_borrower_account_nullable.sql` — makes borrower_account_id nullable
+- `supabase/migrations/006_transaction_id_on_settlements.sql` — adds transaction_id to loan_settlements
+- `scripts/` — backfill script for existing settlement records
+
+### Files Changed
+- `api/routes/loans.ts` — person loans, partial settlement, inter-account settle rewrite, loan_settlements record for inter-account
+- `api/routes/transactions.ts` — PATCH handler recalculates loan on settlement edit; DELETE handler linked_transaction_id fallback; linked transaction sync for loan_settle type
+- `src/types.ts` — Loan interface: added borrower_name, remaining, borrower_account_name, nullable borrower_account_id
+- `api/db.ts` — SQLite schema: borrower_name, remaining columns + loan_settlements table
+- `api/index.ts` — wired /api/loans route
+
+### Pending
+- Supabase migrations `005` and `006` must be run in Supabase Dashboard SQL Editor before person loans or settlement transaction tracking work on Supabase
+- Pre-existing TS error at `src/components/FloatingActionButton.tsx(16,20)` — unrelated

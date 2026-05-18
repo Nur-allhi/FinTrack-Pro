@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-18
+### Add
+- Person loan support — borrower_name free text field, type toggle in create form at `src/components/LoanManager.tsx`, `api/routes/loans.ts`
+- Partial settlement — settle modal with amount input, remaining balance tracking for both loan types at `api/routes/loans.ts`
+- Settlement edit reversal — PATCH /api/transactions/:id recalculates loan remaining when loan_settle amount changes at `api/routes/transactions.ts`
+- Loan settlements table — `loan_settlements` with transaction_id for reliable reverse on delete at `api/db.ts`, `supabase/migrations/004_add_loan_person_fields.sql`, `006_transaction_id_on_settlements.sql`
+- Inter-account loan_settlements records — settlements now tracked in loan_settlements table for consistent lookup at `api/routes/loans.ts`
+
+### Fix
+- DELETE /api/transactions/:id now checks linked_transaction_id fallback when reversing loan settlements (handles debit-side inter-account deletion) at `api/routes/transactions.ts`
+- Inter-account settle changed from always-full to partial-support (remaining adjusts dynamically, status only settled when remaining ≤ 0) at `api/routes/loans.ts`
+- Settlement recalculation uses Math.abs(amount) to handle debit-side negative amounts at `api/routes/transactions.ts`
+- PATCH /api/transactions/:id now syncs linked transaction amount for loan_settle type (was transfer-only) at `api/routes/transactions.ts`
+
 ## 2026-05-16
 
 ### Add

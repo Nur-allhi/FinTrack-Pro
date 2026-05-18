@@ -31,13 +31,19 @@ async function initSqlite() {
       CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id INTEGER NOT NULL, date TEXT NOT NULL, particulars TEXT NOT NULL, category TEXT, amount REAL NOT NULL, type TEXT DEFAULT 'normal', linked_transaction_id INTEGER, summary TEXT);
       CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id INTEGER NOT NULL, principal REAL NOT NULL, date TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS investment_returns (id INTEGER PRIMARY KEY AUTOINCREMENT, investment_id INTEGER NOT NULL, date TEXT NOT NULL, amount REAL NOT NULL, percentage REAL);
+      CREATE TABLE IF NOT EXISTS loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender_account_id INTEGER NOT NULL, borrower_account_id INTEGER, amount REAL NOT NULL, date_given TEXT NOT NULL, due_date TEXT, interest_rate REAL, particulars TEXT, status TEXT DEFAULT 'active', settled_date TEXT, borrower_name TEXT, remaining REAL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS loan_settlements (id INTEGER PRIMARY KEY AUTOINCREMENT, loan_id INTEGER NOT NULL REFERENCES loans(id) ON DELETE CASCADE, amount REAL NOT NULL, date TEXT NOT NULL, notes TEXT DEFAULT '', user_id TEXT, transaction_id INTEGER);
     `);
+    try { _db.exec("ALTER TABLE loans ADD COLUMN borrower_name TEXT"); } catch {}
+    try { _db.exec("ALTER TABLE loans ADD COLUMN remaining REAL DEFAULT 0"); } catch {}
+    try { _db.exec("UPDATE loans SET remaining = amount WHERE remaining IS NULL OR remaining = 0"); } catch {}
+    try { _db.exec("ALTER TABLE loan_settlements ADD COLUMN transaction_id INTEGER"); } catch {}
   } catch (e) {
     console.warn("SQLite unavailable (non-fatal):", (e as any)?.message);
   }
 }
 
-export const db = _db;
+export { _db as db };
 
 // Initialize database — Supabase first, SQLite fallback
 export const initDb = async () => {
@@ -47,7 +53,7 @@ export const initDb = async () => {
     await initSqlite();
   } else {
     await initSqlite();
-    if (db) {
+    if (_db) {
       console.log("Using local SQLite as the database. To use Supabase, set SUPABASE_URL and SUPABASE_ANON_KEY.");
     } else {
       console.error("No database available. Set SUPABASE_URL and SUPABASE_ANON_KEY or install better-sqlite3.");

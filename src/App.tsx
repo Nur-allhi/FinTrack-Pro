@@ -8,7 +8,8 @@ import {
   FileText, 
   Layers,
   Settings as SettingsIcon,
-  Shield
+  Shield,
+  Handshake
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
@@ -37,6 +38,7 @@ const InvestmentTracker = lazy(() => import('./components/InvestmentTracker'));
 const ReportGenerator = lazy(() => import('./components/ReportGenerator'));
 const Settings = lazy(() => import('./components/Settings'));
 const GroupManager = lazy(() => import('./components/GroupManager'));
+const LoanManager = lazy(() => import('./components/LoanManager'));
 const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const Login = lazy(() => import('./components/Login'));
@@ -44,7 +46,7 @@ const AdminPanel = lazy(() => import('./components/AdminPanel'));
 
 export default function App() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'reports' | 'settings' | 'admin'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'admin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
@@ -270,6 +272,7 @@ export default function App() {
     { id: 'accounts', label: 'Accounts', icon: Wallet },
     { id: 'groups', label: 'Groups', icon: Layers },
     { id: 'investments', label: 'Investments', icon: TrendingUp },
+    { id: 'loans', label: 'Loans', icon: Handshake },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
     ...(isAdmin ? [{ id: 'admin' as const, label: 'Admin Panel', icon: Shield }] : []),
@@ -291,6 +294,7 @@ export default function App() {
       case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
       case 'investments': return <InvestmentTracker accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
+      case 'loans': return <LoanManager accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
       case 'admin': return <AdminPanel />;
       case 'settings': return <Settings settings={settings as any} onUpdateSettings={(s: any) => { setSettings(s); cacheService.setSettings(s); }} />;
