@@ -145,7 +145,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       if (!res.ok) throw new Error("Save failed");
       const saved = await res.json();
       setTransactions(p => p.map(t => t.id === optimisticTx.id ? { ...t, id: saved.id } : t));
-      onUpdate();
+      fetchTransactions(false);
     } catch (error) {
       console.error(error);
       if (error instanceof TypeError) {
@@ -169,7 +169,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     try {
       const res = await authService.apiFetch(`/api/transactions/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Delete failed");
-      onUpdate();
+      fetchTransactions(false);
     } catch (error) {
       console.error(error);
       setTransactions(prev);
@@ -185,6 +185,10 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       return acc;
     }, [] as (Transaction & { runningBalance: number })[])
     .reverse();
+
+  const currentBalance = txsWithBalance.length > 0
+    ? txsWithBalance[0].runningBalance
+    : Number(account.initial_balance);
 
   const categoryCounts = transactions.reduce<Record<string, number>>((acc, tx) => {
     const cat = tx.category || 'Uncategorized';
@@ -231,7 +235,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
               <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
             </div>
             <p className="text-xl md:text-3xl font-normal text-ink financial-number tracking-tighter">
-              {currency}{account.current_balance.toLocaleString()}
+              {currency}{currentBalance.toLocaleString()}
             </p>
           </div>
         </div>
