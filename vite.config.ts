@@ -21,7 +21,18 @@ export default defineConfig(({mode}) => {
   };
 
   return {
-    plugins: [react(), tailwindcss(), VitePWA({
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'inject-version',
+        transformIndexHtml() {
+          return [
+            { tag: 'meta', attrs: { name: 'app-version', content: getVersion() }, injectTo: 'head-prepend' }
+          ];
+        },
+      },
+      VitePWA({
       srcDir: '.',
       filename: 'sw.ts',
       strategies: 'injectManifest',
@@ -54,7 +65,6 @@ export default defineConfig(({mode}) => {
     },
     define: {
       'process.env.APP_URL': JSON.stringify(APP_URL),
-      'process.env.APP_VERSION': JSON.stringify(getVersion()),
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
