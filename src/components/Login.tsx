@@ -17,12 +17,12 @@ export default function Login({ onLogin }: LoginProps) {
 
   useEffect(() => {
     if (localStorage.getItem('auth_token')) return;
-    authService.getSession().then(session => {
-      if (session?.access_token) {
-        authService.signOut();
+    authService.refreshToken().then(token => {
+      if (token) {
+        onLogin(token);
       }
     }).catch(() => {});
-  }, []);
+  }, [onLogin]);
 
   const handleGoogleSignIn = async () => {
     try {

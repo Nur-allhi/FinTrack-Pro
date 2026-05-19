@@ -2,6 +2,11 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let _supabase: SupabaseClient | null = null;
 let _initPromise: Promise<SupabaseClient | null> | null = null;
+let _onSessionExpired: (() => void) | null = null;
+
+export function setOnSessionExpired(callback: () => void) {
+  _onSessionExpired = callback;
+}
 
 async function getSupabase(): Promise<SupabaseClient | null> {
   if (_supabase) return _supabase;
@@ -18,6 +23,17 @@ async function getSupabase(): Promise<SupabaseClient | null> {
       _supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
+      _supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+          if (session?.access_token) {
+            localStorage.setItem('auth_token', session.access_token);
+          }
+        }
+        if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('auth_token');
+          _onSessionExpired?.();
+        }
+      });
       return _supabase;
     } catch (err) {
       console.error('Failed to init Supabase auth:', err);
@@ -26,6 +42,17 @@ async function getSupabase(): Promise<SupabaseClient | null> {
   })();
 
   return _initPromise;
+}
+
+async function refreshTokenInternal(): Promise<string | null> {
+  const sb = await getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.auth.getSession();
+  if (data.session?.access_token) {
+    localStorage.setItem('auth_token', data.session.access_token);
+    return data.session.access_token;
+  }
+  return null;
 }
 
 export const authService = {
@@ -59,6 +86,10 @@ export const authService = {
     return data.session;
   },
 
+  async refreshToken(): Promise<string | null> {
+    return refreshTokenInternal();
+  },
+
   async signOut() {
     const sb = await getSupabase();
     if (!sb) return;
@@ -78,7 +109,7 @@ export const authService = {
     return localStorage.getItem('auth_token');
   },
 
-  apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const token = this.getToken();
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string> || {}),
@@ -86,6 +117,18 @@ export const authService = {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    return fetch(url, { ...options, headers });
+    const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) {
+      const newToken = await refreshTokenInternal();
+      if (newToken && newToken !== token) {
+        headers['Authorization'] = `Bearer ${newToken}`;
+        return fetch(url, { ...options, headers });
+      }
+      if (!newToken) {
+        localStorage.removeItem('auth_token');
+        _onSessionExpired?.();
+      }
+    }
+    return res;
   }
 };

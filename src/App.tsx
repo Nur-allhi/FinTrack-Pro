@@ -20,7 +20,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
-import { authService } from './services/authService';
+import { authService, setOnSessionExpired } from './services/authService';
 import { offlineService } from './services/offlineService';
 import { cn } from './utils/cn';
 import { useToast } from './components/Toast';
@@ -120,17 +120,36 @@ export default function App() {
   };
 
   useEffect(() => {
-    const stored = localStorage.getItem('auth_token');
-    if (stored) {
-      setIsAuthenticated(true);
-      if (localStorage.getItem('is_admin') === '1') setIsAdmin(true);
-      const savedTab = sessionStorage.getItem('activeTab');
-      const savedAccountId = sessionStorage.getItem('selectedAccountId');
-      if (savedTab) setActiveTab(savedTab as any);
-      if (savedAccountId) setSelectedAccountId(Number(savedAccountId));
-    } else {
+    const init = async () => {
+      const stored = localStorage.getItem('auth_token');
+      if (stored) {
+        const refreshed = await authService.refreshToken();
+        if (refreshed) {
+          setIsAuthenticated(true);
+          if (localStorage.getItem('is_admin') === '1') setIsAdmin(true);
+          const savedTab = sessionStorage.getItem('activeTab');
+          const savedAccountId = sessionStorage.getItem('selectedAccountId');
+          if (savedTab) setActiveTab(savedTab as any);
+          if (savedAccountId) setSelectedAccountId(Number(savedAccountId));
+        } else {
+          localStorage.removeItem('auth_token');
+          setIsAuthenticated(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    setOnSessionExpired(() => {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('is_admin');
       setIsAuthenticated(false);
-    }
+      setIsAdmin(false);
+      toast("Session expired. Please sign in again.", 'error');
+    });
   }, []);
 
   useEffect(() => {
