@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loan, Account } from '../types';
 import { Plus, X, Handshake, CheckCircle2, ArrowRight, Loader2, Pencil, User, Building2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
@@ -412,8 +412,13 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
+            <AnimatePresence initial={false}>
             {filteredLoans.map(loan => (
-              <tr key={loan.id} className="hover:bg-surface-soft/30 transition-colors">
+              <motion.tr key={loan.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="hover:bg-surface-soft/30 transition-colors">
                 <td className="px-5 py-3 whitespace-nowrap text-sm font-semibold text-ink">{loan.lender_name || `Account #${loan.lender_account_id}`}</td>
                 <td className="px-5 py-3 whitespace-nowrap text-sm font-semibold text-ink">
                   {loan.borrower_name || loan.borrower_account_name || `Account #${loan.borrower_account_id}`}
@@ -457,8 +462,9 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
                     </button>
                   </div>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
+            </AnimatePresence>
             {loading && (
               <tr><td colSpan={7} className="px-5 py-16 text-center">
                 <Loader2 className="w-6 h-6 animate-spin text-muted mx-auto" />
@@ -473,8 +479,13 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
 
       {/* Mobile cards */}
       <div className="md:hidden space-y-3">
+        <AnimatePresence initial={false}>
         {filteredLoans.map(loan => (
-          <div key={loan.id} className="bg-canvas p-4 rounded-xl border border-hairline space-y-3">
+          <motion.div key={loan.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-canvas p-4 rounded-xl border border-hairline space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Handshake className={cn(
@@ -521,8 +532,9 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
                 {deletingId === loan.id ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : 'Delete'}
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
+        </AnimatePresence>
         {loading && (
           <div className="p-12 text-center bg-surface-soft rounded-xl border border-dashed border-hairline">
             <Loader2 className="w-6 h-6 animate-spin text-muted mx-auto" />

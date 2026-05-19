@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X, Edit2, Trash2, Layers, ChevronDown, Wallet, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
@@ -179,8 +180,13 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
       {/* Grid View */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AnimatePresence initial={false}>
           {groups.map(group => (
-            <div key={group.id} className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md group">
+            <motion.div key={group.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md group">
               <div className="h-1" style={{ backgroundColor: group.color }} />
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -225,8 +231,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
         </div>
       ) : (
         /* List View */
@@ -244,8 +251,13 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                 </tr>
               </thead>
               <tbody className="divide-y divide-hairline">
+                <AnimatePresence initial={false}>
                 {groups.map(group => (
-                  <tr key={group.id} className="hover:bg-surface-soft/30 transition-colors">
+                  <motion.tr key={group.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="hover:bg-surface-soft/30 transition-colors">
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: group.color }} />
@@ -263,15 +275,21 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                         </button>
                       </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
           {/* Mobile compact cards */}
           <div className="md:hidden space-y-2">
+            <AnimatePresence initial={false}>
             {groups.map(group => (
-              <div key={group.id} className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
+              <motion.div key={group.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: group.color + '15', color: group.color }}>
                   <Layers className="w-4 h-4" />
                 </div>
@@ -292,8 +310,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
+            </AnimatePresence>
           </div>
         </>
       )}
