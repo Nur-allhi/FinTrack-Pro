@@ -4,6 +4,31 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+## May 19, 2026 — Auth Stability, Smoother UI & Live Version
+
+**What got better:**
+
+**Auth no longer breaks after inactivity**
+- If you leave the app idle and come back, your session now refreshes automatically instead of silently failing. No more sign-out + sign-in cycle.
+- When an API call returns 401, the app tries to refresh your token once before giving up. If the session is truly gone, you're redirected to login with a clear message.
+- Google OAuth sign-in no longer leaves you stuck on the login screen — the app recovers the session from Supabase automatically.
+- On page load, the stored token is validated and refreshed if needed.
+
+**No more ledger "bump" when posting transactions**
+- The ledger now computes the account balance locally from your transactions instead of relying on a full accounts refresh. No layout shift when data syncs in the background.
+- After posting or deleting a transaction, only the transaction list refreshes — not the entire accounts list.
+
+**Loan & Group modules feel more responsive**
+- Both modules now show loading spinners while data is being fetched, saved, or deleted.
+- Buttons show a spinner during save/delete so you know something is happening.
+- When loans or groups appear, they fade in smoothly — matching the animation style used elsewhere in the app.
+
+**Version shown on login screen is always up-to-date**
+- Previously, the version (commit hash) was baked when the dev server started. If you committed new code, the login screen still showed the old hash until you restarted the server.
+- Now the version is injected on every page request during development. Just refresh the browser after committing — no server restart needed.
+
+**Files touched:** authService, App.tsx, Login, Ledger, LoanManager, GroupManager, Sidebar, vite.config.ts
+
 ## May 18, 2026 — Loan Module (Part 2): Person Loans & Flexible Settlements
 
 **What's new:**

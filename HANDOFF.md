@@ -250,3 +250,40 @@ PWA support, dark mode overhaul, settings reorganization, User Profile page, adm
 - `USER_MANUAL.md` — expanded with Loans, Profile, PWA sections; all sections updated
 - `HANDOFF.md` — appended this session
 - `PROJECTPLAN.md` — Phase 6 status update
+
+---
+
+## Session 12 — 19 May 2026 (Auth stability + UI smoothness)
+
+### Changes
+
+**Session expiry on Vercel cold start** — token drift between Supabase auto-refresh and app's custom `auth_token` was causing silent 401s after inactivity. Fixed at `src/services/authService.ts`, `src/App.tsx`, `src/components/Login.tsx`:
+- `authService.ts`: auth state listener syncs Supabase-refreshed tokens to `localStorage('auth_token')`; `refreshToken()` method recovers sessions from Supabase internal storage; `apiFetch()` intercepts 401, refreshes silently, retries once; `setOnSessionExpired()` callback for clean logout
+- `App.tsx`: validates/refreshes token on mount instead of just checking `localStorage` existence; registers session expiry handler
+- `Login.tsx`: recovers OAuth sessions on mount instead of destroying orphan Supabase sessions
+
+**Ledger bump on transaction post** — full `fetchData` cycle replaced the `accounts` array causing unnecessary re-render and layout shift. Fixed at `src/components/Ledger.tsx`:
+- Balance derived locally from `txsWithBalance[0].runningBalance` instead of `account.current_balance`
+- `onUpdate()` replaced with `fetchTransactions(false)` in add/delete handlers — only refetches this account's transactions
+
+**Loading spinners for Loan and Group modules** — added at `src/components/LoanManager.tsx`, `src/components/GroupManager.tsx`:
+- LoanManager: initial fetch spinner, delete button spinner via `deletingId` state
+- GroupManager: initial loading UI, delete button spinner, save button `Loader2` icon replaces text "Saving..."
+
+**Fade-in animations** — `AnimatePresence` + `motion.tr`/`motion.div` added to match existing Ledger animation pattern at `src/components/LoanManager.tsx`, `src/components/GroupManager.tsx`:
+- LoanManager: desktop table rows + mobile cards
+- GroupManager: grid cards + desktop list table rows + mobile compact cards
+
+**Live app version without dev restart** — `process.env.APP_VERSION` was static (baked at dev server start). Fixed at `vite.config.ts`, `src/components/Login.tsx`, `src/components/layout/Sidebar.tsx`:
+- `vite.config.ts`: removed static `define`, added `inject-version` plugin with `transformIndexHtml` — injects `<meta name="app-version">` on every request during dev
+- Login/Sidebar: read from meta tag instead of compile-time constant
+
+### Files Changed
+- `src/services/authService.ts` — token sync, refresh, 401 retry, session expiry callback
+- `src/App.tsx` — mount token validation, session expiry handler
+- `src/components/Login.tsx` — OAuth session recovery, version from meta tag
+- `src/components/Ledger.tsx` — local balance derivation, fetchTransactions(false) instead of onUpdate()
+- `src/components/LoanManager.tsx` — loading spinners, deleteId state, AnimatePresence animations
+- `src/components/GroupManager.tsx` — loading UI, delete/save spinners, AnimatePresence animations
+- `src/components/layout/Sidebar.tsx` — version from meta tag
+- `vite.config.ts` — inject-version plugin, removed APP_VERSION define
