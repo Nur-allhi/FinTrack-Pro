@@ -23,6 +23,7 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
   const [loanType, setLoanType] = useState<'inter_account' | 'person'>('person');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [settlingId, setSettlingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [settleModal, setSettleModal] = useState<{ id: number; borrowerName: string; amount: number; remaining: number } | null>(null);
   const [settleAmount, setSettleAmount] = useState('');
   const [settleError, setSettleError] = useState('');
@@ -39,12 +40,17 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
     particulars: ''
   });
 
-  const fetchLoans = async () => {
-    const res = await authService.apiFetch('/api/loans');
-    if (res.ok) setLoans(await res.json());
+  const fetchLoans = async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    try {
+      const res = await authService.apiFetch('/api/loans');
+      if (res.ok) setLoans(await res.json());
+    } finally {
+      if (showLoading) setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchLoans(); }, []);
+  useEffect(() => { fetchLoans(true); }, []);
 
   const resetForm = () => {
     setForm({
@@ -167,6 +173,7 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
 
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this loan record?")) return;
+    setDeletingId(id);
     try {
       await authService.apiFetch(`/api/loans/${id}`, { method: 'DELETE' });
       toast("Loan deleted.", 'success');
@@ -174,6 +181,8 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
       onUpdate();
     } catch (err) {
       toast("Failed to delete loan.", 'error');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -442,15 +451,20 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
                       <Pencil className="w-3.5 h-3.5" />
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(loan.id)}
-                      className="px-3 py-1.5 rounded-pill text-xs font-bold bg-semantic-down/10 text-semantic-down hover:bg-semantic-down/20 transition-colors">
-                      Delete
+                    <button onClick={() => handleDelete(loan.id)} disabled={deletingId === loan.id}
+                      className="px-3 py-1.5 rounded-pill text-xs font-bold bg-semantic-down/10 text-semantic-down hover:bg-semantic-down/20 transition-colors disabled:opacity-50">
+                      {deletingId === loan.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Delete'}
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {filteredLoans.length === 0 && (
+            {loading && (
+              <tr><td colSpan={7} className="px-5 py-16 text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-muted mx-auto" />
+              </td></tr>
+            )}
+            {!loading && filteredLoans.length === 0 && (
               <tr><td colSpan={7} className="px-5 py-16 text-center text-sm text-muted italic font-medium">No loans found.</td></tr>
             )}
           </tbody>
@@ -502,14 +516,19 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
                 <Pencil className="w-3.5 h-3.5" />
                 Edit
               </button>
-              <button onClick={() => handleDelete(loan.id)}
-                className="flex-1 py-2 rounded-pill text-xs font-bold bg-semantic-down/10 text-semantic-down hover:bg-semantic-down/20 transition-colors">
-                Delete
+              <button onClick={() => handleDelete(loan.id)} disabled={deletingId === loan.id}
+                className="flex-1 py-2 rounded-pill text-xs font-bold bg-semantic-down/10 text-semantic-down hover:bg-semantic-down/20 transition-colors disabled:opacity-50">
+                {deletingId === loan.id ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : 'Delete'}
               </button>
             </div>
           </div>
         ))}
-        {filteredLoans.length === 0 && (
+        {loading && (
+          <div className="p-12 text-center bg-surface-soft rounded-xl border border-dashed border-hairline">
+            <Loader2 className="w-6 h-6 animate-spin text-muted mx-auto" />
+          </div>
+        )}
+        {!loading && filteredLoans.length === 0 && (
           <div className="p-12 text-center bg-surface-soft rounded-xl border border-dashed border-hairline text-muted font-medium italic">
             No loans found.
           </div>

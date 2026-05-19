@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Edit2, Trash2, Layers, ChevronDown, Wallet } from 'lucide-react';
+import { Plus, X, Edit2, Trash2, Layers, ChevronDown, Wallet, Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
@@ -35,6 +35,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
   const [isAdding, setIsAdding] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [members, setMembers] = useState<{ id: number; name: string }[]>([]);
   const [newGroup, setNewGroup] = useState({ name: '', member_id: '', color: colors[0] });
@@ -90,6 +91,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Delete group "${name}"? Child accounts will be unlinked but not deleted.`)) return;
+    setDeletingId(id);
     try {
       await authService.apiFetch(`/api/groups/${id}`, { method: 'DELETE' });
       toast("Group deleted.", 'success');
@@ -97,6 +99,8 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
       onUpdate();
     } catch (err) {
       toast("Failed to delete group.", 'error');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -163,7 +167,10 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
             </div>
             <div className="md:col-span-3 flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => { setIsAdding(false); setEditingGroup(null); }} className="btn-secondary text-xs px-5 py-2">Cancel</button>
-              <button type="submit" disabled={saving} className="btn-primary text-xs px-6 py-2">{saving ? 'Saving...' : (editingGroup ? 'Update' : 'Create')}</button>
+              <button type="submit" disabled={saving} className="btn-primary text-xs px-6 py-2 flex items-center gap-2">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {editingGroup ? 'Update' : 'Create'}
+              </button>
             </div>
           </form>
         </div>
@@ -188,7 +195,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                   </div>
                   <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => startEdit(group)} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => handleDelete(group.id, group.name)} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => handleDelete(group.id, group.name)} disabled={deletingId === group.id} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors disabled:opacity-50" title="Delete">
+                      {deletingId === group.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
                 </div>
                 <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-1">{currency || '৳'}{group.accumulated_balance?.toLocaleString() || '0'}</p>
@@ -249,7 +258,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     <td className="px-3 py-2.5 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => startEdit(group)} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => handleDelete(group.id, group.name)} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDelete(group.id, group.name)} disabled={deletingId === group.id} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors disabled:opacity-50" title="Delete">
+                          {deletingId === group.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -276,13 +287,22 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                   </div>
                   <div className="flex gap-2 mt-1.5">
                     <button onClick={() => startEdit(group)} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>
-                    <button onClick={() => handleDelete(group.id, group.name)} className="text-[10px] font-bold text-muted hover:text-semantic-down uppercase tracking-wider">Delete</button>
+                    <button onClick={() => handleDelete(group.id, group.name)} disabled={deletingId === group.id} className="text-[10px] font-bold text-muted hover:text-semantic-down uppercase tracking-wider disabled:opacity-50">
+                      {deletingId === group.id ? <Loader2 className="w-3 h-3 animate-spin inline" /> : 'Delete'}
+                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </>
+      )}
+
+      {/* Loading State */}
+      {groups.length === 0 && loading && (
+        <div className="py-16 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-muted mx-auto" />
+        </div>
       )}
 
       {/* Empty State */}
