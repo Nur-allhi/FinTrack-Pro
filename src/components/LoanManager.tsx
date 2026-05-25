@@ -277,6 +277,11 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
         <div>
           <h3 className="text-lg md:text-2xl lg:text-3xl font-normal text-ink tracking-tight">Loans</h3>
           <p className="text-xs md:text-sm text-muted font-medium">Track inter-account lending and borrowing.</p>
+          <div className="flex items-center gap-3 mt-1.5 text-xs">
+            <span><strong className="text-ink">{loans.filter(l => l.status === 'active').length}</strong> <span className="text-muted">active</span></span>
+            <span className="text-hairline">|</span>
+            <span>Total outstanding: <strong className="text-ink">{currency}{loans.filter(l => l.status === 'active').reduce((s, l) => s + l.remaining, 0).toLocaleString()}</strong></span>
+          </div>
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary text-xs md:text-sm px-4 md:px-6 py-2 md:py-3 self-start">
           <Plus className="w-4 md:w-5 h-4 md:h-5" />
