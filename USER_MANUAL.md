@@ -1,7 +1,7 @@
 # FinTrack Pro — User Manual
 
-**Version:** 1.1  
-**Last updated:** 2026-05-18
+**Version:** 1.2  
+**Last updated:** 2026-05-25
 
 ---
 

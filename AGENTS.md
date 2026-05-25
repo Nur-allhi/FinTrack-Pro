@@ -73,7 +73,8 @@
 ## 6) Auto-Documentation (Conditional)
 After completing impactful changes (feature/bugfix/schema/architecture), update briefly:
 - `README.md`: If stable info (stack/versions/overview) is affected.
-- `HANDOFF.md`, `CHANGELOG.md`, `docs/structure.md`: Update if the file exists, or create only when explicitly requested.
+- `SESSIONLOG.md`, `CHANGELOG.md`, `docs/structure.md`: Update if the file exists, or create only when explicitly requested.
+- `SESSIONLOG.md`: Append a new session entry with summary, files changed, and any notable decisions.
 - `CHANGELOG.md` format (when used): `YYYY-MM-DD: <Fix|Add|Change|Remove> <what> at <path> - <impact> (completed).`
 
 ## gitnexus
