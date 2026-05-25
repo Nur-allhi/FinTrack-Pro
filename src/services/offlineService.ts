@@ -80,10 +80,12 @@ export const offlineService = {
 
     if (failed === 0) this.clearQueue();
     else {
-      const remaining = queue.filter(a => {
-        const action = queue.indexOf(a);
-        return action >= synced;
-      });
+      const syncedSet = new Set<string>();
+      for (const action of queue) {
+        if (syncedSet.size >= synced) break;
+        syncedSet.add(action.id);
+      }
+      const remaining = queue.filter(a => !syncedSet.has(a.id));
       localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
     }
 

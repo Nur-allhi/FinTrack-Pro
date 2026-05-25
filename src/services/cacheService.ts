@@ -2,12 +2,24 @@ import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'ledger_cache';
 const DB_VERSION = 1;
+const DEFAULT_TTL = 5 * 60 * 1000;
+
+interface CachedEntry<T> {
+  data: T;
+  timestamp: number;
+}
 
 interface LedgerDB {
-  members: any;
-  accounts: any;
+  members: {
+    key: string;
+    value: CachedEntry<any[]>;
+  };
+  accounts: {
+    key: string;
+    value: CachedEntry<any[]>;
+  };
   transactions: {
-    key: string; // accountId
+    key: string;
     value: {
       accountId: string;
       data: any[];
@@ -36,25 +48,41 @@ function getDB() {
   return dbPromise;
 }
 
+function isExpired(timestamp: number, ttl: number = DEFAULT_TTL): boolean {
+  return Date.now() - timestamp > ttl;
+}
+
 export const cacheService = {
   async setMembers(data: any[]) {
     const db = await getDB();
-    await db.put('members', data, 'list');
+    await db.put('members', { data, timestamp: Date.now() }, 'list');
   },
 
-  async getMembers() {
+  async getMembers(ttl?: number) {
     const db = await getDB();
-    return db.get('members', 'list');
+    const entry = await db.get('members', 'list');
+    if (!entry) return null;
+    if (isExpired(entry.timestamp, ttl)) {
+      await db.delete('members', 'list');
+      return null;
+    }
+    return entry.data;
   },
 
   async setAccounts(data: any[]) {
     const db = await getDB();
-    await db.put('accounts', data, 'list');
+    await db.put('accounts', { data, timestamp: Date.now() }, 'list');
   },
 
-  async getAccounts() {
+  async getAccounts(ttl?: number) {
     const db = await getDB();
-    return db.get('accounts', 'list');
+    const entry = await db.get('accounts', 'list');
+    if (!entry) return null;
+    if (isExpired(entry.timestamp, ttl)) {
+      await db.delete('accounts', 'list');
+      return null;
+    }
+    return entry.data;
   },
 
   async setTransactions(accountId: string, data: any[]) {
@@ -66,10 +94,15 @@ export const cacheService = {
     }, accountId);
   },
 
-  async getTransactions(accountId: string) {
+  async getTransactions(accountId: string, ttl?: number) {
     const db = await getDB();
     const entry = await db.get('transactions', accountId);
-    return entry ? entry.data : null;
+    if (!entry) return null;
+    if (isExpired(entry.timestamp, ttl)) {
+      await db.delete('transactions', accountId);
+      return null;
+    }
+    return entry.data;
   },
 
   async clearCache() {

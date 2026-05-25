@@ -4,8 +4,10 @@ import { fileURLToPath } from "url";
 import { initDb, supabase, supabaseAdmin } from "./db.js";
 import { config } from "./config.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
+import { errorHandler } from "./middleware/error.js";
+import { requestIdMiddleware } from "./middleware/requestId.js";
+import { requestLogger } from "./logger.js";
 
-// Route Imports
 import memberRoutes from "./routes/members.js";
 import accountRoutes from "./routes/accounts.js";
 import transactionRoutes from "./routes/transactions.js";
@@ -21,17 +23,17 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Initialize database asynchronously — Vercel cold start waits for this
 const startup = initDb().catch(e => console.error("Startup error:", e));
 
-// Middleware that waits for DB init before processing requests
 app.use(async (_req: any, _res: any, next: any) => {
   await startup;
   next();
 });
+
+app.use(requestIdMiddleware);
+app.use(requestLogger);
 app.use(express.json());
 
-// Global Error Handlers
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
@@ -40,9 +42,6 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
 
-// --- Auth Routes ---
-
-// Validate a Supabase JWT and return the user session (replaces old login)
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { access_token } = req.body;
@@ -67,7 +66,6 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// Public Supabase config for frontend (anon key is safe to expose)
 app.get("/api/auth/config", (_req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || "",
@@ -75,13 +73,11 @@ app.get("/api/auth/config", (_req, res) => {
   });
 });
 
-// Get current user info (requires valid JWT)
 app.get("/api/auth/me", requireAuth, (req, res) => {
   const isAdmin = req.user?.email ? config.admin.emails.includes(req.user.email.toLowerCase()) : false;
   res.json({ user: req.user, isAdmin });
 });
 
-// Apply auth middleware to all data routes
 app.use("/api/members", requireAuth, memberRoutes);
 app.use("/api/accounts", requireAuth, accountRoutes);
 app.use("/api/transactions", requireAuth, transactionRoutes);
@@ -90,12 +86,12 @@ app.use("/api/transfers", requireAuth, transferRoutes);
 app.use("/api/loans", requireAuth, loanRoutes);
 app.use("/api/groups", requireAuth, groupRoutes);
 app.use("/api/export", requireAuth, exportRoutes);
-app.use("/api/import", exportRoutes);
+app.use("/api/import", requireAuth, exportRoutes);
 
-// Admin routes (auth + admin check)
 app.use("/api/admin", requireAuth, requireAdmin, adminRoutes);
 
-// Serve static files in non-production
+app.use(errorHandler);
+
 if (process.env.NODE_ENV !== 'production') {
   app.use(express.static(path.resolve(__dirname, '../dist')));
   app.get('*', (req, res, next) => {

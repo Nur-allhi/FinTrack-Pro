@@ -7,7 +7,6 @@ coverage/
 .env*
 !.env.example
 *.db
-graphify-out/cache/
 
 # Orphaned design mockups
 Design/

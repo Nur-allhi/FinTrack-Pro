@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../db.js";
+import { supabase, supabaseAdmin } from "../db.js";
 
 const TABLES = ['members', 'accounts', 'transactions', 'investments', 'investment_returns'];
 
@@ -15,7 +15,7 @@ export const requireQuota = async (req: Request, res: Response, next: NextFuncti
   if (!req.user?.id || !supabase) return next();
 
   try {
-    const { data: userData } = await supabase.auth.getUser(req.headers.authorization?.slice(7) || '');
+    const { data: userData } = await supabaseAdmin!.auth.admin.getUserById(req.user.id);
     const limitMB = (userData?.user?.user_metadata as any)?.storage_limit_mb || 5;
 
     let totalBytes = 0;

@@ -1,79 +1,52 @@
 import express from "express";
-import { db, supabase } from "../db.js";
+import { getInvestments, createInvestment, getInvestmentReturns, createInvestmentReturn } from "../db/index.js";
+import { investmentSchema, investmentReturnSchema, validate } from "../../shared/validation.js";
+import { sendError } from "../middleware/error.js";
+import { logger } from "../logger.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    if (supabase) {
-      const { data, error } = await supabase.from("investments").select("*, accounts(name)").eq("user_id", req.user!.id);
-      if (error) throw error;
-      const formatted = data.map((i: any) => ({
-        ...i,
-        account_name: i.accounts?.name
-      }));
-      return res.json(formatted);
-    }
-    const investments = db.prepare(`
-        SELECT i.*, a.name as account_name 
-        FROM investments i
-        JOIN accounts a ON i.account_id = a.id
-    `).all();
-    res.json(investments);
+    const data = await getInvestments(req.user!.id);
+    res.json(data);
   } catch (err: any) {
-    console.error("GET /api/investments error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/investments");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 
 router.get("/:id/returns", async (req, res) => {
   try {
-    if (supabase) {
-      const { data, error } = await supabase.from("investment_returns").select("*").eq("investment_id", req.params.id).order("date", { ascending: false });
-      if (error) throw error;
-      return res.json(data);
-    }
-    const returns = db.prepare("SELECT * FROM investment_returns WHERE investment_id = ? ORDER BY date DESC").all(req.params.id);
-    res.json(returns);
+    const data = await getInvestmentReturns(Number(req.params.id));
+    res.json(data);
   } catch (err: any) {
-    console.error("GET /api/investments/:id/returns error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/investments/:id/returns");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 
 router.post("/", async (req, res) => {
   try {
-    const { account_id, principal, date } = req.body;
-    
-    if (supabase) {
-      const { data, error } = await supabase.from("investments").insert([{ account_id, principal, date, user_id: req.user!.id }]).select().single();
-      if (error) throw error;
-      return res.json(data);
-    }
-
-    const info = db.prepare("INSERT INTO investments (account_id, principal, date) VALUES (?, ?, ?)").run(account_id, principal, date);
-    res.json({ id: info.lastInsertRowid, ...req.body });
+    const parsed = validate(investmentSchema, req.body);
+    if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
+    const result = await createInvestment(req.user!.id, parsed.data.account_id, parsed.data.principal, parsed.data.date);
+    res.json(result);
   } catch (err: any) {
-    console.error("POST /api/investments error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/investments");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 
 router.post("/:id/returns", async (req, res) => {
   try {
-    const { date, amount, percentage } = req.body;
-    
-    if (supabase) {
-      const { data, error } = await supabase.from("investment_returns").insert([{ investment_id: req.params.id, date, amount, percentage }]).select().single();
-      if (error) throw error;
-      return res.json(data);
-    }
-
-    const info = db.prepare("INSERT INTO investment_returns (investment_id, date, amount, percentage) VALUES (?, ?, ?, ?)").run(req.params.id, date, amount, percentage);
-    res.json({ id: info.lastInsertRowid, ...req.body });
+    const parsed = validate(investmentReturnSchema, req.body);
+    if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
+    const result = await createInvestmentReturn(Number(req.params.id), parsed.data.date, parsed.data.amount, parsed.data.percentage);
+    res.json(result);
   } catch (err: any) {
-    console.error("POST /api/investments/:id/returns error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/investments/:id/returns");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 

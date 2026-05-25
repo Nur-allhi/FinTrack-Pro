@@ -13,18 +13,18 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
   const isAnyModalOpen = isTransactionModalOpen || isTransferModalOpen;
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined as any);
+  const timerRef = useRef<number | undefined>(undefined);
 
   const close = () => {
-    clearTimeout(timerRef.current);
+    window.clearTimeout(timerRef.current);
     setIsOpen(false);
   };
 
   const toggle = () => {
     const next = !isOpen;
-    clearTimeout(timerRef.current);
+    window.clearTimeout(timerRef.current);
     if (next) {
-      timerRef.current = setTimeout(close, 5000);
+      timerRef.current = window.setTimeout(close, 5000);
     }
     setIsOpen(next);
   };

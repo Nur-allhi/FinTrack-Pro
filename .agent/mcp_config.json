@@ -15,6 +15,12 @@
                 "shadcn@latest",
                 "mcp"
             ]
+        },
+        "gitnexus": {
+            "command": "gitnexus",
+            "args": [
+                "mcp"
+            ]
         }
         //other mcp servers
     }

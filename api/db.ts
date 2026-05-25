@@ -38,6 +38,13 @@ async function initSqlite() {
     try { _db.exec("ALTER TABLE loans ADD COLUMN remaining REAL DEFAULT 0"); } catch {}
     try { _db.exec("UPDATE loans SET remaining = amount WHERE remaining IS NULL OR remaining = 0"); } catch {}
     try { _db.exec("ALTER TABLE loan_settlements ADD COLUMN transaction_id INTEGER"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id)"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date)"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_loans_lender_account_id ON loans(lender_account_id)"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_loans_borrower_account_id ON loans(borrower_account_id)"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_loan_settlements_loan_id ON loan_settlements(loan_id)"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_investments_account_id ON investments(account_id)"); } catch {}
+    try { _db.exec("CREATE INDEX IF NOT EXISTS idx_investment_returns_investment_id ON investment_returns(investment_id)"); } catch {}
   } catch (e) {
     console.warn("SQLite unavailable (non-fatal):", (e as any)?.message);
   }

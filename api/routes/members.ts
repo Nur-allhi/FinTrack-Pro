@@ -1,54 +1,40 @@
 import express from "express";
-import { db, supabase } from "../db.js";
+import { getMembers, createMember, deleteMember } from "../db/index.js";
+import { memberSchema, validate } from "../../shared/validation.js";
+import { sendError } from "../middleware/error.js";
+import { logger } from "../logger.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    if (supabase) {
-      const { data, error } = await supabase.from("members").select("*").eq("user_id", req.user!.id);
-      if (error) throw error;
-      return res.json(data);
-    }
-    const members = db.prepare("SELECT * FROM members").all();
-    res.json(members);
+    const data = await getMembers(req.user!.id);
+    res.json(data);
   } catch (err: any) {
-    console.error("GET /api/members error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/members");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 
 router.post("/", async (req, res) => {
   try {
-    const { name, relationship } = req.body;
-    if (!name) return res.status(400).json({ error: "Name is required" });
-    
-    if (supabase) {
-      const { data, error } = await supabase.from("members").insert([{ name, relationship, user_id: req.user!.id }]).select().single();
-      if (error) throw error;
-      return res.json(data);
-    }
-
-    const info = db.prepare("INSERT INTO members (name, relationship) VALUES (?, ?)").run(name, relationship);
-    res.json({ id: info.lastInsertRowid, name, relationship });
+    const result = validate(memberSchema, req.body);
+    if (!result.success) return sendError(res, 400, result.error, "VALIDATION_ERROR");
+    const created = await createMember(req.user!.id, result.data.name, result.data.relationship || "");
+    res.json(created);
   } catch (err: any) {
-    console.error("POST /api/members error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/members");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 
 router.delete("/:id", async (req, res) => {
   try {
-    if (supabase) {
-      const { error } = await supabase.from("members").delete().eq("id", req.params.id).eq("user_id", req.user!.id);
-      if (error) throw error;
-      return res.json({ success: true });
-    }
-    db.prepare("DELETE FROM members WHERE id = ?").run(req.params.id);
+    await deleteMember(req.user!.id, Number(req.params.id));
     res.json({ success: true });
   } catch (err: any) {
-    console.error("DELETE /api/members error:", err);
-    res.status(500).json({ error: err.message });
+    logger.error({ requestId: req.requestId, error: err.message }, "DELETE /api/members");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });
 
