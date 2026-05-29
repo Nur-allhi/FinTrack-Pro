@@ -9,7 +9,8 @@
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["vite/client"]
   },
   "include": ["src", "api", "vite.config.ts"]
 }

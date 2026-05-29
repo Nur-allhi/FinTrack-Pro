@@ -126,10 +126,12 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     setNewTx({ date: format(new Date(), 'yyyy-MM-dd'), particulars: '', amount: '', isCredit: false, category: '' });
 
     if (!navigator.onLine) {
+      const qBody: Record<string, any> = { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount };
+      if (summary !== null) qBody.summary = summary;
       offlineService.queueAction({
         type: editingTx ? 'update' : 'create',
         endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
-        body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, summary }
+        body: qBody
       });
       toast("Transaction queued for sync when online.", 'success');
       return;
@@ -138,9 +140,11 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     try {
       const method = editingTx ? 'PATCH' : 'POST';
       const url = editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions';
+      const body: Record<string, any> = { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount };
+      if (summary !== null) body.summary = summary;
       const res = await authService.apiFetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, summary })
+        body: JSON.stringify(body)
       });
       if (!res.ok) throw new Error("Save failed");
       const saved = await res.json();
@@ -152,7 +156,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         offlineService.queueAction({
           type: editingTx ? 'update' : 'create',
           endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
-          body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, summary }
+          body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, ...(summary !== null && { summary }) }
         });
         toast("Transaction queued for sync when online.", 'success');
       } else {
@@ -224,19 +228,39 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       </div>
 
       <div className="bg-canvas rounded-xl border border-hairline shadow-sm" aria-label="Transaction Ledger">
-        <div className="p-4 md:p-5 flex items-center justify-between bg-primary/5 border-b border-hairline">
-          <div>
-            <h3 className="text-base md:text-xl font-normal text-ink tracking-tight">{account.name}</h3>
-            <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">{account.type.replace('_', ' ')}</p>
-          </div>
-          <div className="text-right">
-            <div className="flex items-center gap-1 md:gap-2 justify-end mb-0.5 md:mb-1">
-              {isSyncing && <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 animate-spin text-primary" />}
-              <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
+        <div className="p-4 md:p-5 bg-primary/5 border-b border-hairline">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-base md:text-xl font-normal text-ink tracking-tight">{account.name}</h3>
+              <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">{account.type.replace('_', ' ')}</p>
+              <div className="md:hidden flex items-center gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    showFilters || dateView !== 'all' || categoryFilter ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
+                  }`}
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
+                  Filters
+                </button>
+              </div>
             </div>
-            <p className="text-xl md:text-3xl font-normal text-ink financial-number tracking-tighter">
-              {currency}{currentBalance.toLocaleString()}
-            </p>
+            <div className="text-right shrink-0">
+              <div className="flex items-center gap-1 md:gap-2 justify-end mb-0.5 md:mb-1">
+                {isSyncing && <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 animate-spin text-primary" />}
+                <p className="hidden md:block text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
+              </div>
+              <p className="text-xl md:text-3xl font-normal text-ink financial-number tracking-tighter">
+                {currency}{currentBalance.toLocaleString()}
+              </p>
+              <div className="md:hidden mt-2">
+                <button onClick={() => setIsAdding(true)} className="btn-primary text-[10px] px-3 py-1.5">
+                  <Plus className="w-3.5 h-3.5" />
+                  New
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -296,27 +320,6 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
                 New
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Mobile toolbar: Entries header + filter toggle */}
-        <div className="md:hidden px-4 py-2.5 border-b border-hairline bg-canvas flex items-center justify-between">
-          <h4 className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Entries</h4>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
-                showFilters || dateView !== 'all' || categoryFilter ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
-              }`}
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
-              Filters
-            </button>
-            <button onClick={() => setIsAdding(true)} className="btn-primary text-[10px] px-3 py-1.5">
-              <Plus className="w-3.5 h-3.5" />
-              New
-            </button>
           </div>
         </div>
 

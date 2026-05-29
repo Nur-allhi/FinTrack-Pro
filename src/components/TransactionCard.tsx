@@ -50,28 +50,27 @@ export default function TransactionCard({
           isExpanded ? "bg-primary/5" : "bg-canvas hover:bg-surface-soft/30"
         )}
       >
-        <div className="flex items-start gap-3">
-          <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0", isDebit ? 'bg-semantic-down' : 'bg-semantic-up')} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-ink truncate">{tx.particulars}</p>
-              <span className={cn(
-                "text-sm font-bold financial-number shrink-0",
-                isDebit ? "text-semantic-down" : "text-semantic-up"
-              )}>
-                {isDebit ? '-' : '+'}{currency}{Math.abs(tx.amount).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs font-mono font-bold text-muted">{format(new Date(tx.date), 'dd MMM').toUpperCase()}</span>
-              <span className={cn(
-                "inline-block px-2 py-0.5 rounded-pill text-[10px] font-bold uppercase tracking-wider",
-                tx.category ? "bg-surface-strong text-muted" : "bg-amber-50 text-amber-600"
-              )}>
-                {tx.category || 'PENDING'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between mt-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-ink truncate">{tx.particulars}</p>
+            <span className={cn(
+              "text-sm font-bold financial-number shrink-0",
+              isDebit ? "text-semantic-down" : "text-semantic-up"
+            )}>
+              {isDebit ? '-' : '+'}{currency}{Math.abs(tx.amount).toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs font-mono font-bold text-muted">{format(new Date(tx.date), 'dd MMM').toUpperCase()}</span>
+            <span className={cn(
+              "inline-block px-2 py-0.5 rounded-pill text-[10px] font-bold uppercase tracking-wider",
+              tx.category ? "bg-surface-strong text-muted" : "bg-amber-50 text-amber-600"
+            )}>
+              {tx.category || 'PENDING'}
+            </span>
+          </div>
+          {isExpanded && (
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-hairline">
               <span className="text-xs font-bold text-muted uppercase tracking-wider">
                 Balance: <span className="text-ink font-mono font-bold">{currency}{tx.runningBalance.toLocaleString()}</span>
               </span>
@@ -93,7 +92,7 @@ export default function TransactionCard({
                 )}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </motion.div>
     </>

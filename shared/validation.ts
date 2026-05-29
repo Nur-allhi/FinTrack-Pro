@@ -32,7 +32,7 @@ export const transactionSchema = z.object({
   amount: z.number(),
   type: z.enum(["normal", "transfer", "loan", "loan_settle"]).optional(),
   linked_transaction_id: z.number().int().positive().optional(),
-  summary: z.string().max(1000).optional(),
+  summary: z.string().max(1000).optional().nullable(),
 });
 
 export const transactionUpdateSchema = z.object({

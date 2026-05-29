@@ -63,7 +63,7 @@ export async function getTransactions(accountId: string, userId: string, limit?:
 
 export async function createTransaction(userId: string, data: {
   account_id: number; date: string; particulars: string; category?: string;
-  amount: number; type?: string; linked_transaction_id?: number; summary?: string
+  amount: number; type?: string; linked_transaction_id?: number; summary?: string | null
 }) {
   if (supabase) {
     const { data: result, error } = await supabase.from("transactions").insert([{

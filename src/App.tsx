@@ -24,6 +24,7 @@ import { authService, setOnSessionExpired } from './services/authService';
 import { offlineService } from './services/offlineService';
 import { cn } from './utils/cn';
 import { useToast } from './components/Toast';
+import { Agentation } from 'agentation';
 
 // Layout Components
 import Sidebar from './components/layout/Sidebar';
@@ -325,7 +326,7 @@ export default function App() {
   if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <><div className="min-h-screen bg-background flex flex-col md:flex-row">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         selectedAccountId={selectedAccountId} setSelectedAccountId={setSelectedAccountId}
@@ -371,5 +372,7 @@ export default function App() {
       </ErrorBoundary>
       <div className="md:hidden"><FloatingActionButton onNewTransaction={() => setIsTransactionModalOpen(true)} onNewTransfer={() => setIsTransferModalOpen(true)} isTransactionModalOpen={isTransactionModalOpen} isTransferModalOpen={isTransferModalOpen} /></div>
     </div>
+      {import.meta.env.DEV && <Agentation />}
+    </>
   );
 }
