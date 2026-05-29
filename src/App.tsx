@@ -294,6 +294,8 @@ export default function App() {
       for (const a of queue) {
         if (a.type === 'create' && a.endpoint === '/api/transactions' && a.body?.account_id && typeof a.body.amount === 'number') {
           adj[a.body.account_id] = (adj[a.body.account_id] || 0) + a.body.amount;
+        } else if (a.type === 'delete' && a.body?.account_id && typeof a.body.amount === 'number') {
+          adj[a.body.account_id] = (adj[a.body.account_id] || 0) - a.body.amount;
         }
       }
       setPendingBalanceAdj(adj);

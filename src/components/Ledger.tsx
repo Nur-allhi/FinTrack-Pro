@@ -218,12 +218,15 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
   };
 
   const handleDelete = async (id: number) => {
+    const tx = transactions.find(t => t.id === id);
     const prev = [...transactions];
     setTransactions(transactions.filter(t => t.id !== id));
     setDeletingId(null);
 
+    const queueDelete = () => offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}`, body: { account_id: account.id, amount: tx?.amount || 0 } });
+
     if (!navigator.onLine) {
-      await offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}` });
+      await queueDelete();
       const cached = await cacheService.getTransactions(account.id.toString());
       if (cached) {
         await cacheService.setTransactions(account.id.toString(), cached.filter(t => t.id !== id));
@@ -239,7 +242,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     } catch (error) {
       console.error(error);
       if (error instanceof TypeError) {
-        await offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}` });
+        await queueDelete();
         const cached = await cacheService.getTransactions(account.id.toString());
         if (cached) {
           await cacheService.setTransactions(account.id.toString(), cached.filter(t => t.id !== id));

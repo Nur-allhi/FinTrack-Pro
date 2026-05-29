@@ -154,7 +154,7 @@ export const offlineService = {
           method,
           headers: { 'Content-Type': 'application/json' },
         };
-        if (action.body) options.body = JSON.stringify(action.body);
+        if (action.body && method !== 'DELETE') options.body = JSON.stringify(action.body);
         console.log(`[syncQueue] replaying ${method} ${action.endpoint}`, action.body);
         const res = await fetchFn(action.endpoint, options);
         if (res.ok) {
