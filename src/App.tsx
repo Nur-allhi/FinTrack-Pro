@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -59,6 +59,7 @@ export default function App() {
   const [lastSync, setLastSync] = useState<number | null>(offlineService.getLastSync());
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [pendingBalanceAdj, setPendingBalanceAdj] = useState<Record<number, number>>({});
   const [userEmail, setUserEmail] = useState('');
   const [showProfile, setShowProfile] = useState(false);
 
@@ -286,6 +287,26 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (pendingCount === 0) { setPendingBalanceAdj({}); return; }
+    offlineService.getQueue().then(queue => {
+      const adj: Record<number, number> = {};
+      for (const a of queue) {
+        if (a.type === 'create' && a.endpoint === '/api/transactions' && a.body?.account_id && typeof a.body.amount === 'number') {
+          adj[a.body.account_id] = (adj[a.body.account_id] || 0) + a.body.amount;
+        }
+      }
+      setPendingBalanceAdj(adj);
+    });
+  }, [pendingCount]);
+
+  const adjustedAccounts = useMemo(() =>
+    accounts.map(a => ({
+      ...a, current_balance: a.current_balance + (pendingBalanceAdj[a.id] || 0)
+    })),
+    [accounts, pendingBalanceAdj]
+  );
+
+  useEffect(() => {
     if (!isAuthenticated) return;
     const interval = setInterval(async () => {
       if (!offlineService.isOnline()) return;
@@ -349,19 +370,19 @@ export default function App() {
       return <UserProfile userEmail={userEmail} onRefreshData={() => fetchData(true)} onExportData={handleExportData} onClearCache={handleClearCache} />;
     }
     if (selectedAccountId) {
-      const account = accounts.find(a => a.id === selectedAccountId);
+      const account = adjustedAccounts.find(a => a.id === selectedAccountId);
       if (!account) return <div className="p-8 text-center text-muted">Account not found</div>;
       return <Ledger account={account} onBack={() => setSelectedAccountId(null)} onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
     }
 
     switch (activeTab) {
-      case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onOpenTransfer={() => setIsTransferModalOpen(true)} onOpenTransaction={() => setIsTransactionModalOpen(true)} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} dataLoading={dataLoading} />;
-      case 'members': return <MemberManager members={members} accounts={accounts} onUpdate={fetchData} onSelectAccount={setSelectedAccountId} currency={settings.currency} typeColors={settings.typeColors} />;
-      case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
+      case 'dashboard': return <Dashboard accounts={adjustedAccounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onOpenTransfer={() => setIsTransferModalOpen(true)} onOpenTransaction={() => setIsTransactionModalOpen(true)} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} dataLoading={dataLoading} />;
+      case 'members': return <MemberManager members={members} accounts={adjustedAccounts} onUpdate={fetchData} onSelectAccount={setSelectedAccountId} currency={settings.currency} typeColors={settings.typeColors} />;
+      case 'accounts': return <AccountManager accounts={adjustedAccounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
-      case 'investments': return <InvestmentTracker accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
-      case 'loans': return <LoanManager accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
-      case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
+      case 'investments': return <InvestmentTracker accounts={adjustedAccounts} onUpdate={fetchData} currency={settings.currency} />;
+      case 'loans': return <LoanManager accounts={adjustedAccounts} onUpdate={fetchData} currency={settings.currency} />;
+      case 'reports': return <ReportGenerator accounts={adjustedAccounts} members={members} currency={settings.currency} />;
       case 'admin': return <AdminPanel />;
       case 'settings': return <Settings settings={settings as any} onUpdateSettings={(s: any) => { setSettings(s); cacheService.setSettings(s); }} />;
       default: return null;
@@ -386,7 +407,7 @@ export default function App() {
           setIsMobileMenuOpen={setIsMobileMenuOpen} 
           selectedAccountId={selectedAccountId} 
           activeTabLabel={navItems.find(i => i.id === activeTab)?.label}
-          accounts={accounts}
+          accounts={adjustedAccounts}
           members={members}
           onSearchSelect={(type, id) => {
             if (type === 'account') { setSelectedAccountId(id); }
@@ -407,12 +428,12 @@ export default function App() {
       <ErrorBoundary>
         {isTransferModalOpen && (
           <Suspense fallback={null}>
-            <TransferModal accounts={accounts} onClose={() => setIsTransferModalOpen(false)} onUpdate={fetchData} currency={settings.currency} />
+            <TransferModal accounts={adjustedAccounts} onClose={() => setIsTransferModalOpen(false)} onUpdate={fetchData} currency={settings.currency} />
           </Suspense>
         )}
         {isTransactionModalOpen && (
           <Suspense fallback={null}>
-            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
+            <TransactionModal accounts={adjustedAccounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
           </Suspense>
         )}
       </ErrorBoundary>
