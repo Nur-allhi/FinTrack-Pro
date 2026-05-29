@@ -89,7 +89,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       .then(res => res.ok ? res.json() : [])
       .then(data => { if (Array.isArray(data)) setAllCategories(data); })
       .catch(() => {});
-  }, [account.id]);
+  }, [account.id, lastUpdate]);
 
   useEffect(() => {
     if (!account?.id) return;

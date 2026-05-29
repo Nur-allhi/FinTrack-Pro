@@ -281,6 +281,27 @@ export default function App() {
     return unsub;
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(async () => {
+      if (!offlineService.isOnline()) return;
+      const state = syncState.get();
+      if (state.pendingCount === 0 || state.state === 'syncing') return;
+      console.log('[sync-poller] found pending items, running sync');
+      const result = await offlineService.syncQueue(authService.apiFetch);
+      if (result.synced > 0) {
+        await fetchData();
+        toast(
+          result.failed > 0
+            ? `Synced ${result.synced} change${result.synced !== 1 ? 's' : ''}, ${result.failed} failed.`
+            : `Synced ${result.synced} pending change${result.synced !== 1 ? 's' : ''}.`,
+          result.failed > 0 ? 'error' : 'success'
+        );
+      }
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
   const handleLogin = (token: string) => {
     localStorage.setItem('auth_token', token);
     setIsAuthenticated(true);
