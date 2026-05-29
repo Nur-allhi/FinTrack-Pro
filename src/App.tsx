@@ -217,7 +217,7 @@ export default function App() {
     const offCleanup = offlineService.onOffline(() => setIsOnline(false));
     const onCleanup = offlineService.onOnline(async () => {
       setIsOnline(true);
-      const result = await offlineService.syncQueue(authService.apiFetch);
+      const result = await offlineService.syncQueue(authService.apiFetch.bind(authService));
       await fetchData();
       if (result.synced > 0) {
         const msg = result.failed > 0
@@ -266,7 +266,7 @@ export default function App() {
   useEffect(() => {
     const handleSWSync = async () => {
       if (!offlineService.isOnline()) return;
-      const result = await offlineService.syncQueue(authService.apiFetch);
+      const result = await offlineService.syncQueue(authService.apiFetch.bind(authService));
       await fetchData();
       if (result.synced > 0) {
         toast(`Background synced ${result.synced} change${result.synced !== 1 ? 's' : ''}.`, result.failed > 0 ? 'error' : 'success');
@@ -288,7 +288,7 @@ export default function App() {
       const state = syncState.get();
       if (state.pendingCount === 0 || state.state === 'syncing') return;
       console.log('[sync-poller] found pending items, running sync');
-      const result = await offlineService.syncQueue(authService.apiFetch);
+      const result = await offlineService.syncQueue(authService.apiFetch.bind(authService));
       if (result.synced > 0) {
         await fetchData();
         toast(
