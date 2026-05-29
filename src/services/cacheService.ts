@@ -1,7 +1,7 @@
 import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'ledger_cache';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const DEFAULT_TTL = 5 * 60 * 1000;
 
 interface CachedEntry<T> {
@@ -34,14 +34,19 @@ interface LedgerDB {
 
 let dbPromise: Promise<IDBPDatabase<LedgerDB>> | null = null;
 
-function getDB() {
+export function getDB() {
   if (!dbPromise) {
     dbPromise = openDB<LedgerDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        db.createObjectStore('members');
-        db.createObjectStore('accounts');
-        db.createObjectStore('transactions');
-        db.createObjectStore('metadata');
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore('members');
+          db.createObjectStore('accounts');
+          db.createObjectStore('transactions');
+          db.createObjectStore('metadata');
+        }
+        if (oldVersion < 2) {
+          db.createObjectStore('offline_queue');
+        }
       },
     });
   }

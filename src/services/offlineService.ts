@@ -1,5 +1,4 @@
-import { openDB, IDBPDatabase } from 'idb';
-import { cacheService } from './cacheService';
+import { getDB, cacheService } from './cacheService';
 
 type OfflineAction = {
   id: string;
@@ -8,31 +7,6 @@ type OfflineAction = {
   body?: any;
   timestamp: number;
 };
-
-const DB_NAME = 'ledger_cache';
-const DB_VERSION = 2;
-
-interface OfflineQueueStore {
-  offline_queue: {
-    key: 'pending';
-    value: OfflineAction[];
-  };
-}
-
-let dbPromise: Promise<IDBPDatabase<OfflineQueueStore>> | null = null;
-
-function getDB() {
-  if (!dbPromise) {
-    dbPromise = openDB<OfflineQueueStore>(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
-        if (oldVersion < 2) {
-          db.createObjectStore('offline_queue');
-        }
-      },
-    });
-  }
-  return dbPromise;
-}
 
 type SyncStateListener = (state: SyncStatus) => void;
 
