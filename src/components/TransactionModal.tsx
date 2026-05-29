@@ -54,7 +54,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
     }
 
     if (!navigator.onLine) {
-      offlineService.queueAction({
+      await offlineService.queueAction({
         type: 'create',
         endpoint: '/api/transactions',
         body: {
@@ -94,7 +94,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
     } catch (error) {
       console.error("Save failed:", error);
       if (error instanceof TypeError) {
-        offlineService.queueAction({
+        await offlineService.queueAction({
           type: 'create',
           endpoint: '/api/transactions',
           body: {

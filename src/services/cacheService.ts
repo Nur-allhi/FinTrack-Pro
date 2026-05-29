@@ -62,7 +62,7 @@ export const cacheService = {
     const db = await getDB();
     const entry = await db.get('members', 'list');
     if (!entry) return null;
-    if (isExpired(entry.timestamp, ttl)) {
+    if (navigator.onLine && isExpired(entry.timestamp, ttl)) {
       await db.delete('members', 'list');
       return null;
     }
@@ -78,7 +78,7 @@ export const cacheService = {
     const db = await getDB();
     const entry = await db.get('accounts', 'list');
     if (!entry) return null;
-    if (isExpired(entry.timestamp, ttl)) {
+    if (navigator.onLine && isExpired(entry.timestamp, ttl)) {
       await db.delete('accounts', 'list');
       return null;
     }
@@ -98,7 +98,7 @@ export const cacheService = {
     const db = await getDB();
     const entry = await db.get('transactions', accountId);
     if (!entry) return null;
-    if (isExpired(entry.timestamp, ttl)) {
+    if (navigator.onLine && isExpired(entry.timestamp, ttl)) {
       await db.delete('transactions', accountId);
       return null;
     }

@@ -23,6 +23,12 @@ if ('serviceWorker' in navigator) {
           }
         });
       });
+
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'SYNC_OFFLINE_QUEUE') {
+          window.dispatchEvent(new CustomEvent('sw-sync-offline'));
+        }
+      });
     } catch {}
   });
 }

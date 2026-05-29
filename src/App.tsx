@@ -21,7 +21,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
 import { authService, setOnSessionExpired } from './services/authService';
-import { offlineService } from './services/offlineService';
+import { offlineService, syncState } from './services/offlineService';
 import { cn } from './utils/cn';
 import { useToast } from './components/Toast';
 import { Agentation } from 'agentation';
@@ -57,6 +57,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<number | null>(offlineService.getLastSync());
+  const [pendingCount, setPendingCount] = useState(0);
   const [userEmail, setUserEmail] = useState('');
   const [showProfile, setShowProfile] = useState(false);
 
@@ -213,15 +214,16 @@ export default function App() {
 
   useEffect(() => {
     const offCleanup = offlineService.onOffline(() => setIsOnline(false));
-    const onCleanup = offlineService.onOnline(() => {
+    const onCleanup = offlineService.onOnline(async () => {
       setIsOnline(true);
-      setLastSync(Date.now());
-      fetchData();
-      offlineService.syncQueue(authService.apiFetch).then(result => {
-        if (result.synced > 0) {
-          toast(`Synced ${result.synced} pending change${result.synced !== 1 ? 's' : ''}.`, 'success');
-        }
-      });
+      const result = await offlineService.syncQueue(authService.apiFetch);
+      await fetchData();
+      if (result.synced > 0) {
+        const msg = result.failed > 0
+          ? `Synced ${result.synced} change${result.synced !== 1 ? 's' : ''}, ${result.failed} failed.`
+          : `Synced ${result.synced} pending change${result.synced !== 1 ? 's' : ''}.`;
+        toast(msg, result.failed > 0 ? 'error' : 'success');
+      }
     });
     return () => { offCleanup(); onCleanup(); };
   }, []);
@@ -259,6 +261,24 @@ export default function App() {
   useEffect(() => {
     setShowProfile(false);
   }, [activeTab]);
+
+  useEffect(() => {
+    const handleSWSync = async () => {
+      if (!offlineService.isOnline()) return;
+      const result = await offlineService.syncQueue(authService.apiFetch);
+      await fetchData();
+      if (result.synced > 0) {
+        toast(`Background synced ${result.synced} change${result.synced !== 1 ? 's' : ''}.`, result.failed > 0 ? 'error' : 'success');
+      }
+    };
+    window.addEventListener('sw-sync-offline', handleSWSync);
+    return () => window.removeEventListener('sw-sync-offline', handleSWSync);
+  }, []);
+
+  useEffect(() => {
+    const unsub = syncState.subscribe(s => setPendingCount(s.pendingCount));
+    return unsub;
+  }, []);
 
   const handleLogin = (token: string) => {
     localStorage.setItem('auth_token', token);
@@ -348,7 +368,7 @@ export default function App() {
           }}
         />
 
-        <OfflineIndicator isOnline={isOnline} />
+        <OfflineIndicator isOnline={isOnline} pendingCount={pendingCount} lastSyncAt={lastSync} />
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.2 }}>

@@ -43,7 +43,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
     }
 
     if (!navigator.onLine) {
-      offlineService.queueAction({
+      await offlineService.queueAction({
         type: 'create',
         endpoint: '/api/transfers',
         body: {
@@ -80,7 +80,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
     } catch (error) {
       console.error("Transfer failed:", error);
       if (error instanceof TypeError) {
-        offlineService.queueAction({
+        await offlineService.queueAction({
           type: 'create',
           endpoint: '/api/transfers',
           body: {

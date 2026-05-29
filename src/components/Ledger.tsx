@@ -13,7 +13,7 @@ import { cacheService } from '../services/cacheService';
 import { exportLedgerPDF } from '../utils/ledgerPdf';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
-import { offlineService } from '../services/offlineService';
+import { offlineService, syncState } from '../services/offlineService';
 import Select from './Select';
 import DatePicker from './DatePicker';
 
@@ -128,7 +128,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     if (!navigator.onLine) {
       const qBody: Record<string, any> = { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount };
       if (summary !== null) qBody.summary = summary;
-      offlineService.queueAction({
+      await offlineService.queueAction({
         type: editingTx ? 'update' : 'create',
         endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
         body: qBody
@@ -153,7 +153,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     } catch (error) {
       console.error(error);
       if (error instanceof TypeError) {
-        offlineService.queueAction({
+        await offlineService.queueAction({
           type: editingTx ? 'update' : 'create',
           endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
           body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, ...(summary !== null && { summary }) }
@@ -170,14 +170,26 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     const prev = [...transactions];
     setTransactions(transactions.filter(t => t.id !== id));
     setDeletingId(null);
+
+    if (!navigator.onLine) {
+      await offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}` });
+      toast("Deletion queued for sync when online.", 'success');
+      return;
+    }
+
     try {
       const res = await authService.apiFetch(`/api/transactions/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Delete failed");
       fetchTransactions(false);
     } catch (error) {
       console.error(error);
-      setTransactions(prev);
-      toast("Failed to delete transaction.", 'error');
+      if (error instanceof TypeError) {
+        await offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}` });
+        toast("Deletion queued for sync when online.", 'success');
+      } else {
+        setTransactions(prev);
+        toast("Failed to delete transaction.", 'error');
+      }
     }
   };
 
