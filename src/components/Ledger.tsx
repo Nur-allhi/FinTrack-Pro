@@ -63,7 +63,8 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     else setIsSyncing(true);
 
     try {
-      const res = await authService.apiFetch(`/api/transactions/${account.id}`);
+      const cacheBuster = navigator.onLine ? `?_=${Date.now()}` : '';
+      const res = await authService.apiFetch(`/api/transactions/${account.id}${cacheBuster}`);
       if (!res.ok) throw new Error("Server error");
       let data: Transaction[] = await res.json();
 
