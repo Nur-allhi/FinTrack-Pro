@@ -43,17 +43,21 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
     }
 
     if (!navigator.onLine) {
-      await offlineService.queueAction({
-        type: 'create',
-        endpoint: '/api/transfers',
-        body: {
-          from_account_id: Number(transfer.from_account_id),
-          to_account_id: Number(transfer.to_account_id),
-          amount: parseFloat(transfer.amount),
-          particulars: transfer.particulars,
-          date: transfer.date
-        }
-      });
+      try {
+        await offlineService.queueAction({
+          type: 'create',
+          endpoint: '/api/transfers',
+          body: {
+            from_account_id: Number(transfer.from_account_id),
+            to_account_id: Number(transfer.to_account_id),
+            amount: parseFloat(transfer.amount),
+            particulars: transfer.particulars,
+            date: transfer.date
+          }
+        });
+      } catch (e) {
+        console.error('Failed to queue transfer:', e);
+      }
       toast("Transfer queued for sync when online.", 'success');
       handleClose();
       return;
@@ -80,17 +84,21 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
     } catch (error) {
       console.error("Transfer failed:", error);
       if (error instanceof TypeError) {
-        await offlineService.queueAction({
-          type: 'create',
-          endpoint: '/api/transfers',
-          body: {
-            from_account_id: Number(transfer.from_account_id),
-            to_account_id: Number(transfer.to_account_id),
-            amount: parseFloat(transfer.amount),
-            particulars: transfer.particulars,
-            date: transfer.date
-          }
-        });
+        try {
+          await offlineService.queueAction({
+            type: 'create',
+            endpoint: '/api/transfers',
+            body: {
+              from_account_id: Number(transfer.from_account_id),
+              to_account_id: Number(transfer.to_account_id),
+              amount: parseFloat(transfer.amount),
+              particulars: transfer.particulars,
+              date: transfer.date
+            }
+          });
+        } catch (e) {
+          console.error('Failed to queue transfer:', e);
+        }
         toast("Transfer queued for sync when online.", 'success');
         handleClose();
       } else {

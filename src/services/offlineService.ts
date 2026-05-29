@@ -43,6 +43,15 @@ export const syncState = {
   },
 };
 
+export async function initPendingCount() {
+  try {
+    const queue = await getQueueFromDB();
+    syncState.setState({ pendingCount: queue.length });
+  } catch (e) {
+    console.error('Failed to init pending count:', e);
+  }
+}
+
 async function registerBackgroundSync() {
   try {
     if ('sync' in navigator && 'serviceWorker' in navigator) {
@@ -59,7 +68,8 @@ async function getQueueFromDB(): Promise<OfflineAction[]> {
     const db = await getDB();
     const queue = await db.get('offline_queue', 'pending');
     return queue || [];
-  } catch {
+  } catch (e) {
+    console.error('getQueueFromDB failed:', e);
     return [];
   }
 }
@@ -124,8 +134,12 @@ export const offlineService = {
     fetchFn: (url: string, options?: RequestInit) => Promise<Response>
   ): Promise<{ synced: number; failed: number }> {
     const queue = await getQueueFromDB();
-    if (queue.length === 0) return { synced: 0, failed: 0 };
+    if (queue.length === 0) {
+      console.log('[syncQueue] queue empty, nothing to sync');
+      return { synced: 0, failed: 0 };
+    }
 
+    console.log(`[syncQueue] starting sync for ${queue.length} item(s)`, queue.map(a => ({ type: a.type, endpoint: a.endpoint })));
     syncState.setState({ state: 'syncing' });
     let synced = 0;
     let failed = 0;
@@ -141,16 +155,21 @@ export const offlineService = {
           headers: { 'Content-Type': 'application/json' },
         };
         if (action.body) options.body = JSON.stringify(action.body);
+        console.log(`[syncQueue] replaying ${method} ${action.endpoint}`, action.body);
         const res = await fetchFn(action.endpoint, options);
         if (res.ok) {
+          console.log(`[syncQueue] success: ${method} ${action.endpoint} -> ${res.status}`);
           synced++;
         } else if (res.status >= 500) {
+          console.warn(`[syncQueue] server error: ${method} ${action.endpoint} -> ${res.status}, will retry`);
           remaining.push(action);
           failed++;
         } else {
+          console.error(`[syncQueue] client error: ${method} ${action.endpoint} -> ${res.status}, action dropped`);
           failed++;
         }
-      } catch {
+      } catch (e) {
+        console.error(`[syncQueue] network error replaying ${action.type} ${action.endpoint}:`, e);
         remaining.push(action);
         failed++;
       }
@@ -162,6 +181,7 @@ export const offlineService = {
       state: remaining.length > 0 ? 'error' : 'idle',
       pendingCount: remaining.length,
     });
+    console.log(`[syncQueue] done: ${synced} synced, ${failed} failed, ${remaining.length} remaining`);
     return { synced, failed };
   },
 };

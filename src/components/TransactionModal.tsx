@@ -54,17 +54,21 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
     }
 
     if (!navigator.onLine) {
-      await offlineService.queueAction({
-        type: 'create',
-        endpoint: '/api/transactions',
-        body: {
-          account_id: Number(tx.account_id),
-          date: tx.date,
-          particulars: tx.particulars,
-          category: tx.category || 'Uncategorized',
-          amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
-        }
-      });
+      try {
+        await offlineService.queueAction({
+          type: 'create',
+          endpoint: '/api/transactions',
+          body: {
+            account_id: Number(tx.account_id),
+            date: tx.date,
+            particulars: tx.particulars,
+            category: tx.category || 'Uncategorized',
+            amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
+          }
+        });
+      } catch (e) {
+        console.error('Failed to queue transaction:', e);
+      }
       toast("Transaction queued for sync when online.", 'success');
       handleClose();
       return;
@@ -94,17 +98,21 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
     } catch (error) {
       console.error("Save failed:", error);
       if (error instanceof TypeError) {
-        await offlineService.queueAction({
-          type: 'create',
-          endpoint: '/api/transactions',
-          body: {
-            account_id: Number(tx.account_id),
-            date: tx.date,
-            particulars: tx.particulars,
-            category: tx.category || 'Uncategorized',
-            amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
-          }
-        });
+        try {
+          await offlineService.queueAction({
+            type: 'create',
+            endpoint: '/api/transactions',
+            body: {
+              account_id: Number(tx.account_id),
+              date: tx.date,
+              particulars: tx.particulars,
+              category: tx.category || 'Uncategorized',
+              amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
+            }
+          });
+        } catch (e) {
+          console.error('Failed to queue transaction:', e);
+        }
         toast("Transaction queued for sync when online.", 'success');
         handleClose();
       } else {

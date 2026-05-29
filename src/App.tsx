@@ -21,7 +21,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Member, Account } from './types';
 import { cacheService } from './services/cacheService';
 import { authService, setOnSessionExpired } from './services/authService';
-import { offlineService, syncState } from './services/offlineService';
+import { offlineService, syncState, initPendingCount } from './services/offlineService';
 import { cn } from './utils/cn';
 import { useToast } from './components/Toast';
 import { Agentation } from 'agentation';
@@ -123,6 +123,7 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
+      initPendingCount();
       const stored = localStorage.getItem('auth_token');
       if (stored) {
         const refreshed = await authService.refreshToken();
