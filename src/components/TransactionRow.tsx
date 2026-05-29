@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Transaction } from '../types';
 import { cn } from '../utils/cn';
@@ -15,6 +15,8 @@ interface TransactionRowProps {
   setDeletingId: (id: number | null) => void;
   onDelete: (id: number) => void;
   onEdit: (tx: Transaction) => void;
+  editingTxId: number | null;
+  renderEditForm?: () => React.ReactNode;
 }
 
 export default function TransactionRow({
@@ -26,7 +28,9 @@ export default function TransactionRow({
   deletingId,
   setDeletingId,
   onDelete,
-  onEdit
+  onEdit,
+  editingTxId,
+  renderEditForm
 }: TransactionRowProps) {
   const isDebit = tx.amount < 0;
 
@@ -34,7 +38,7 @@ export default function TransactionRow({
     <>
       {isNewDate && (
         <tr>
-          <td colSpan={5} className="px-5 py-2 bg-surface-soft/50">
+          <td colSpan={6} className="sticky top-0 z-10 bg-surface-soft px-5 py-2">
             <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">
               {format(new Date(tx.date), 'EEEE, MMMM dd, yyyy')}
             </p>
@@ -42,10 +46,10 @@ export default function TransactionRow({
         </tr>
       )}
       <motion.tr
-        layout="position"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ type: 'tween', duration: 0.2 }}
         onClick={onToggleExpand}
         className={cn(
           "cursor-pointer transition-all group border-b border-hairline",
@@ -55,11 +59,10 @@ export default function TransactionRow({
         <td className="px-5 py-2.5 whitespace-nowrap">
           <div className="flex items-center gap-2">
             <div className={cn("w-2 h-2 rounded-full shrink-0", isDebit ? 'bg-semantic-down' : 'bg-semantic-up')} />
-            <span className="text-xs font-mono font-bold text-muted">{format(new Date(tx.date), 'dd MMM').toUpperCase()}</span>
           </div>
         </td>
         <td className="px-5 py-2.5 max-w-[250px]">
-          <p className="text-sm font-semibold text-ink truncate">{tx.particulars}</p>
+          <p className={`text-sm font-semibold text-ink ${isExpanded ? '' : 'truncate'}`}>{tx.particulars}</p>
         </td>
         <td className="px-5 py-2.5">
           <span className={cn(
@@ -102,8 +105,9 @@ export default function TransactionRow({
       </motion.tr>
       {isExpanded && (
         <motion.tr
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'tween', duration: 0.15 }}
         >
           <td colSpan={6} className="px-5 py-4 bg-primary/5 border-b border-primary/10">
             <div className="flex items-center justify-between gap-4">
@@ -116,6 +120,20 @@ export default function TransactionRow({
           </td>
         </motion.tr>
       )}
+      <AnimatePresence>
+        {editingTxId === tx.id && renderEditForm && (
+          <motion.tr
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ type: 'tween', duration: 0.15 }}
+          >
+            <td colSpan={6} className="p-0">
+              {renderEditForm()}
+            </td>
+          </motion.tr>
+        )}
+      </AnimatePresence>
     </>
   );
 }

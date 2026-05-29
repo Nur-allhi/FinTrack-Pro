@@ -50,9 +50,9 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
         {isOpen && !isAnyModalOpen && (
           <div className="flex flex-col items-end gap-3 mb-2">
             <motion.button
-              initial={{ opacity: 0, y: 20, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.8 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
               onClick={() => {
                 onNewTransfer();
                 close();
@@ -66,9 +66,9 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
             </motion.button>
 
             <motion.button
-              initial={{ opacity: 0, y: 20, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.8 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
               transition={{ delay: 0.05 }}
               onClick={() => {
                 onNewTransaction();
@@ -88,7 +88,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
       <button
         onClick={toggle}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-          isOpen ? 'bg-primary rotate-45' : 'bg-primary hover:scale-110 active:scale-95'
+          isOpen ? 'bg-primary rotate-45' : 'bg-primary hover:scale-110'
         }`}
       >
         {isOpen ? (

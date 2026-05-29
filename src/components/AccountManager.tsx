@@ -233,7 +233,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
               const isEditing = editingAccount?.id === acc.id;
               const Icon = typeIcons[acc.type] || Wallet;
               return (
-                <motion.div key={acc.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }}>
+                <motion.div key={acc.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
                   {isEditing ? (
                     <div className="card-xl border-primary/20 bg-primary/5">
                       {renderForm('Edit Account')}

@@ -183,9 +183,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
           <AnimatePresence initial={false}>
           {groups.map(group => (
             <motion.div key={group.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
               className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md group">
               <div className="h-1" style={{ backgroundColor: group.color }} />
               <div className="p-4">
@@ -254,9 +254,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                 <AnimatePresence initial={false}>
                 {groups.map(group => (
                   <motion.tr key={group.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
                     className="hover:bg-surface-soft/30 transition-colors">
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -286,9 +286,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
             <AnimatePresence initial={false}>
             {groups.map(group => (
               <motion.div key={group.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
                 className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: group.color + '15', color: group.color }}>
                   <Layers className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Transaction } from '../types';
 import { cn } from '../utils/cn';
@@ -15,6 +15,8 @@ interface TransactionCardProps {
   setDeletingId: (id: number | null) => void;
   onDelete: (id: number) => void;
   onEdit: (tx: Transaction) => void;
+  editingTxId: number | null;
+  renderEditForm?: () => React.ReactNode;
 }
 
 export default function TransactionCard({
@@ -26,24 +28,26 @@ export default function TransactionCard({
   deletingId,
   setDeletingId,
   onDelete,
-  onEdit
+  onEdit,
+  editingTxId,
+  renderEditForm
 }: TransactionCardProps) {
   const isDebit = tx.amount < 0;
 
   return (
     <>
       {isNewDate && (
-        <div className="bg-surface-soft/50 px-4 py-2 border-y border-hairline">
+        <div className="sticky top-0 z-10 bg-surface-soft px-4 py-2 border-y border-hairline">
           <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">
             {format(new Date(tx.date), 'EEEE, MMMM dd, yyyy')}
           </p>
         </div>
       )}
       <motion.div
-        layout="position"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -12 }}
+        transition={{ type: 'tween', duration: 0.2 }}
         onClick={onToggleExpand}
         className={cn(
           "px-4 py-3 transition-all cursor-pointer border-b border-hairline",
@@ -52,7 +56,7 @@ export default function TransactionCard({
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-ink truncate">{tx.particulars}</p>
+            <p className={`text-sm font-semibold text-ink ${isExpanded ? '' : 'truncate'}`}>{tx.particulars}</p>
             <span className={cn(
               "text-sm font-bold financial-number shrink-0",
               isDebit ? "text-semantic-down" : "text-semantic-up"
@@ -61,7 +65,6 @@ export default function TransactionCard({
             </span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs font-mono font-bold text-muted">{format(new Date(tx.date), 'dd MMM').toUpperCase()}</span>
             <span className={cn(
               "inline-block px-2 py-0.5 rounded-pill text-[10px] font-bold uppercase tracking-wider",
               tx.category ? "bg-surface-strong text-muted" : "bg-amber-50 text-amber-600"
@@ -95,6 +98,18 @@ export default function TransactionCard({
           )}
         </div>
       </motion.div>
+      <AnimatePresence>
+        {editingTxId === tx.id && renderEditForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ type: 'tween', duration: 0.15 }}
+          >
+            {renderEditForm()}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

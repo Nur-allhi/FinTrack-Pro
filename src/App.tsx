@@ -351,7 +351,7 @@ export default function App() {
         <OfflineIndicator isOnline={isOnline} />
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <AnimatePresence mode="wait">
-            <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+            <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.2 }}>
               <Suspense fallback={<LoadingScreen />}>{renderContent()}</Suspense>
             </motion.div>
           </AnimatePresence>
@@ -372,7 +372,7 @@ export default function App() {
       </ErrorBoundary>
       <div className="md:hidden"><FloatingActionButton onNewTransaction={() => setIsTransactionModalOpen(true)} onNewTransfer={() => setIsTransferModalOpen(true)} isTransactionModalOpen={isTransactionModalOpen} isTransferModalOpen={isTransferModalOpen} /></div>
     </div>
-      {import.meta.env.DEV && <Agentation />}
+      {import.meta.env.VITE_AGENTATION === 'true' && <Agentation />}
     </>
   );
 }

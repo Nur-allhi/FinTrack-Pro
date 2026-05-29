@@ -89,7 +89,6 @@ export default function Sidebar({
                   <motion.button
                     key={item.id}
                     layout
-                    whileTap={{ scale: 0.97 }}
                     onClick={() => {
                       setActiveTab(item.id);
                       setSelectedAccountId(null);

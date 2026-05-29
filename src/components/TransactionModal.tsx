@@ -117,7 +117,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-surface-dark/40 backdrop-blur-sm">
-      <motion.div initial={{ opacity: 0, y: 20, scale: 0.97 }} animate={closing ? { opacity: 0, y: 20, scale: 0.97 } : { opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.2 }} className="bg-canvas w-full max-w-lg rounded-xl border border-hairline shadow-2xl overflow-hidden">
+      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="bg-canvas w-full max-w-lg rounded-xl border border-hairline shadow-2xl overflow-hidden">
         <div className="p-8 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
           <h3 className="text-2xl font-normal text-ink tracking-tight">Post Transaction</h3>
           <button onClick={handleClose} className="p-2 text-muted hover:text-ink transition-colors">

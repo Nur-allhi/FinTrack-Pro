@@ -233,18 +233,6 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
             <div>
               <h3 className="text-base md:text-xl font-normal text-ink tracking-tight">{account.name}</h3>
               <p className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">{account.type.replace('_', ' ')}</p>
-              <div className="md:hidden flex items-center gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
-                    showFilters || dateView !== 'all' || categoryFilter ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
-                  }`}
-                >
-                  <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
-                  Filters
-                </button>
-              </div>
             </div>
             <div className="text-right shrink-0">
               <div className="flex items-center gap-1 md:gap-2 justify-end mb-0.5 md:mb-1">
@@ -254,13 +242,23 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
               <p className="text-xl md:text-3xl font-normal text-ink financial-number tracking-tighter">
                 {currency}{currentBalance.toLocaleString()}
               </p>
-              <div className="md:hidden mt-2">
-                <button onClick={() => setIsAdding(true)} className="btn-primary text-[10px] px-3 py-1.5">
-                  <Plus className="w-3.5 h-3.5" />
-                  New
-                </button>
-              </div>
             </div>
+          </div>
+          <div className="md:hidden flex items-center justify-between mt-4">
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`-ml-1 px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
+                showFilters || dateView !== 'all' || categoryFilter ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
+              Filters
+            </button>
+            <button onClick={() => setIsAdding(true)} className="btn-primary text-[10px] px-3 py-1.5">
+              <Plus className="w-3.5 h-3.5" />
+              New
+            </button>
           </div>
         </div>
 
@@ -384,7 +382,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         )}
 
         <AnimatePresence>
-          {isAdding && (
+          {isAdding && !editingTx && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -417,6 +415,10 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
                     key={tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
                     isExpanded={expandedId === tx.id} onToggleExpand={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
                     currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete} onEdit={(t) => { setEditingTx(t); setNewTx({ date: t.date, particulars: t.particulars, amount: Math.abs(t.amount).toString(), isCredit: t.amount > 0, category: t.category || '' }); setIsAdding(true); }}
+                    editingTxId={editingTx?.id ?? null}
+                    renderEditForm={editingTx ? () => (
+                      <TransactionForm onSubmit={handleAddOrUpdateTransaction} newTx={newTx} setNewTx={setNewTx} onCancel={() => { setIsAdding(false); setEditingTx(null); }} availableCategories={allCategories} />
+                    ) : undefined}
                   />
                 ))}
               </AnimatePresence>
@@ -431,6 +433,10 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
                 key={tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
                 isExpanded={expandedId === tx.id} onToggleExpand={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
                 currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete} onEdit={(t) => { setEditingTx(t); setNewTx({ date: t.date, particulars: t.particulars, amount: Math.abs(t.amount).toString(), isCredit: t.amount > 0, category: t.category || '' }); setIsAdding(true); }}
+                editingTxId={editingTx?.id ?? null}
+                renderEditForm={editingTx ? () => (
+                  <TransactionForm onSubmit={handleAddOrUpdateTransaction} newTx={newTx} setNewTx={setNewTx} onCancel={() => { setIsAdding(false); setEditingTx(null); }} availableCategories={allCategories} />
+                ) : undefined}
               />
             ))}
           </AnimatePresence>

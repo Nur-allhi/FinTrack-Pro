@@ -101,10 +101,6 @@
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
-:where(button):active {
-  transform: scale(0.96);
-}
-
 body {
   font-family: var(--font-sans);
   background-color: var(--color-canvas);
@@ -129,11 +125,11 @@ h1, h2, h3, h4, h5, .font-display {
   }
 
   .btn-pill {
-    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2;
   }
 
   .btn-primary {
-    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2;
     background-color: var(--color-primary);
     color: var(--color-on-primary);
   }
@@ -142,7 +138,7 @@ h1, h2, h3, h4, h5, .font-display {
   }
 
   .btn-secondary {
-    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all active:scale-[0.96] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2;
     background-color: var(--color-surface-strong);
     color: var(--color-ink);
   }

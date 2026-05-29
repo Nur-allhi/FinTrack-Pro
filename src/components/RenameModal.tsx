@@ -38,9 +38,9 @@ export default function RenameModal({ open, title, initialValue, onConfirm, onCa
           onClick={onCancel}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.15 }}
             onClick={e => e.stopPropagation()}
             className="bg-canvas rounded-xl border border-hairline shadow-2xl w-[320px] p-5"
