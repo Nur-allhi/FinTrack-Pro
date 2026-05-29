@@ -128,11 +128,15 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     if (!navigator.onLine) {
       const qBody: Record<string, any> = { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount };
       if (summary !== null) qBody.summary = summary;
-      await offlineService.queueAction({
-        type: editingTx ? 'update' : 'create',
-        endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
-        body: qBody
-      });
+      try {
+        await offlineService.queueAction({
+          type: editingTx ? 'update' : 'create',
+          endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
+          body: qBody
+        });
+      } catch (e) {
+        console.error('Failed to queue action:', e);
+      }
       toast("Transaction queued for sync when online.", 'success');
       return;
     }

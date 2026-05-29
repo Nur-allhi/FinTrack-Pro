@@ -30,6 +30,10 @@ interface LedgerDB {
     key: string;
     value: any;
   };
+  offline_queue: {
+    key: string;
+    value: any;
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<LedgerDB>> | null = null;
