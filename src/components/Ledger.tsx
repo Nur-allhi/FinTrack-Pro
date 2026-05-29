@@ -134,6 +134,11 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
           endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
           body: qBody
         });
+        const cached = await cacheService.getTransactions(account.id.toString());
+        const updatedCache = editingTx
+          ? (cached || []).map(t => t.id === editingTx.id ? optimisticTx : t)
+          : [optimisticTx, ...(cached || [])];
+        await cacheService.setTransactions(account.id.toString(), updatedCache);
       } catch (e) {
         console.error('Failed to queue action:', e);
       }
@@ -162,6 +167,11 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
           endpoint: editingTx ? `/api/transactions/${editingTx.id}` : '/api/transactions',
           body: { account_id: account.id, date: newTx.date, particulars: newTx.particulars, category, amount, ...(summary !== null && { summary }) }
         });
+        const cached = await cacheService.getTransactions(account.id.toString());
+        const updatedCache = editingTx
+          ? (cached || []).map(t => t.id === editingTx.id ? optimisticTx : t)
+          : [optimisticTx, ...(cached || [])];
+        await cacheService.setTransactions(account.id.toString(), updatedCache);
         toast("Transaction queued for sync when online.", 'success');
       } else {
         setTransactions(prev);
@@ -177,6 +187,10 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
 
     if (!navigator.onLine) {
       await offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}` });
+      const cached = await cacheService.getTransactions(account.id.toString());
+      if (cached) {
+        await cacheService.setTransactions(account.id.toString(), cached.filter(t => t.id !== id));
+      }
       toast("Deletion queued for sync when online.", 'success');
       return;
     }
@@ -189,6 +203,10 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       console.error(error);
       if (error instanceof TypeError) {
         await offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}` });
+        const cached = await cacheService.getTransactions(account.id.toString());
+        if (cached) {
+          await cacheService.setTransactions(account.id.toString(), cached.filter(t => t.id !== id));
+        }
         toast("Deletion queued for sync when online.", 'success');
       } else {
         setTransactions(prev);
