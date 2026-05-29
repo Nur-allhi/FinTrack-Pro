@@ -58,6 +58,7 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<number | null>(offlineService.getLastSync());
   const [pendingCount, setPendingCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [showProfile, setShowProfile] = useState(false);
 
@@ -277,7 +278,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const unsub = syncState.subscribe(s => setPendingCount(s.pendingCount));
+    const unsub = syncState.subscribe(s => {
+      setPendingCount(s.pendingCount);
+      setIsSyncing(s.state === 'syncing');
+    });
     return unsub;
   }, []);
 
@@ -390,7 +394,7 @@ export default function App() {
           }}
         />
 
-        <OfflineIndicator isOnline={isOnline} pendingCount={pendingCount} lastSyncAt={lastSync} />
+        <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} />
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.2 }}>

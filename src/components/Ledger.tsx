@@ -61,11 +61,47 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     if (!account?.id) return setLoading(false);
     if (showLoading) setLoading(true);
     else setIsSyncing(true);
-    
+
     try {
       const res = await authService.apiFetch(`/api/transactions/${account.id}`);
       if (!res.ok) throw new Error("Server error");
-      const data = await res.json();
+      let data: Transaction[] = await res.json();
+
+      const queue = await offlineService.getQueue();
+      const pendingDeletes = queue.filter(a =>
+        a.type === 'delete' && a.endpoint.startsWith('/api/transactions/')
+      );
+      for (const del of pendingDeletes) {
+        const id = parseInt(del.endpoint.split('/').pop()!, 10);
+        data = data.filter(t => t.id !== id);
+      }
+      const pendingCreates = queue.filter(a =>
+        a.type === 'create' && a.endpoint === '/api/transactions'
+      );
+      for (const create of pendingCreates) {
+        data.unshift({
+          id: Date.now() + Math.random(),
+          account_id: account.id,
+          date: create.body.date,
+          particulars: create.body.particulars,
+          category: create.body.category || 'Uncategorized',
+          amount: create.body.amount,
+          type: 'normal',
+          summary: create.body.summary || null,
+          linked_transaction_id: null,
+        } as Transaction);
+      }
+      const pendingUpdates = queue.filter(a =>
+        a.type === 'update' && a.body?.account_id === account.id
+      );
+      for (const update of pendingUpdates) {
+        const id = parseInt(update.endpoint.split('/').pop()!, 10);
+        const idx = data.findIndex(t => t.id === id);
+        if (idx >= 0) {
+          data[idx] = { ...data[idx], date: update.body.date, particulars: update.body.particulars, category: update.body.category || 'Uncategorized', amount: update.body.amount };
+        }
+      }
+
       setTransactions(data);
       cacheService.setTransactions(account.id.toString(), data);
     } catch (error) {

@@ -48,17 +48,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
               className={cn(
-                "pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl border max-w-sm",
-                t.type === 'success' && "bg-semantic-up/5 border-semantic-up/10 text-semantic-up",
-                t.type === 'error' && "bg-semantic-down/5 border-semantic-down/10 text-semantic-down",
-                t.type === 'info' && "bg-primary/5 border-primary/10 text-primary"
+                "pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-lg shadow-lg max-w-sm",
+                t.type === 'success' && "bg-green-600 text-white",
+                t.type === 'error' && "bg-red-600 text-white",
+                t.type === 'info' && "bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900"
               )}
             >
               {t.type === 'success' && <CheckCircle2 className="w-5 h-5 shrink-0" />}
               {t.type === 'error' && <AlertCircle className="w-5 h-5 shrink-0" />}
               {t.type === 'info' && <Info className="w-5 h-5 shrink-0" />}
               <p className="text-sm font-semibold flex-1">{t.message}</p>
-              <button onClick={() => removeToast(t.id)} className="opacity-50 hover:opacity-100 transition-opacity">
+              <button onClick={() => removeToast(t.id)} className="opacity-70 hover:opacity-100 transition-opacity">
                 <X className="w-4 h-4" />
               </button>
             </motion.div>
