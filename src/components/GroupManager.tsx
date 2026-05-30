@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Edit2, Trash2, Layers, ChevronDown, Wallet, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Layers, ChevronDown, Wallet, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
-import Select from './Select';
+import GroupForm from './GroupForm';
 
 interface GroupChild {
   id: number;
@@ -109,7 +109,6 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h3 className="text-lg font-normal text-ink tracking-tight">Account Groups</h3>
         <div className="flex items-center gap-3">
@@ -123,61 +122,24 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
         </div>
       </div>
 
-      {/* Summary */}
       <div className="flex items-center gap-4 px-1">
         <span className="text-xs font-bold text-muted uppercase tracking-wider">{groups.length} groups</span>
         <span className="w-px h-3 bg-hairline" />
         <span className="text-xs font-bold text-muted uppercase tracking-wider">Total: <span className="text-ink font-mono">{currency || '৳'}{totalAccumulated.toLocaleString()}</span></span>
       </div>
 
-      {/* Form */}
       {isAdding && (
-        <div className="card-xl border-primary/20 bg-primary/5">
-          <div className="flex items-center justify-between mb-5">
-            <h4 className="text-base font-normal text-ink">{editingGroup ? 'Edit Group' : 'New Group'}</h4>
-            <button onClick={() => { setIsAdding(false); setEditingGroup(null); }} className="p-1 text-muted hover:text-ink">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <form onSubmit={handleCreateOrUpdate} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Group Name</label>
-              <input type="text" required value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})}
-                placeholder="e.g. HK Bank" className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-sm font-medium" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Member</label>
-              <Select
-                value={newGroup.member_id}
-                onChange={v => setNewGroup({...newGroup, member_id: v})}
-                options={[
-                  { value: '', label: 'None' },
-                  ...members.map(m => ({ value: String(m.id), label: m.name }))
-                ]}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Color</label>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {colors.map(c => (
-                  <button key={c} type="button" onClick={() => setNewGroup({...newGroup, color: c})}
-                    className={cn("w-7 h-7 rounded-full transition-all border-2", newGroup.color === c ? "border-primary scale-110 shadow-md" : "border-transparent hover:scale-105")}
-                    style={{ backgroundColor: c }} />
-                ))}
-              </div>
-            </div>
-            <div className="md:col-span-3 flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => { setIsAdding(false); setEditingGroup(null); }} className="btn-secondary text-xs px-5 py-2">Cancel</button>
-              <button type="submit" disabled={saving} className="btn-primary text-xs px-6 py-2 flex items-center gap-2">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                {editingGroup ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </form>
-        </div>
+        <GroupForm
+          editingGroup={!!editingGroup}
+          newGroup={newGroup}
+          setNewGroup={setNewGroup}
+          members={members}
+          saving={saving}
+          onSubmit={handleCreateOrUpdate}
+          onCancel={() => { setIsAdding(false); setEditingGroup(null); }}
+        />
       )}
 
-      {/* Grid View */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <AnimatePresence initial={false}>
@@ -218,7 +180,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     {group.children.length === 0 ? (
                       <p className="text-xs text-muted italic">No accounts assigned</p>
                     ) : (
-                      group.children.map((child: any) => (
+                      group.children.map((child: GroupChild) => (
                         <div key={child.id} className="flex items-center justify-between py-1.5 px-3 bg-surface-soft rounded-lg">
                           <div className="flex items-center gap-2 min-w-0">
                             <Wallet className="w-3 h-3 text-muted shrink-0" />
@@ -236,9 +198,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
           </AnimatePresence>
         </div>
       ) : (
-        /* List View */
         <>
-          {/* Desktop table */}
           <div className="hidden md:block bg-canvas border border-hairline rounded-xl overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -281,7 +241,6 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
               </tbody>
             </table>
           </div>
-          {/* Mobile compact cards */}
           <div className="md:hidden space-y-2">
             <AnimatePresence initial={false}>
             {groups.map(group => (
@@ -317,14 +276,12 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
         </>
       )}
 
-      {/* Loading State */}
       {groups.length === 0 && loading && (
         <div className="py-16 text-center">
           <Loader2 className="w-8 h-8 animate-spin text-muted mx-auto" />
         </div>
       )}
 
-      {/* Empty State */}
       {groups.length === 0 && !loading && (
         <div className="py-16 text-center">
           <div className="w-12 h-12 bg-surface-soft rounded-full flex items-center justify-center mx-auto mb-4 border border-hairline">
@@ -337,5 +294,3 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
     </div>
   );
 }
-
-
