@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase, supabaseAdmin } from "../db.js";
+import { supabase } from "../db.js";
 
 export interface AuthUser {
   id: string;
@@ -22,12 +22,12 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
   const token = authHeader.slice(7);
 
-  if (!supabaseAdmin || !supabase) {
+  if (!supabase) {
     return res.status(503).json({ error: "Supabase not configured" });
   }
 
   try {
-    const { data, error } = await supabaseAdmin.auth.getUser(token);
+    const { data, error } = await supabase.auth.getUser(token);
     if (error || !data.user) {
       return res.status(401).json({ error: "Invalid or expired token" });
     }

@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { initDb, supabaseAdmin } from "./db.js";
+import { initDb, supabase } from "./db.js";
 import { requireAuth } from "./middleware/auth.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
@@ -46,10 +46,7 @@ app.post("/api/auth/login", async (req, res) => {
     if (!access_token) {
       return res.status(400).json({ error: "access_token is required" });
     }
-    if (!supabaseAdmin) {
-      return res.status(503).json({ error: "Supabase Auth not configured — set SUPABASE_SERVICE_ROLE_KEY" });
-    }
-    const { data, error } = await supabaseAdmin.auth.getUser(access_token);
+    const { data, error } = await supabase.auth.getUser(access_token);
     if (error) {
       return res.status(401).json({ error: error.message });
     }

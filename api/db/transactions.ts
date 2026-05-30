@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from "../db.js";
+import { supabase } from "../db.js";
 
 export async function getCategories(userId: string) {
   const { data, error } = await supabase
@@ -67,7 +67,7 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
   return (async () => {
     let settlement: any = null;
 
-    const { data: byTx } = await supabaseAdmin!
+    const { data: byTx } = await supabase
       .from("loan_settlements")
       .select("id, loan_id, amount")
       .eq("transaction_id", transactionId)
@@ -75,7 +75,7 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
     settlement = byTx?.[0] ?? null;
 
     if (!settlement && linkedTransactionId) {
-      const { data: byLinked } = await supabaseAdmin!
+      const { data: byLinked } = await supabase
         .from("loan_settlements")
         .select("id, loan_id, amount")
         .eq("transaction_id", linkedTransactionId)
@@ -84,13 +84,13 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
     }
 
     if (!settlement) {
-      const { data: loans } = await supabaseAdmin!
+      const { data: loans } = await supabase
         .from("loans")
         .select("id, remaining, status")
         .eq("lender_account_id", accountId)
         .gte("remaining", 0);
       for (const loan of loans ?? []) {
-        const { data: matches } = await supabaseAdmin!
+        const { data: matches } = await supabase
           .from("loan_settlements")
           .select("id, amount")
           .eq("loan_id", loan.id)
@@ -114,7 +114,7 @@ async function updateSettlementForTransaction(
 
   let settlement: any = null;
 
-  const { data: byTx } = await supabaseAdmin!
+  const { data: byTx } = await supabase
     .from("loan_settlements")
     .select("id, loan_id, amount")
     .eq("transaction_id", transaction.id)
@@ -122,7 +122,7 @@ async function updateSettlementForTransaction(
   settlement = byTx?.[0] ?? null;
 
   if (!settlement && transaction.linked_transaction_id) {
-    const { data: byLinked } = await supabaseAdmin!
+    const { data: byLinked } = await supabase
       .from("loan_settlements")
       .select("id, loan_id, amount")
       .eq("transaction_id", transaction.linked_transaction_id)
@@ -132,16 +132,16 @@ async function updateSettlementForTransaction(
 
   if (settlement) {
     const absAmount = Math.abs(amount);
-    const { data: settlements } = await supabaseAdmin!
+    const { data: settlements } = await supabase
       .from("loan_settlements")
       .select("amount")
       .eq("loan_id", settlement.loan_id);
     const oldTotalSettled = (settlements ?? []).reduce((sum: number, s: any) => sum + s.amount, 0);
     const newTotalSettled = oldTotalSettled - settlement.amount + absAmount;
 
-    await supabaseAdmin!.from("loan_settlements").update({ amount: absAmount }).eq("id", settlement.id);
+    await supabase.from("loan_settlements").update({ amount: absAmount }).eq("id", settlement.id);
 
-    const { data: loan } = await supabaseAdmin!
+    const { data: loan } = await supabase
       .from("loans")
       .select("id, amount, remaining, status")
       .eq("id", settlement.loan_id)
@@ -157,7 +157,7 @@ async function updateSettlementForTransaction(
         updateData.status = 'active';
         updateData.settled_date = null;
       }
-      await supabaseAdmin!.from("loans").update(updateData).eq("id", loan.id);
+      await supabase.from("loans").update(updateData).eq("id", loan.id);
     }
   }
 }
@@ -200,10 +200,10 @@ export async function deleteTransaction(userId: string, id: number) {
     throw fetchError;
   }
 
-  if (transaction && transaction.type === 'loan_settle' && supabaseAdmin) {
+  if (transaction && transaction.type === 'loan_settle') {
     const settlement = await findSettlement(transaction.id, transaction.linked_transaction_id, transaction.account_id, transaction.amount);
     if (settlement) {
-      const { data: loan } = await supabaseAdmin
+      const { data: loan } = await supabase
         .from("loans")
         .select("id, remaining, status")
         .eq("id", settlement.loan_id)
@@ -215,8 +215,8 @@ export async function deleteTransaction(userId: string, id: number) {
           updateData.status = 'active';
           updateData.settled_date = null;
         }
-        await supabaseAdmin!.from("loans").update(updateData).eq("id", loan.id);
-        await supabaseAdmin!.from("loan_settlements").delete().eq("id", settlement.id);
+        await supabase.from("loans").update(updateData).eq("id", loan.id);
+        await supabase.from("loan_settlements").delete().eq("id", settlement.id);
       }
     }
   }

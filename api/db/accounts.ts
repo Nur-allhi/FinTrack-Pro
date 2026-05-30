@@ -1,4 +1,5 @@
 import { supabase } from "../db.js";
+import { insertOne, updateOne } from "./queries.js";
 import type { Account } from "../../shared/types.js";
 
 interface SupabaseAccountRow {
@@ -38,15 +39,12 @@ export async function getAccounts(userId: string, limit?: number, offset?: numbe
 }
 
 export async function createAccount(userId: string, data: { name: string; type: string; member_id?: number; parent_id?: number; color?: string; initial_balance?: number }): Promise<Account> {
-  const { data: result, error } = await supabase.from("accounts").insert([{ 
+  return insertOne<Account>("accounts", {
     name: data.name, type: data.type, member_id: data.member_id, parent_id: data.parent_id,
     color: data.color, initial_balance: data.initial_balance || 0, user_id: userId
-  }]).select().single();
-  if (error) throw error;
-  return result as Account;
+  });
 }
 
 export async function updateAccount(userId: string, id: number, updates: Partial<Account>) {
-  const { error } = await supabase.from("accounts").update(updates).eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  await updateOne("accounts", userId, id, updates as Record<string, any>);
 }

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../db.js";
+import { supabase } from "../db.js";
 
 interface SettleLoanResult {
   success?: boolean;
@@ -11,7 +11,7 @@ interface SettleLoanResult {
 }
 
 export async function getLoans(userId: string, limit?: number, offset?: number) {
-  let query = supabaseAdmin!
+  let query = supabase
     .from("loans")
     .select("*")
     .eq("user_id", userId)
@@ -25,7 +25,7 @@ export async function getLoans(userId: string, limit?: number, offset?: number) 
     accountIds.add(l.lender_account_id);
     if (l.borrower_account_id) accountIds.add(l.borrower_account_id);
   }
-  const { data: accounts } = await supabaseAdmin!
+  const { data: accounts } = await supabase
     .from("accounts")
     .select("id, name")
     .in("id", [...accountIds]);
@@ -59,10 +59,10 @@ export async function createLoan(userId: string, data: {
     insertData.borrower_name = data.borrower_name;
   }
 
-  const { data: loan, error: loanErr } = await supabaseAdmin!.from("loans").insert([insertData]).select().single();
+  const { data: loan, error: loanErr } = await supabase.from("loans").insert([insertData]).select().single();
   if (loanErr) throw loanErr;
 
-      const { data: lenderAcc } = await supabaseAdmin!
+      const { data: lenderAcc } = await supabase
     .from("accounts")
     .select("name")
     .eq("id", data.lender_account_id)
@@ -70,7 +70,7 @@ export async function createLoan(userId: string, data: {
   const lenderName = lenderAcc?.name ?? `Account #${data.lender_account_id}`;
   let counterpartyName = data.borrower_name;
   if (isInterAccount) {
-      const { data: borrowerAcc } = await supabaseAdmin!
+      const { data: borrowerAcc } = await supabase
         .from("accounts")
       .select("name")
       .eq("id", data.borrower_account_id)
@@ -79,7 +79,7 @@ export async function createLoan(userId: string, data: {
   }
   const detail = data.particulars ? ` - ${data.particulars}` : '';
 
-  const { data: debit, error: dErr } = await supabaseAdmin!.from("transactions").insert([{
+  const { data: debit, error: dErr } = await supabase.from("transactions").insert([{
     account_id: data.lender_account_id, date: data.date_given,
     particulars: `Loan to: ${counterpartyName}${detail}`,
     category: 'Loan', amount: -data.amount, type: 'loan',
@@ -88,7 +88,7 @@ export async function createLoan(userId: string, data: {
   if (dErr) throw dErr;
 
   if (isInterAccount) {
-    const { data: credit, error: cErr } = await supabaseAdmin!.from("transactions").insert([{
+    const { data: credit, error: cErr } = await supabase.from("transactions").insert([{
       account_id: data.borrower_account_id, date: data.date_given,
       particulars: `Loan from: ${lenderName}${detail}`,
       category: 'Loan', amount: data.amount, type: 'loan',
@@ -96,7 +96,7 @@ export async function createLoan(userId: string, data: {
       user_id: userId
     }]).select().single();
     if (cErr) throw cErr;
-    await supabaseAdmin!.from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id).eq("user_id", userId);
+    await supabase.from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id).eq("user_id", userId);
   }
   return loan;
 }
@@ -114,13 +114,13 @@ export async function updateLoan(userId: string, id: number, updates: {
   if (updates.borrower_name !== undefined) dbUpdate.borrower_name = updates.borrower_name;
   if (updates.status === 'settled') dbUpdate.settled_date = new Date().toISOString().split('T')[0];
 
-  const { error } = await supabaseAdmin!.from("loans").update(dbUpdate).eq("id", id).eq("user_id", userId);
+  const { error } = await supabase.from("loans").update(dbUpdate).eq("id", id).eq("user_id", userId);
   if (error) throw error;
   return { success: true };
 }
 
 export async function settleLoan(userId: string, loanId: number, settleAmount?: number): Promise<SettleLoanResult> {
-  const { data: loan, error: fetchErr } = await supabaseAdmin!
+  const { data: loan, error: fetchErr } = await supabase
     .from("loans")
     .select("*")
     .eq("id", loanId)
@@ -144,14 +144,14 @@ export async function settleLoan(userId: string, loanId: number, settleAmount?: 
 
 async function settlePersonLoan(loan: any, amount: number, userId: string) {
   const today = new Date().toISOString().split('T')[0];
-  const { data: lenderAcc } = await supabaseAdmin!
+  const { data: lenderAcc } = await supabase
     .from("accounts")
     .select("name")
     .eq("id", loan.lender_account_id)
     .single();
   const lenderName = lenderAcc?.name ?? `Account #${loan.lender_account_id}`;
 
-  const { data: tx, error: txErr } = await supabaseAdmin!.from("transactions").insert([{
+  const { data: tx, error: txErr } = await supabase.from("transactions").insert([{
     account_id: loan.lender_account_id, date: today,
     particulars: `Loan settlement from: ${loan.borrower_name}`,
     category: 'Loan Settlement', amount: amount, type: 'loan_settle',
@@ -159,7 +159,7 @@ async function settlePersonLoan(loan: any, amount: number, userId: string) {
   }]).select().single();
   if (txErr) throw txErr;
 
-  await supabaseAdmin!.from("loan_settlements").insert([{
+  await supabase.from("loan_settlements").insert([{
     loan_id: loan.id, amount, date: today,
     transaction_id: tx.id,
     user_id: userId
@@ -171,13 +171,13 @@ async function settlePersonLoan(loan: any, amount: number, userId: string) {
     updateData.status = 'settled';
     updateData.settled_date = today;
   }
-  await supabaseAdmin!.from("loans").update(updateData).eq("id", loan.id).eq("user_id", userId);
+  await supabase.from("loans").update(updateData).eq("id", loan.id).eq("user_id", userId);
   return { success: true, remaining: newRemaining, settled: newRemaining <= 0, transaction_id: tx.id };
 }
 
 async function settleInterAccountLoan(loan: any, amount: number, userId: string) {
   const today = new Date().toISOString().split('T')[0];
-  const { data: accounts } = await supabaseAdmin!
+  const { data: accounts } = await supabase
     .from("accounts")
     .select("id, name")
     .in("id", [loan.lender_account_id, loan.borrower_account_id]);
@@ -185,7 +185,7 @@ async function settleInterAccountLoan(loan: any, amount: number, userId: string)
   const lenderName = accMap[loan.lender_account_id] ?? `Account #${loan.lender_account_id}`;
   const borrowerName = accMap[loan.borrower_account_id] ?? `Account #${loan.borrower_account_id}`;
 
-  const { data: debit, error: dErr } = await supabaseAdmin!.from("transactions").insert([{
+  const { data: debit, error: dErr } = await supabase.from("transactions").insert([{
     account_id: loan.borrower_account_id, date: today,
     particulars: `Loan settlement to: ${lenderName}`,
     category: 'Loan Settlement', amount: -amount, type: 'loan_settle',
@@ -193,7 +193,7 @@ async function settleInterAccountLoan(loan: any, amount: number, userId: string)
   }]).select().single();
   if (dErr) throw dErr;
 
-  const { data: credit, error: cErr } = await supabaseAdmin!.from("transactions").insert([{
+  const { data: credit, error: cErr } = await supabase.from("transactions").insert([{
     account_id: loan.lender_account_id, date: today,
     particulars: `Loan settlement from: ${borrowerName}`,
     category: 'Loan Settlement', amount: amount, type: 'loan_settle',
@@ -202,9 +202,9 @@ async function settleInterAccountLoan(loan: any, amount: number, userId: string)
   }]).select().single();
   if (cErr) throw cErr;
 
-  await supabaseAdmin!.from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id).eq("user_id", userId);
+  await supabase.from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id).eq("user_id", userId);
 
-  await supabaseAdmin!.from("loan_settlements").insert([{
+  await supabase.from("loan_settlements").insert([{
     loan_id: loan.id, amount, date: today,
     transaction_id: credit.id,
     user_id: userId
@@ -216,11 +216,11 @@ async function settleInterAccountLoan(loan: any, amount: number, userId: string)
     updateData.status = 'settled';
     updateData.settled_date = today;
   }
-  await supabaseAdmin!.from("loans").update(updateData).eq("id", loan.id).eq("user_id", userId);
+  await supabase.from("loans").update(updateData).eq("id", loan.id).eq("user_id", userId);
   return { success: true, remaining: Math.max(0, newRemaining), settled: newRemaining <= 0 };
 }
 
 export async function deleteLoan(userId: string, id: number) {
-  const { error } = await supabaseAdmin!.from("loans").delete().eq("id", id).eq("user_id", userId);
+  const { error } = await supabase.from("loans").delete().eq("id", id).eq("user_id", userId);
   if (error) throw error;
 }
