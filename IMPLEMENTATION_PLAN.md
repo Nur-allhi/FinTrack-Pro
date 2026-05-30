@@ -152,18 +152,14 @@
 ## ⬜ Remaining Items
 
 ### T-029 — Typography audit
-- **Priority**: P0
-- **Phase**: 0 — In-Flight Issues
-- **Estimate**: 30m
-- **Details**: Verify Inter and JetBrains Mono fonts are properly referenced in `src/index.css` and match DESIGN.md spec. No code changes expected.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Commit**: _(current branch)_
+- **Details**: Added JetBrains Mono to Google Fonts import and corrected `--font-mono` theme token from Inter to JetBrains Mono.
 
 ### T-030 — Dark mode micro-interactions
-- **Priority**: P0
-- **Phase**: 0 — In-Flight Issues
-- **Estimate**: 1h
-- **Details**: Add smooth theme transition animations in `src/index.css` (e.g., `transition: background-color 0.3s, color 0.3s` on `*` selector) for dark mode toggling.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Commit**: _(current branch)_
+- **Details**: Updated `*` selector transitions from 0.2s to 0.3s for `background-color`, `border-color`, and `color` to smooth theme toggling.
 
 ### T-031 — Create unified query interface
 - **Priority**: P1
@@ -410,7 +406,7 @@
 | Phase | Items | Status | Est. Effort | Risk |
 |-------|-------|--------|-------------|------|
 | Completed (T-001 to T-028) | 28 items | ✅ All done | — | — |
-| Phase 0 — In-Flight Issues | T-029 to T-030 | ⬜ 2 pending | 1.5h | None |
+| Phase 0 — In-Flight Issues | T-029 to T-030 | ✅ Done | 1.5h | None |
 | Phase 1 — Data Layer & Architecture | T-031 to T-034 | ⬜ 4 pending | 11-17h | Medium |
 | Phase 2 — Type Safety & Cleanup | T-035 to T-038 | ⬜ 4 pending | 11-16h | Low |
 | Phase 3 — File Splitting | T-039 to T-048 | ⬜ 10 pending | 8-14h | Low-Medium |
