@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initDb, supabase } from "./db.js";
@@ -23,7 +23,7 @@ const app = express();
 
 const startup = initDb().catch(e => console.error("Startup error:", e));
 
-app.use(async (_req: any, _res: any, next: any) => {
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   await startup;
   next();
 });

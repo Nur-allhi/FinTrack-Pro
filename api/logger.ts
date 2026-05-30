@@ -1,4 +1,5 @@
 import pino from "pino";
+import type { Request, Response, NextFunction } from "express";
 
 export const logger = pino({
   level: process.env.LOG_LEVEL || "info",
@@ -7,7 +8,7 @@ export const logger = pino({
     : undefined,
 });
 
-export function requestLogger(req: any, _res: any, next: any) {
-  logger.info({ requestId: req.requestId, method: req.method, url: req.url }, "request");
+export function requestLogger(req: Request, _res: Response, next: NextFunction) {
+  logger.info({ requestId: (req as any).requestId, method: req.method, url: req.url }, "request");
   next();
 }

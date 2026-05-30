@@ -1,4 +1,38 @@
 import { supabaseAdmin } from "../db.js";
+import type { Transaction } from "../../shared/types.js";
+
+interface SupabaseTransactionRow {
+  id: number; account_id: number; date: string; particulars: string;
+  category?: string | null; amount: number; type?: string;
+  linked_transaction_id?: number | null; summary?: string | null;
+  user_id?: string;
+}
+
+interface TransactionWithLinked extends SupabaseTransactionRow {
+  linked_account_name?: string;
+}
+
+interface LinkedTxRow {
+  id: number;
+  account_id: number;
+  accounts?: { name: string }[] | null;
+}
+
+interface SettlementRow {
+  id: number; loan_id: number; amount: number;
+}
+
+interface LoanRow {
+  id: number; remaining: number; status: string;
+}
+
+interface SettlementWithLoanId extends SettlementRow {
+  loan_id: number;
+}
+
+interface CategoryRow {
+  category: string | null;
+}
 
 function db(): NonNullable<typeof supabaseAdmin> {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
@@ -13,7 +47,8 @@ export async function getCategories(userId: string) {
     .neq("category", "")
     .neq("category", null);
   if (error) throw error;
-  return [...new Set((data || []).map((t: any) => t.category).filter(Boolean))].sort();
+  const cats = (data || []).map((t: CategoryRow) => t.category).filter(Boolean);
+  return [...new Set(cats)].sort();
 }
 
 export async function getTransactions(accountId: string, userId: string, limit?: number, offset?: number) {
@@ -29,9 +64,9 @@ export async function getTransactions(accountId: string, userId: string, limit?:
   if (txError) throw txError;
   if (!transactions || transactions.length === 0) return [];
 
-  const linkedIds = transactions
-    .filter((tx: any) => tx.linked_transaction_id)
-    .map((tx: any) => tx.linked_transaction_id);
+  const linkedIds = (transactions as SupabaseTransactionRow[])
+    .filter((tx) => tx.linked_transaction_id)
+    .map((tx) => tx.linked_transaction_id!);
 
   if (linkedIds.length > 0) {
     const { data: linkedTxs, error: linkedError } = await db()
@@ -41,8 +76,8 @@ export async function getTransactions(accountId: string, userId: string, limit?:
       .eq("user_id", userId);
 
     if (!linkedError && linkedTxs) {
-      const linkedMap = new Map(linkedTxs.map((lt: any) => [lt.id, lt.accounts?.[0]?.name]));
-      return transactions.map((tx: any) => ({
+      const linkedMap = new Map((linkedTxs as LinkedTxRow[]).map((lt) => [lt.id, lt.accounts?.[0]?.name]));
+      return (transactions as SupabaseTransactionRow[]).map((tx): TransactionWithLinked => ({
         ...tx,
         linked_account_name: tx.linked_transaction_id ? linkedMap.get(tx.linked_transaction_id) : undefined
       }));
@@ -62,22 +97,16 @@ export async function createTransaction(userId: string, data: {
   return result;
 }
 
-interface SettlementRecord {
-  id: number;
-  loan_id: number;
-  amount: number;
-}
-
-function findSettlement(transactionId: number, linkedTransactionId: number | null, accountId: number, amount: number): Promise<SettlementRecord | null> {
+function findSettlement(transactionId: number, linkedTransactionId: number | null, accountId: number, amount: number): Promise<SettlementRow | null> {
   return (async () => {
-    let settlement: any = null;
+    let settlement: SettlementRow | null = null;
 
     const { data: byTx } = await db()
       .from("loan_settlements")
       .select("id, loan_id, amount")
       .eq("transaction_id", transactionId)
       .limit(1);
-    settlement = byTx?.[0] ?? null;
+    if (byTx?.[0]) settlement = byTx[0] as SettlementRow;
 
     if (!settlement && linkedTransactionId) {
       const { data: byLinked } = await db()
@@ -85,7 +114,7 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
         .select("id, loan_id, amount")
         .eq("transaction_id", linkedTransactionId)
         .limit(1);
-      settlement = byLinked?.[0] ?? null;
+      if (byLinked?.[0]) settlement = byLinked[0] as SettlementRow;
     }
 
     if (!settlement) {
@@ -94,7 +123,7 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
         .select("id, remaining, status")
         .eq("lender_account_id", accountId)
         .gte("remaining", 0);
-      for (const loan of loans ?? []) {
+      for (const loan of (loans || []) as LoanRow[]) {
         const { data: matches } = await db()
           .from("loan_settlements")
           .select("id, amount")
@@ -102,29 +131,29 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
           .eq("amount", amount)
           .limit(1);
         if (matches?.[0]) {
-          settlement = { ...matches[0], loan_id: loan.id };
+          settlement = { ...matches[0] as SettlementRow, loan_id: loan.id } as SettlementWithLoanId;
           break;
         }
       }
     }
-    return settlement as SettlementRecord | null;
+    return settlement as SettlementRow | null;
   })();
 }
 
 async function updateSettlementForTransaction(
-  transaction: any, userId: string, updates: { amount?: number; date?: string; particulars?: string; category?: string | null; summary?: string | null }
+  transaction: SupabaseTransactionRow, userId: string, updates: { amount?: number; date?: string; particulars?: string; category?: string | null; summary?: string | null }
 ) {
   const amount = updates.amount;
   if (amount === undefined) return;
 
-  let settlement: any = null;
+  let settlement: SettlementRow | null = null;
 
   const { data: byTx } = await db()
     .from("loan_settlements")
     .select("id, loan_id, amount")
     .eq("transaction_id", transaction.id)
     .limit(1);
-  settlement = byTx?.[0] ?? null;
+  if (byTx?.[0]) settlement = byTx[0] as SettlementRow;
 
   if (!settlement && transaction.linked_transaction_id) {
     const { data: byLinked } = await db()
@@ -132,7 +161,7 @@ async function updateSettlementForTransaction(
       .select("id, loan_id, amount")
       .eq("transaction_id", transaction.linked_transaction_id)
       .limit(1);
-    settlement = byLinked?.[0] ?? null;
+    if (byLinked?.[0]) settlement = byLinked[0] as SettlementRow;
   }
 
   if (settlement) {
@@ -141,7 +170,7 @@ async function updateSettlementForTransaction(
       .from("loan_settlements")
       .select("amount")
       .eq("loan_id", settlement.loan_id);
-    const oldTotalSettled = (settlements ?? []).reduce((sum: number, s: any) => sum + s.amount, 0);
+    const oldTotalSettled = ((settlements || []) as { amount: number }[]).reduce((sum, s) => sum + s.amount, 0);
     const newTotalSettled = oldTotalSettled - settlement.amount + absAmount;
 
     await db().from("loan_settlements").update({ amount: absAmount }).eq("id", settlement.id);
@@ -154,7 +183,7 @@ async function updateSettlementForTransaction(
 
     if (loan) {
       const newRemaining = Math.max(0, loan.amount - newTotalSettled);
-      const updateData: any = { remaining: newRemaining };
+      const updateData: Record<string, string | number | null> = { remaining: newRemaining };
       if (newRemaining <= 0) {
         updateData.status = 'settled';
         updateData.settled_date = new Date().toISOString().split('T')[0];
@@ -171,9 +200,13 @@ export async function updateTransaction(userId: string, id: number, updates: {
   date?: string; particulars?: string; category?: string | null; amount?: number; summary?: string | null
 }) {
   const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
-  if (fetchError) throw fetchError;
+  if (fetchError) {
+    const pgError = fetchError as { code?: string };
+    if (pgError.code === 'PGRST116') return { success: true };
+    throw fetchError;
+  }
 
-  const dbUpdate: any = {};
+  const dbUpdate: Record<string, string | number | null> = {};
   if (updates.date !== undefined) dbUpdate.date = updates.date;
   if (updates.particulars !== undefined) dbUpdate.particulars = updates.particulars;
   if (updates.category !== undefined) dbUpdate.category = updates.category;
@@ -184,7 +217,7 @@ export async function updateTransaction(userId: string, id: number, updates: {
   if (error) throw error;
 
   if (transaction && transaction.linked_transaction_id) {
-    const linkedUpdate: any = { ...dbUpdate };
+    const linkedUpdate: Record<string, string | number | null> = { ...dbUpdate };
     if (updates.amount !== undefined && (transaction.type === 'transfer' || transaction.type === 'loan_settle')) {
       linkedUpdate.amount = -updates.amount;
     }
@@ -201,7 +234,8 @@ export async function updateTransaction(userId: string, id: number, updates: {
 export async function deleteTransaction(userId: string, id: number) {
   const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
   if (fetchError) {
-    if ((fetchError as any).code === 'PGRST116') return { success: true };
+    const pgError = fetchError as { code?: string };
+    if (pgError.code === 'PGRST116') return { success: true };
     throw fetchError;
   }
 
@@ -215,7 +249,7 @@ export async function deleteTransaction(userId: string, id: number) {
         .single();
       if (loan) {
         const newRemaining = loan.remaining + settlement.amount;
-        const updateData: any = { remaining: newRemaining };
+        const updateData: Record<string, string | number | null> = { remaining: newRemaining };
         if (loan.status === 'settled') {
           updateData.status = 'active';
           updateData.settled_date = null;

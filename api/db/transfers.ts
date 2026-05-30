@@ -1,5 +1,10 @@
 import { supabaseAdmin } from "../db.js";
 
+interface AccountWithMembers {
+  name: string;
+  members?: { name: string }[] | null;
+}
+
 function db(): NonNullable<typeof supabaseAdmin> {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
   return supabaseAdmin;
@@ -8,8 +13,10 @@ function db(): NonNullable<typeof supabaseAdmin> {
 export async function createTransfer(userId: string, data: {
   from_account_id: number; to_account_id: number; date: string; amount: number; particulars?: string
 }) {
-  const { data: fromAcc }: any = await db().from("accounts").select("name, members(name)").eq("id", data.from_account_id).eq("user_id", userId).single();
-  const { data: toAcc }: any = await db().from("accounts").select("name, members(name)").eq("id", data.to_account_id).eq("user_id", userId).single();
+  const fromRes = await db().from("accounts").select("name, members(name)").eq("id", data.from_account_id).eq("user_id", userId).single();
+  const fromAcc = fromRes.data as AccountWithMembers | null;
+  const toRes = await db().from("accounts").select("name, members(name)").eq("id", data.to_account_id).eq("user_id", userId).single();
+  const toAcc = toRes.data as AccountWithMembers | null;
 
   const fromMember = fromAcc?.members?.[0]?.name ? ` (${fromAcc.members[0].name})` : '';
   const toMember = toAcc?.members?.[0]?.name ? ` (${toAcc.members[0].name})` : '';

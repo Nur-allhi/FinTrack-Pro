@@ -1,6 +1,16 @@
 import { supabaseAdmin } from "../db.js";
 import { insertOne, updateOne, deleteOne } from "./queries.js";
 
+interface AccountRow {
+  id: number; name: string; type: string; parent_id?: number | null;
+  initial_balance?: number; archived?: number; member_id?: number;
+  members?: { name: string } | null;
+}
+
+interface TxRow {
+  account_id: number; amount: number;
+}
+
 export async function getGroups(userId: string) {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
   const { data: groups, error } = await supabaseAdmin
@@ -22,18 +32,18 @@ export async function getGroups(userId: string) {
   if (txErr) throw txErr;
 
   const balances: Record<number, number> = {};
-  for (const tx of (allTx || [])) {
+  for (const tx of (allTx || []) as TxRow[]) {
     balances[tx.account_id] = (balances[tx.account_id] || 0) + Number(tx.amount);
   }
 
-  return (groups || []).map((g: any) => {
-    const childAccounts = (children || []).filter((c: any) => c.parent_id === g.id && !c.archived);
+  return ((groups || []) as AccountRow[]).map((g) => {
+    const childAccounts = ((children || []) as AccountRow[]).filter((c) => c.parent_id === g.id && !c.archived);
     return {
       ...g,
       member_name: g.members?.name,
       child_count: childAccounts.length,
-      accumulated_balance: childAccounts.reduce((sum: number, c: any) => sum + Number(c.initial_balance || 0) + (balances[c.id] || 0), 0),
-      children: childAccounts.map((c: any) => ({
+      accumulated_balance: childAccounts.reduce((sum, c) => sum + Number(c.initial_balance || 0) + (balances[c.id] || 0), 0),
+      children: childAccounts.map((c) => ({
         id: c.id,
         name: c.name,
         type: c.type,
@@ -51,7 +61,7 @@ export async function createGroup(userId: string, name: string, memberId?: numbe
 }
 
 export async function updateGroup(userId: string, id: number, updates: { name?: string; color?: string; member_id?: number | null }) {
-  const dbUpdate: any = {};
+  const dbUpdate: Record<string, string | number | boolean | null> = {};
   if (updates.name !== undefined) dbUpdate.name = updates.name;
   if (updates.color !== undefined) dbUpdate.color = updates.color;
   if (updates.member_id !== undefined) dbUpdate.member_id = updates.member_id;
