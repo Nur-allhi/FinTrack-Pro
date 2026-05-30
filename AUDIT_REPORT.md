@@ -1,9 +1,9 @@
 # FinTrack Pro — Full Codebase Audit Report
 
 **Date**: 2026-05-25  
-**Last Updated**: 2026-05-25  
+**Last Updated**: 2026-05-30  
 **Author**: opencode audit  
-**Status**: GitNexus indexed & up-to-date — see `commit e00c6a2` for implementation  
+**Status**: GitNexus indexed & up-to-date — see `PROJECTPLAN.md` Phase 7 for implementation details
 
 ---
 
@@ -29,7 +29,7 @@
 | 2 | **MEDIUM** | `timerRef` initialized as `undefined as any` — TS error on line 16 | `src/components/FloatingActionButton.tsx:16` | ✅ **FIXED** — typed as `ReturnType<typeof window.setTimeout>` |
 | 3 | **MEDIUM** | Offline `syncQueue` uses `queue.indexOf(a)` for filtering — returns first index always, corrupts queue on partial sync | `src/services/offlineService.ts:83-86` | ✅ **FIXED** — filtered by `item.id` instead |
 | 4 | **LOW** | `requireQuota` re-extracts token from headers instead of using already-verified `req.user` | `api/middleware/quota.ts:18` | ✅ **FIXED** — uses `supabaseAdmin.getUserById(req.user.id)` |
-| 5 | **LOW** | Liabilities card always shows hardcoded "0" | Dashboard component | ❌ **NOT FIXED** — scope limited to audit + Phases 0–6 |
+| 5 | **LOW** | Liabilities card always shows hardcoded "0" | Dashboard component | ❌ **NOT FIXED** — see PROJECTPLAN Phase 11.8 |
 
 ---
 
@@ -37,18 +37,18 @@
 
 | # | Issue | Details | Status |
 |---|-------|---------|--------|
-| 6 | **Files > 300 LOC** | LoanManager (580), Ledger (459), AdminPanel (445), AccountManager (398), Dashboard (391), transactions.ts (400), loans.ts (400), GroupManager (341), Settings (319), InvestmentTracker (311), ReportGenerator (303) | ⏳ **PENDING** — not in scope of audit remediation |
+| 6 | **Files > 300 LOC** | Ledger (542), AdminPanel (444), LoanManager (403), AccountManager (398), Dashboard (391), GroupManager (341), Settings (319), LoanGroupCard (314), InvestmentTracker (311), ReportGenerator (303) | ⏳ **PENDING** — see IMPLEMENTATION_PLAN.md Phase 3 |
 | 7 | **Dual DB branching** | Every handler had `if (supabase) {...} else { db.prepare(...) }` — ~70% of API code duplicated | ✅ **FIXED** — extracted to `api/db/*.ts` with per-entity modules |
-| 8 | **Excessive `any` types** | Heavy use of `any` throughout | ⏳ **PARTIAL** — `shared/types.ts` created, `members.ts` & `accounts.ts` typed, rest pending |
+| 8 | **Excessive `any` types** | Heavy use of `any` throughout | ⏳ **PARTIAL** — `shared/types.ts` created, `members.ts` & `accounts.ts` typed, rest pending (IMPLEMENTATION_PLAN.md Phase 2) |
 | 9 | **No request validation** | Zero Zod/validation schemas | ✅ **FIXED** — Zod schemas + `validate()` helper on all POST/PATCH routes |
 | 10 | **No testing** | No unit, integration, or e2e tests | ⏳ **PARTIAL** — 3 Vitest tests for members data layer (`api/tests/members.test.ts`) |
-| 11 | **No rate limiting** | All endpoints unprotected against abuse | ❌ **NOT FIXED** — out of scope |
+| 11 | **No rate limiting** | All endpoints unprotected against abuse | ❌ **NOT FIXED** — see IMPLEMENTATION_PLAN.md Phase 2.4 |
 | 12 | **No pagination** | GET endpoints returned all rows | ✅ **FIXED** — `?limit=&offset=` on accounts, transactions, loans |
 | 13 | **No input sanitization** | Category names, particulars, etc. pass through unsanitized | ⏳ **PARTIAL** — Zod schemas trim strings, validate enums; further sanitization pending |
-| 14 | **`/api/import` uses DELETE + INSERT** | Not wrapped in a transaction — partial failure corrupts data | ❌ **NOT FIXED** — out of scope |
+| 14 | **`/api/import` uses DELETE + INSERT** | Not wrapped in a transaction — partial failure corrupts data | ❌ **NOT FIXED** — see IMPLEMENTATION_PLAN.md Phase 2.3 |
 | 15 | **SQLite missing indexes** | No indexes on `user_id`, `account_id`, `loan_id` | ✅ **FIXED** — 9 indexes added in `api/db.ts` |
 | 16 | **Cache has no TTL** | `cacheService` stored data with timestamps but never checked them | ✅ **FIXED** — 5-min default TTL checked on getMembers/getAccounts/getTransactions |
-| 17 | **`supabaseAdmin` used for data queries** | Service role key used for regular SELECT/INSERT | ❌ **NOT FIXED** — out of scope (requires auth refactor) |
+| 17 | **`supabaseAdmin` used for data queries** | Service role key used for regular SELECT/INSERT | ❌ **NOT FIXED** — see IMPLEMENTATION_PLAN.md Phase 1.3 |
 
 ---
 
@@ -59,7 +59,7 @@
 | 18 | **No data-access layer** | Dual DB logic lived in route handlers — impossible to swap DB without touching every file | ✅ **FIXED** — `api/db/*.ts` with per-entity query modules |
 | 19 | **No error standardization** | Routes returned `{ error: err.message }` — leaking internal details | ✅ **FIXED** — `sendError()` + `errorHandler` middleware with `{ error, code, details }` |
 | 20 | **No logging framework** | Used raw `console.error` — no structured logging, no log levels | ✅ **FIXED** — pino logger with request-scoped child loggers |
-| 21 | **Token in localStorage** | Bearer token stored in `localStorage` — XSS-vulnerable | ❌ **NOT FIXED** — requires Supabase HttpOnly cookie migration, out of scope |
+| 21 | **Token in localStorage** | Bearer token stored in `localStorage` — XSS-vulnerable | ❌ **NOT FIXED** — see IMPLEMENTATION_PLAN.md Phase 1.4 |
 | 22 | **No request ID tracing** | Impossible to correlate frontend→backend errors | ✅ **FIXED** — `requestId` middleware generates UUID per request |
 
 ---
@@ -80,7 +80,7 @@
 
 ### P2 — UX Improvements
 
-- [ ] **Recycle bin / soft-delete** — already in PROJECTPLAN Phase 6 backlog
+- [ ] **Recycle bin / soft-delete** — IMPLEMENTATION_PLAN.md Phase 5
 - [ ] **Liability tracking** — replace hardcoded "0" with actual liability accounts/transactions
 - [ ] **Budgeting module** — set monthly category budgets, track overspend
 - [ ] **Recurring transactions** — auto-create transactions on schedule (cron job or client-side)
@@ -89,17 +89,17 @@
 
 ### P3 — Technical Debt
 
-- [ ] **Split 11 files over 300 LOC** into smaller modules
+- [ ] **Split 10 files over 300 LOC** into smaller modules — IMPLEMENTATION_PLAN.md Phase 3
 - [x] **Replace `any` types** with proper interfaces — `shared/types.ts` created, `members.ts` & `accounts.ts` typed (partial)
-- [x] **Add Vitest tests** — 3 passing tests for members data layer (`api/tests/members.test.ts`)
+- [ ] **Expand test coverage** — IMPLEMENTATION_PLAN.md Phase 4
 - [x] **Add structured logging** — pino with request-scoped loggers installed
 - [x] **Add database indexes** for SQLite — 9 indexes added in `api/db.ts`
 - [x] **Make cacheService respect TTL** — default 5-minute TTL with per-call override
 
 ### P4 — Enhancements
 
-- [ ] **Dark mode micro-interactions** — theme transition animations (Phase 3.7 in PROJECTPLAN)
-- [ ] **Typography audit** — verify Inter/JetBrains Mono in CSS (Phase 3.8)
+- [ ] **Dark mode micro-interactions** — theme transition animations
+- [ ] **Typography audit** — verify Inter/JetBrains Mono in CSS
 - [ ] **PWA push notifications** for loan due dates
 - [ ] **CSV import** for bulk transactions
 - [ ] **Dashboard charts** — spending by category pie chart, balance trend line
@@ -108,7 +108,7 @@
 
 ---
 
-## Resolution Summary (commit `e00c6a2`)
+## Resolution Summary
 
 ### Fixed (14 items)
 | Area | Items |
@@ -125,9 +125,16 @@
 ### Not Fixed (5 items)
 | Area | Items |
 |------|-------|
-| Bugs | #5 (liabilities "0" — out of scope) |
-| Code Quality | #6 (file splitting — out of scope), #11 (rate limiting — out of scope), #14 (import transaction — out of scope), #17 (supabaseAdmin — out of scope) |
-| Architecture | #21 (localStorage token — out of scope) |
+| Bugs | #5 (liabilities "0" — PROJECTPLAN Phase 11.8) |
+| Code Quality | #6 (file splitting — IMPLEMENTATION_PLAN.md Phase 3), #11 (rate limiting — IMPLEMENTATION_PLAN.md Phase 2.4), #14 (import transaction — IMPLEMENTATION_PLAN.md Phase 2.3), #17 (supabaseAdmin — IMPLEMENTATION_PLAN.md Phase 1.3) |
+| Architecture | #21 (localStorage token — IMPLEMENTATION_PLAN.md Phase 1.4) |
+
+### Post-Audit Work Completed
+| Phase | Items |
+|-------|-------|
+| Animation Overhaul | Bounce removal, slide-in/slide-out across 10+ components |
+| Offline Mode | Full implementation: SW caching, IndexedDB queue, Background Sync, reactive sync state, offline delete, pending count, offline-aware TTL |
+| Branding | Sidebar logo rebrand — Wallet icon replaced with custom bar-chart SVG + Roboto Slab wordmark; logo clickable to refresh |
 
 ### All 20 API tests pass (login, validation CRUD, pagination, auth guards, export, admin)
 

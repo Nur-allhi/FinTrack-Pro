@@ -55,7 +55,7 @@ Full audit remediation based on `AUDIT_REPORT.md` — 14 items fixed, 20 API tes
 - `api/middleware/requestId.ts` — UUID request ID per request
 - `api/tests/members.test.ts` — 3 Vitest tests
 - `vitest.config.ts` — test configuration
-- `IMPLEMENTATION.md` — phased implementation plan
+- `IMPLEMENTATION_PLAN.md` — phased implementation plan
 - `AUDIT_REPORT.md` — audit report (updated with status)
 
 ### Files Changed

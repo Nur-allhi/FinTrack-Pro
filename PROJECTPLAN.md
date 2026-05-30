@@ -30,10 +30,11 @@
 - [x] **3.4** Toast system — done in Phase 2
 - [x] **3.5** Color palette — aligned with DESIGN.md spec (Coinbase tokens)
 - [x] **3.6** Dark mode — CSS variable system + toggle in Settings
-- [ ] **3.7** Micro-interactions — theme transition animations added
+- [x] **3.7** Micro-interactions — bounce animations removed, replaced with clean slide-in/slide-out
 - [ ] **3.8** Typography audit — Inter/JetBrains Mono verified in CSS
 
 ---
+
 ## Phase 4: PWA & UX Stability
 
 - [x] **4.1** PWA support — vite-plugin-pwa, service worker, manifest, offline caching
@@ -45,20 +46,12 @@
 
 ---
 
-## Phase 5: Admin & User Experience (Current)
-
-### P0 — Immediate
+## Phase 5: Admin & User Experience
 
 - [x] **5.1** Fix Users page not showing on mobile (responsive audit — padding, text size, button sizing)
 - [x] **5.2** Profile icon in sidebar — avatar circle + email + Settings link (bottom section)
-
-### P1 — High Priority
-
 - [x] **5.3** Show password once in creation-success modal (not stored). Add Reset Password action.
 - [x] **5.4** Add Name field + email validation to user creation form
-
-### P2 — Medium Priority
-
 - [x] **5.5** Storage usage display per user (byte calculation across all tables)
 - [x] **5.6** 5MB storage limit for free users + admin override per user (input)
 - [x] **5.7** Write user manual (USER_MANUAL.md)
@@ -67,12 +60,11 @@
 
 ## Phase 6: Settings Reorganization ✅
 
-### Step 1: Settings Sub-Navigation (Completed in Sessions 7-8)
 - [x] **6.1.1** Add vertical sidebar nav inside Settings page (desktop) + scrollable pill tabs (mobile)
-- [x] **6.1.2** Section: **Appearance** — Dark Mode, Theme Style, Accent Color, Font Size, Account Colors
-- [x] **6.1.3** Section: **Dashboard Banner** — 3 visibility toggles (Total Balance, Assets, Liabilities)
-- [x] **6.1.4** Section: **Categories** — category list with rename
-- [x] **6.1.5** Section: **Export & Import** moved to Profile page
+- [x] **6.1.2** Section: Appearance — Dark Mode, Theme Style, Accent Color, Font Size, Account Colors
+- [x] **6.1.3** Section: Dashboard Banner — 3 visibility toggles (Total Balance, Assets, Liabilities)
+- [x] **6.1.4** Section: Categories — category list with rename
+- [x] **6.1.5** Section: Export & Import moved to Profile page
 - [x] **6.1.6** Remove dead "Audit Alerts" toggle
 
 ### Step 2: Recycle Bin Backend (Backlog)
@@ -91,15 +83,87 @@
 
 ---
 
-## Phase 7: Future Enhancements (Backlog)
+## Phase 7: Code Audit & Architecture Overhaul ✅
 
-- [ ] **7.1** Data-access layer — extract Supabase/SQLite branching from all routes
-- [ ] **7.2** Request validation (Zod schemas shared frontend/backend)
-- [ ] **7.3** Testing infrastructure (Vitest + smoke tests)
-- [ ] **7.4** Split large components (< 300 LOC)
-- [ ] **7.5** Liability tracking (remove hardcoded "0")
-- [ ] **7.6** Reusable Toggle component
-- [ ] **7.7** Consolidate TransactionForm / TransactionModal
+Completed in audit commit `e00c6a2`:
+
+- [x] **7.1** Add `requireAuth` to `/api/import` (security)
+- [x] **7.2** Fix `timerRef` typing in FloatingActionButton
+- [x] **7.3** Fix offline `syncQueue` — filter by `item.id` instead of `indexOf`
+- [x] **7.4** Fix `requireQuota` middleware — use `req.user` instead of re-extracting token
+- [x] **7.5** Extract data-access layer — `api/db/*.ts` with per-entity query modules
+- [x] **7.6** Add SQLite indexes on `user_id`, `account_id`, `loan_id`
+- [x] **7.7** Add cache TTL to `cacheService` (5-min default)
+- [x] **7.8** Add Zod request validation on all POST/PATCH routes
+- [x] **7.9** Add pagination (`?limit=&offset=`) to GET endpoints
+- [x] **7.10** Standardized error response format (`{ error, code, details }`)
+- [x] **7.11** Add structured logging (pino)
+- [x] **7.12** Add request ID tracing (UUID middleware)
+- [x] **7.13** Shared types (`shared/types.ts`) created
+
+### Partial
+- [~] **7.14** Replace `any` types — `shared/types.ts` created, members & accounts typed
+- [~] **7.15** Vitest tests — 3 passing tests for members data layer
+
+---
+
+## Phase 8: Animation Overhaul ✅
+
+- [x] **8.1** Remove global button bounce effect (`button:active { scale: 0.96 }`)
+- [x] **8.2** Replace all entry/exit `scale` animations with clean slide-in/slide-out
+- [x] **8.3** Affected components: TransactionModal, TransferModal, RenameModal, Toast, AccountManager, GroupManager, FloatingActionButton, Dashboard, App, Sidebar
+
+---
+
+## Phase 9: Offline Mode ✅
+
+- [x] **9.1** Cache API routes in SW (`StaleWhileRevalidate` for GET, `NetworkFirst` for documents)
+- [x] **9.2** Offline fallback HTML page (`public/offline.html`)
+- [x] **9.3** Migrate offline queue from localStorage to IndexedDB
+- [x] **9.4** Add `navigator.sync` (Background Sync API) registration
+- [x] **9.5** Background sync handler in service worker
+- [x] **9.6** Reactive sync state store (`offlineService.syncState`)
+- [x] **9.7** Enhanced sync-on-reconnect with retries & batch atomicity
+- [x] **9.8** Ledger — offline delete support with optimistic UI
+- [x] **9.9** OfflineIndicator — pending queue count display
+- [x] **9.10** Last sync timestamp display
+- [x] **9.11** Pending sync badge on FAB
+- [x] **9.12** Offline-aware TTL — skip TTL checks when offline
+- [x] **9.13** Fixes: dashboard balance for pending offline deletes, SW stale cache bypass, account balance adjustments, optimistic transaction persistence
+
+---
+
+## Phase 10: Branding & UI Polish
+
+- [x] **10.1** Sidebar logo rebrand — replaced Wallet icon with bar-chart SVG + "FinTrack Pro" wordmark
+- [x] **10.2** Roboto Slab font for wordmark
+- [x] **10.3** Logo clickable to refresh app
+- [x] **10.4** Moved project plan docs to `PLAN/` folder
+
+---
+
+## Phase 11: Future Enhancements (Backlog)
+
+- [ ] **11.1** Data-access layer — create `api/db/queries.ts` unified query interface over Supabase + SQLite
+- [ ] **11.2** Request validation — extract shared Zod schemas to `shared/validation/`
+- [ ] **11.3** Swap `supabaseAdmin` for `supabase` client in data queries
+- [ ] **11.4** Testing infrastructure — expand Vitest + supertest integration tests
+- [ ] **11.5** File splitting — split 10 files over 300 LOC (Ledger 542, LoanManager 403, AdminPanel 444, etc.)
+- [ ] **11.6** Type safety — replace remaining `any` types across frontend and API
+- [ ] **11.7** Recycle bin / soft-delete (Phase 6.2-6.3)
+- [ ] **11.8** Liability tracking — replace hardcoded "0" with real model
+- [ ] **11.9** Budgeting module
+- [ ] **11.10** Recurring transactions
+- [ ] **11.11** Multi-currency support
+- [ ] **11.12** Rate limiting middleware
+- [ ] **11.13** PWA push notifications
+- [ ] **11.14** CSV import for bulk transactions
+- [ ] **11.15** Dashboard charts — spending by category pie, balance trend line
+- [ ] **11.16** Excel (.xlsx) export alongside PDF/CSV
+- [ ] **11.17** Full-text search across transactions/particulars
+- [ ] **11.18** Dark mode micro-interactions — theme transition animations
+- [ ] **11.19** Typography audit — verify Inter/JetBrains Mono in CSS
+- [ ] **11.20** Migrate token from localStorage to HttpOnly cookie
 
 ---
 
@@ -109,8 +173,12 @@
 |-------|--------|
 | Phase 1: Bug Fixes | ✅ Done (8 fixes) |
 | Phase 2: Refactoring | ✅ Done (8 items) |
-| Phase 3: UI Redesign | ✅ Mostly done (6/8 items) |
+| Phase 3: UI Redesign | ✅ Mostly done (7/8 items) |
 | Phase 4: PWA & UX Stability | ✅ Done (6 items) |
 | Phase 5: Admin & UX | ✅ Done (7 items) |
-| Phase 6: Settings Reorganization | ✅ Done (6 items) |
-| Phase 7: Future (Recycle Bin + Backlog) | 📋 Backlog |
+| Phase 6: Settings Reorganization | ✅ Done (6 items, Recycle Bin backlog) |
+| Phase 7: Code Audit & Architecture | ✅ Done (13 items + 2 partial) |
+| Phase 8: Animation Overhaul | ✅ Done (3 items) |
+| Phase 9: Offline Mode | ✅ Done (13 items) |
+| Phase 10: Branding & UI Polish | ✅ Done (4 items) |
+| Phase 11: Future Enhancements | 📋 Backlog (20 items) |
