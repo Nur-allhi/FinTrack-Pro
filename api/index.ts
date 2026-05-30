@@ -1,9 +1,8 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { initDb, supabase, supabaseAdmin } from "./db.js";
-import { config } from "./config.js";
-import { requireAuth, requireAdmin } from "./middleware/auth.js";
+import { initDb, supabaseAdmin } from "./db.js";
+import { requireAuth } from "./middleware/auth.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
 import { requestLogger } from "./logger.js";
@@ -16,7 +15,6 @@ import transferRoutes from "./routes/transfers.js";
 import loanRoutes from "./routes/loans.js";
 import groupRoutes from "./routes/groups.js";
 import exportRoutes from "./routes/export.js";
-import adminRoutes from "./routes/admin.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,8 +72,7 @@ app.get("/api/auth/config", (_req, res) => {
 });
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
-  const isAdmin = req.user?.email ? config.admin.emails.includes(req.user.email.toLowerCase()) : false;
-  res.json({ user: req.user, isAdmin });
+  res.json({ user: req.user });
 });
 
 app.use("/api/members", requireAuth, memberRoutes);
@@ -87,8 +84,6 @@ app.use("/api/loans", requireAuth, loanRoutes);
 app.use("/api/groups", requireAuth, groupRoutes);
 app.use("/api/export", requireAuth, exportRoutes);
 app.use("/api/import", requireAuth, exportRoutes);
-
-app.use("/api/admin", requireAuth, requireAdmin, adminRoutes);
 
 app.use(errorHandler);
 

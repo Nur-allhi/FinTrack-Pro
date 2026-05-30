@@ -8,7 +8,6 @@ import {
   FileText, 
   Layers,
   Settings as SettingsIcon,
-  Shield,
   Handshake
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -43,18 +42,17 @@ const LoanManager = lazy(() => import('./components/LoanManager'));
 const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const Login = lazy(() => import('./components/Login'));
-const AdminPanel = lazy(() => import('./components/AdminPanel'));
+
 
 export default function App() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'admin'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<number | null>(offlineService.getLastSync());
   const [pendingCount, setPendingCount] = useState(0);
@@ -132,7 +130,6 @@ export default function App() {
         const refreshed = await authService.refreshToken();
         if (refreshed) {
           setIsAuthenticated(true);
-          if (localStorage.getItem('is_admin') === '1') setIsAdmin(true);
           const savedTab = sessionStorage.getItem('activeTab');
           const savedAccountId = sessionStorage.getItem('selectedAccountId');
           if (savedTab) setActiveTab(savedTab as any);
@@ -151,9 +148,7 @@ export default function App() {
   useEffect(() => {
     setOnSessionExpired(() => {
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('is_admin');
       setIsAuthenticated(false);
-      setIsAdmin(false);
       toast("Session expired. Please sign in again.", 'error');
     });
   }, []);
@@ -199,15 +194,11 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     loadFromCache();
-    const checkAdmin = () => authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
+    authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.user?.email) setUserEmail(d.user.email);
-      if (d.isAdmin) { setIsAdmin(true); localStorage.setItem('is_admin', '1'); }
-      else { localStorage.removeItem('is_admin'); }
     }).catch((err) => {
-      console.warn('Admin check failed, retrying in 3s:', err);
-      setTimeout(checkAdmin, 3000);
+      console.warn('Auth check failed:', err);
     });
-    checkAdmin();
     if (offlineService.isOnline()) {
       fetchData();
     } else {
@@ -339,9 +330,7 @@ export default function App() {
 
   const handleLogout = async () => {
     localStorage.removeItem('auth_token');
-    localStorage.removeItem('is_admin');
     setIsAuthenticated(false);
-    setIsAdmin(false);
     await authService.signOut();
   };
 
@@ -365,7 +354,6 @@ export default function App() {
     { id: 'loans', label: 'Loans', icon: Handshake },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
-    ...(isAdmin ? [{ id: 'admin' as const, label: 'Admin Panel', icon: Shield }] : []),
   ];
 
   const renderContent = () => {
@@ -386,7 +374,6 @@ export default function App() {
       case 'investments': return <InvestmentTracker accounts={adjustedAccounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'loans': return <LoanManager accounts={adjustedAccounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'reports': return <ReportGenerator accounts={adjustedAccounts} members={members} currency={settings.currency} />;
-      case 'admin': return <AdminPanel />;
       case 'settings': return <Settings settings={settings as any} onUpdateSettings={(s: any) => { setSettings(s); cacheService.setSettings(s); }} />;
       default: return null;
     }

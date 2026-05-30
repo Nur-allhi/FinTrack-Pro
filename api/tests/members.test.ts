@@ -1,19 +1,32 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 
+const mockSupabase = {
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ data: { id: 1, name: "Alice", relationship: "Friend" }, error: null })),
+        insert: vi.fn(() => ({
+          select: vi.fn(() => ({
+            single: vi.fn(() => Promise.resolve({ data: { id: 1, name: "Alice", relationship: "Friend" }, error: null }))
+          }))
+        })),
+        delete: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null }))
+          }))
+        })),
+      }))
+    }))
+  }))
+};
+
 vi.mock("../db.js", () => ({
-  db: {
-    prepare: vi.fn(() => ({
-      all: vi.fn(() => []),
-      run: vi.fn(() => ({ lastInsertRowid: 1 })),
-    })),
-  },
-  supabase: null,
-  supabaseAdmin: null,
+  supabase: mockSupabase,
+  supabaseAdmin: mockSupabase,
 }));
 
 vi.mock("../middleware/auth.js", () => ({
   requireAuth: vi.fn((_req: any, _res: any, next: any) => next()),
-  requireAdmin: vi.fn((_req: any, _res: any, next: any) => next()),
 }));
 
 import { createMember, getMembers, deleteMember } from "../db/members.js";

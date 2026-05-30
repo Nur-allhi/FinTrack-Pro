@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { supabase, supabaseAdmin } from "../db.js";
-import { config } from "../config.js";
 
 export interface AuthUser {
   id: string;
@@ -38,14 +37,4 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     console.error("Auth middleware error:", err);
     return res.status(500).json({ error: "Authentication failed" });
   }
-};
-
-export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user?.email) {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  if (!config.admin.emails.includes(req.user.email.toLowerCase())) {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
 };

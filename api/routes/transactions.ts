@@ -1,5 +1,4 @@
 import express from "express";
-import { requireQuota } from "../middleware/quota.js";
 import { getCategories, getTransactions, createTransaction, updateTransaction, deleteTransaction, renameCategory } from "../db/index.js";
 import { transactionSchema, transactionUpdateSchema, categoryRenameSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
@@ -29,7 +28,7 @@ router.get("/:accountId", async (req, res) => {
   }
 });
 
-router.post("/", requireQuota, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const parsed = validate(transactionSchema, req.body);
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
