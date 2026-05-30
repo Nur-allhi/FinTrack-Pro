@@ -1,4 +1,4 @@
-import { supabase } from "../db.js";
+import { supabaseAdmin } from "../db.js";
 
 export interface PaginationOpts {
   limit?: number;
@@ -19,7 +19,8 @@ export async function selectMany<T>(
   userId: string,
   opts?: PaginationOpts & { filters?: Record<string, any>; order?: { column: string; ascending?: boolean } }
 ): Promise<T[]> {
-  let query = supabase.from(table).select(columns).eq("user_id", userId);
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  let query = supabaseAdmin.from(table).select(columns).eq("user_id", userId);
   if (opts?.filters) {
     for (const [key, value] of Object.entries(opts.filters)) {
       if (value !== undefined && value !== null) {
@@ -45,7 +46,8 @@ export async function selectOne<T>(
   userId: string,
   id: number
 ): Promise<T | null> {
-  const { data, error } = await supabase
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { data, error } = await supabaseAdmin
     .from(table)
     .select(columns)
     .eq("id", id)
@@ -59,7 +61,8 @@ export async function selectOne<T>(
 }
 
 export async function insertOne<T>(table: string, data: Record<string, any>): Promise<T> {
-  const { data: result, error } = await supabase.from(table).insert([data]).select().single();
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { data: result, error } = await supabaseAdmin.from(table).insert([data]).select().single();
   if (error) throw error;
   return result as T;
 }
@@ -70,11 +73,13 @@ export async function updateOne(
   id: number,
   updates: Record<string, any>
 ): Promise<void> {
-  const { error } = await supabase.from(table).update(updates).eq("id", id).eq("user_id", userId);
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { error } = await supabaseAdmin.from(table).update(updates).eq("id", id).eq("user_id", userId);
   if (error) throw error;
 }
 
 export async function deleteOne(table: string, userId: string, id: number): Promise<void> {
-  const { error } = await supabase.from(table).delete().eq("id", id).eq("user_id", userId);
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { error } = await supabaseAdmin.from(table).delete().eq("id", id).eq("user_id", userId);
   if (error) throw error;
 }

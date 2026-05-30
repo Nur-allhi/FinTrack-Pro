@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-05-30
-> **28 completed**, **36 remaining** (Phases 0–6)
+> **32 completed**, **32 remaining** (Phases 0–6)
 
 ---
 
@@ -10,12 +10,12 @@
 - [x] **T-029** Typography audit (30m)
 - [x] **T-030** Dark mode micro-interactions (1h)
 
-## Phase 1 — Data Layer & Architecture
+## Phase 1 — Data Layer & Architecture ✅
 
-- [ ] **T-031** Create unified query interface `api/db/queries.ts` (4-6h)
-- [ ] **T-032** Extract shared Zod schemas to `shared/validation/` (2-3h) ← depends T-031
-- [ ] **T-033** Swap `supabaseAdmin` for regular client in data queries (1-2h)
-- [ ] **T-034** Migrate token from `localStorage` to HttpOnly cookie (4-6h)
+- [x] **T-031** Create unified query interface `api/db/queries.ts` (4-6h)
+- [x] **T-032** Extract shared Zod schemas to `shared/validation/` (2-3h)
+- [x] **T-033** Swap `supabaseAdmin` for regular client in data queries (1-2h)
+- [x] **T-034** Migrate token from `localStorage` to HttpOnly cookie (4-6h)
 
 ## Phase 2 — Type Safety & Cleanup
 
@@ -27,7 +27,7 @@
 ## Phase 3 — File Splitting (<300 LOC)
 
 - [ ] **T-039** Split `Ledger.tsx` (542) → `LedgerTable`, `LedgerFilters`, `LedgerSummary` (2-3h)
-- [ ] **T-040** Split `AdminPanel.tsx` (444) → `UserManager`, `SystemHealth` (1-2h)
+- [ ] **T-040** ~~Split `AdminPanel.tsx` (444)~~ — file deleted (admin removed)
 - [ ] **T-041** Split `LoanManager.tsx` (403) → `LoanForm`, `LoanList`, `LoanDetail` (2-3h)
 - [ ] **T-042** Split `AccountManager.tsx` (398) → `AccountForm`, `AccountList` (1-2h)
 - [ ] **T-043** Split `Dashboard.tsx` (391) → `DashboardHero`, `DashboardGrid`, `DashboardCards` (2-3h)
@@ -64,4 +64,4 @@
 
 ---
 
-**Estimated remaining (Phases 0–5)**: ~48–73h · **Phase 6**: varies
+**Estimated remaining (Phases 0–5)**: ~36–60h · **Phase 6**: varies

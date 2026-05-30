@@ -1,4 +1,4 @@
-import { supabase } from "../db.js";
+import { supabaseAdmin } from "../db.js";
 import { selectMany, insertOne } from "./queries.js";
 
 export async function getInvestments(userId: string) {
@@ -11,13 +11,15 @@ export async function createInvestment(userId: string, accountId: number, princi
 }
 
 export async function getInvestmentReturns(investmentId: number) {
-  const { data, error } = await supabase.from("investment_returns").select("*").eq("investment_id", investmentId).order("date", { ascending: false });
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { data, error } = await supabaseAdmin.from("investment_returns").select("*").eq("investment_id", investmentId).order("date", { ascending: false });
   if (error) throw error;
   return data || [];
 }
 
 export async function createInvestmentReturn(investmentId: number, date: string, amount: number, percentage?: number) {
-  const { data, error } = await supabase.from("investment_returns").insert([{ investment_id: investmentId, date, amount, percentage }]).select().single();
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { data, error } = await supabaseAdmin.from("investment_returns").insert([{ investment_id: investmentId, date, amount, percentage }]).select().single();
   if (error) throw error;
   return data;
 }

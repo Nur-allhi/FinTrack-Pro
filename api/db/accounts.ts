@@ -1,4 +1,4 @@
-import { supabase } from "../db.js";
+import { supabaseAdmin } from "../db.js";
 import { insertOne, updateOne } from "./queries.js";
 import type { Account } from "../../shared/types.js";
 
@@ -20,12 +20,13 @@ function accountRowToAccount(row: SupabaseAccountRow, txSum: number): Account {
 }
 
 export async function getAccounts(userId: string, limit?: number, offset?: number): Promise<Account[]> {
-  let query = supabase.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", userId);
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  let query = supabaseAdmin.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", userId);
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
   const { data: accounts, error: accError } = await query;
   if (accError) throw accError;
 
-  const { data: transactions, error: txError } = await supabase.from("transactions").select("account_id, amount").eq("user_id", userId);
+  const { data: transactions, error: txError } = await supabaseAdmin.from("transactions").select("account_id, amount").eq("user_id", userId);
   if (txError) throw txError;
 
   const txMap = new Map<number, number>();

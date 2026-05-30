@@ -20,6 +20,7 @@ const mockSupabase = vi.hoisted(() => ({
 
 vi.mock("../db.js", () => ({
   supabase: mockSupabase,
+  supabaseAdmin: mockSupabase,
 }));
 
 vi.mock("../middleware/auth.js", () => ({

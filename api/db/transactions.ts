@@ -1,7 +1,12 @@
-import { supabase } from "../db.js";
+import { supabaseAdmin } from "../db.js";
+
+function db(): NonNullable<typeof supabaseAdmin> {
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  return supabaseAdmin;
+}
 
 export async function getCategories(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("transactions")
     .select("category")
     .eq("user_id", userId)
@@ -12,7 +17,7 @@ export async function getCategories(userId: string) {
 }
 
 export async function getTransactions(accountId: string, userId: string, limit?: number, offset?: number) {
-  let query = supabase
+  let query = db()
     .from("transactions")
     .select("*")
     .eq("account_id", accountId)
@@ -29,7 +34,7 @@ export async function getTransactions(accountId: string, userId: string, limit?:
     .map((tx: any) => tx.linked_transaction_id);
 
   if (linkedIds.length > 0) {
-    const { data: linkedTxs, error: linkedError } = await supabase
+    const { data: linkedTxs, error: linkedError } = await db()
       .from("transactions")
       .select("id, account_id, accounts(name)")
       .in("id", linkedIds)
@@ -50,7 +55,7 @@ export async function createTransaction(userId: string, data: {
   account_id: number; date: string; particulars: string; category?: string;
   amount: number; type?: string; linked_transaction_id?: number; summary?: string | null
 }) {
-  const { data: result, error } = await supabase.from("transactions").insert([{
+  const { data: result, error } = await db().from("transactions").insert([{
     ...data, type: data.type || 'normal', user_id: userId
   }]).select().single();
   if (error) throw error;
@@ -67,7 +72,7 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
   return (async () => {
     let settlement: any = null;
 
-    const { data: byTx } = await supabase
+    const { data: byTx } = await db()
       .from("loan_settlements")
       .select("id, loan_id, amount")
       .eq("transaction_id", transactionId)
@@ -75,7 +80,7 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
     settlement = byTx?.[0] ?? null;
 
     if (!settlement && linkedTransactionId) {
-      const { data: byLinked } = await supabase
+      const { data: byLinked } = await db()
         .from("loan_settlements")
         .select("id, loan_id, amount")
         .eq("transaction_id", linkedTransactionId)
@@ -84,13 +89,13 @@ function findSettlement(transactionId: number, linkedTransactionId: number | nul
     }
 
     if (!settlement) {
-      const { data: loans } = await supabase
+      const { data: loans } = await db()
         .from("loans")
         .select("id, remaining, status")
         .eq("lender_account_id", accountId)
         .gte("remaining", 0);
       for (const loan of loans ?? []) {
-        const { data: matches } = await supabase
+        const { data: matches } = await db()
           .from("loan_settlements")
           .select("id, amount")
           .eq("loan_id", loan.id)
@@ -114,7 +119,7 @@ async function updateSettlementForTransaction(
 
   let settlement: any = null;
 
-  const { data: byTx } = await supabase
+  const { data: byTx } = await db()
     .from("loan_settlements")
     .select("id, loan_id, amount")
     .eq("transaction_id", transaction.id)
@@ -122,7 +127,7 @@ async function updateSettlementForTransaction(
   settlement = byTx?.[0] ?? null;
 
   if (!settlement && transaction.linked_transaction_id) {
-    const { data: byLinked } = await supabase
+    const { data: byLinked } = await db()
       .from("loan_settlements")
       .select("id, loan_id, amount")
       .eq("transaction_id", transaction.linked_transaction_id)
@@ -132,16 +137,16 @@ async function updateSettlementForTransaction(
 
   if (settlement) {
     const absAmount = Math.abs(amount);
-    const { data: settlements } = await supabase
+    const { data: settlements } = await db()
       .from("loan_settlements")
       .select("amount")
       .eq("loan_id", settlement.loan_id);
     const oldTotalSettled = (settlements ?? []).reduce((sum: number, s: any) => sum + s.amount, 0);
     const newTotalSettled = oldTotalSettled - settlement.amount + absAmount;
 
-    await supabase.from("loan_settlements").update({ amount: absAmount }).eq("id", settlement.id);
+    await db().from("loan_settlements").update({ amount: absAmount }).eq("id", settlement.id);
 
-    const { data: loan } = await supabase
+    const { data: loan } = await db()
       .from("loans")
       .select("id, amount, remaining, status")
       .eq("id", settlement.loan_id)
@@ -157,7 +162,7 @@ async function updateSettlementForTransaction(
         updateData.status = 'active';
         updateData.settled_date = null;
       }
-      await supabase.from("loans").update(updateData).eq("id", loan.id);
+      await db().from("loans").update(updateData).eq("id", loan.id);
     }
   }
 }
@@ -165,7 +170,7 @@ async function updateSettlementForTransaction(
 export async function updateTransaction(userId: string, id: number, updates: {
   date?: string; particulars?: string; category?: string | null; amount?: number; summary?: string | null
 }) {
-  const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
+  const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
   if (fetchError) throw fetchError;
 
   const dbUpdate: any = {};
@@ -175,7 +180,7 @@ export async function updateTransaction(userId: string, id: number, updates: {
   if (updates.amount !== undefined) dbUpdate.amount = updates.amount;
   if (updates.summary !== undefined) dbUpdate.summary = updates.summary;
 
-  const { error } = await supabase.from("transactions").update(dbUpdate).eq("id", id).eq("user_id", userId);
+  const { error } = await db().from("transactions").update(dbUpdate).eq("id", id).eq("user_id", userId);
   if (error) throw error;
 
   if (transaction && transaction.linked_transaction_id) {
@@ -183,7 +188,7 @@ export async function updateTransaction(userId: string, id: number, updates: {
     if (updates.amount !== undefined && (transaction.type === 'transfer' || transaction.type === 'loan_settle')) {
       linkedUpdate.amount = -updates.amount;
     }
-    await supabase.from("transactions").update(linkedUpdate).eq("id", transaction.linked_transaction_id).eq("user_id", userId);
+    await db().from("transactions").update(linkedUpdate).eq("id", transaction.linked_transaction_id).eq("user_id", userId);
   }
 
   if (transaction && transaction.type === 'loan_settle' && updates.amount !== undefined) {
@@ -194,7 +199,7 @@ export async function updateTransaction(userId: string, id: number, updates: {
 }
 
 export async function deleteTransaction(userId: string, id: number) {
-  const { data: transaction, error: fetchError } = await supabase.from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
+  const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
   if (fetchError) {
     if ((fetchError as any).code === 'PGRST116') return { success: true };
     throw fetchError;
@@ -203,7 +208,7 @@ export async function deleteTransaction(userId: string, id: number) {
   if (transaction && transaction.type === 'loan_settle') {
     const settlement = await findSettlement(transaction.id, transaction.linked_transaction_id, transaction.account_id, transaction.amount);
     if (settlement) {
-      const { data: loan } = await supabase
+      const { data: loan } = await db()
         .from("loans")
         .select("id, remaining, status")
         .eq("id", settlement.loan_id)
@@ -215,22 +220,22 @@ export async function deleteTransaction(userId: string, id: number) {
           updateData.status = 'active';
           updateData.settled_date = null;
         }
-        await supabase.from("loans").update(updateData).eq("id", loan.id);
-        await supabase.from("loan_settlements").delete().eq("id", settlement.id);
+        await db().from("loans").update(updateData).eq("id", loan.id);
+        await db().from("loan_settlements").delete().eq("id", settlement.id);
       }
     }
   }
 
   if (transaction && transaction.linked_transaction_id) {
-    await supabase.from("transactions").delete().eq("id", transaction.linked_transaction_id).eq("user_id", userId);
+    await db().from("transactions").delete().eq("id", transaction.linked_transaction_id).eq("user_id", userId);
   }
-  const { error: delError } = await supabase.from("transactions").delete().eq("id", id).eq("user_id", userId);
+  const { error: delError } = await db().from("transactions").delete().eq("id", id).eq("user_id", userId);
   if (delError) throw delError;
   return { success: true };
 }
 
 export async function renameCategory(userId: string, oldName: string, newName: string) {
-  const { error } = await supabase
+  const { error } = await db()
     .from("transactions")
     .update({ category: newName })
     .eq("category", oldName)

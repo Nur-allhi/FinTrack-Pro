@@ -1,7 +1,9 @@
-import { supabase } from "../db.js";
+import { supabaseAdmin } from "../db.js";
+import { insertOne, updateOne, deleteOne } from "./queries.js";
 
 export async function getGroups(userId: string) {
-  const { data: groups, error } = await supabase
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { data: groups, error } = await supabaseAdmin
     .from("accounts")
     .select("*, members(name)")
     .eq("type", "group")
@@ -9,14 +11,14 @@ export async function getGroups(userId: string) {
     .order("name");
   if (error) throw error;
 
-  const { data: children, error: cError } = await supabase
+  const { data: children, error: cError } = await supabaseAdmin
     .from("accounts")
     .select("id, parent_id, name, type, initial_balance, archived, member_id")
     .eq("user_id", userId)
     .not("parent_id", "is", null);
   if (cError) throw cError;
 
-  const { data: allTx, error: txErr } = await supabase.from("transactions").select("account_id, amount").eq("user_id", userId);
+  const { data: allTx, error: txErr } = await supabaseAdmin.from("transactions").select("account_id, amount").eq("user_id", userId);
   if (txErr) throw txErr;
 
   const balances: Record<number, number> = {};
@@ -42,12 +44,10 @@ export async function getGroups(userId: string) {
 }
 
 export async function createGroup(userId: string, name: string, memberId?: number, color?: string) {
-  const { data, error } = await supabase.from("accounts").insert([{
+  return insertOne("accounts", {
     name, type: 'group', member_id: memberId, color, initial_balance: 0,
     user_id: userId
-  }]).select().single();
-  if (error) throw error;
-  return data;
+  });
 }
 
 export async function updateGroup(userId: string, id: number, updates: { name?: string; color?: string; member_id?: number | null }) {
@@ -55,12 +55,11 @@ export async function updateGroup(userId: string, id: number, updates: { name?: 
   if (updates.name !== undefined) dbUpdate.name = updates.name;
   if (updates.color !== undefined) dbUpdate.color = updates.color;
   if (updates.member_id !== undefined) dbUpdate.member_id = updates.member_id;
-  const { error } = await supabase.from("accounts").update(dbUpdate).eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  await updateOne("accounts", userId, id, dbUpdate);
 }
 
 export async function deleteGroup(userId: string, id: number) {
-  await supabase.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
-  const { error } = await supabase.from("accounts").delete().eq("id", id).eq("type", "group").eq("user_id", userId);
-  if (error) throw error;
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  await supabaseAdmin.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
+  await deleteOne("accounts", userId, id);
 }
