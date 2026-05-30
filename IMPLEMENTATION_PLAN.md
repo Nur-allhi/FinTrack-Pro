@@ -5,7 +5,24 @@
 
 ---
 
-## Phase 0 — In-Flight Issues (P0)
+## ✅ Completed (from PROJECTPLAN.md Phases 7–10)
+
+These have been shipped and are **not** part of this implementation plan:
+
+| Phase | Key Deliverables |
+|-------|-----------------|
+| **Phase 7 — Code Audit & Architecture** | `requireAuth` fix, timerRef typing, syncQueue fix, requireQuota fix, data-access layer (`api/db/*.ts`), SQLite indexes, cache TTL, Zod validation, pagination, error standardization, pino logging, request ID tracing, shared types |
+| **Phase 8 — Animation Overhaul** | Removed global bounce, replaced all scale animations with slide-in/slide-out across 10+ components |
+| **Phase 9 — Offline Mode** | SW API caching, offline fallback page, IndexedDB queue, Background Sync, reactive sync state, optimistic offline delete, pending count, offline-aware TTL, 13 fixes |
+| **Phase 10 — Branding & UI Polish** | Sidebar logo rebrand (Wallet → bar-chart SVG + Roboto Slab wordmark), logo clickable to refresh, docs moved to `PLAN/` |
+
+---
+
+## 📋 Remaining Work
+
+---
+
+## Phase 0 — In-Flight Issues (P0) ⬜
 
 | # | Issue | Location | Effort |
 |---|-------|----------|--------|
@@ -16,7 +33,7 @@
 
 ---
 
-## Phase 1 — Data Layer & Architecture (P1)
+## Phase 1 — Data Layer & Architecture (P1) ⬜
 
 | # | Issue | Details | Effort |
 |---|-------|---------|--------|
@@ -29,7 +46,7 @@
 
 ---
 
-## Phase 2 — Type Safety & Cleanup (P2)
+## Phase 2 — Type Safety & Cleanup (P2) ⬜
 
 | # | Issue | Details | Effort |
 |---|-------|---------|--------|
@@ -42,7 +59,7 @@
 
 ---
 
-## Phase 3 — File Splitting (< 300 LOC) (P2)
+## Phase 3 — File Splitting (< 300 LOC) (P2) ⬜
 
 | # | File | Current LOC | Split Plan |
 |---|------|-------------|------------|
@@ -61,7 +78,7 @@
 
 ---
 
-## Phase 4 — Testing (P2)
+## Phase 4 — Testing (P2) ⬜
 
 | # | Issue | Details | Effort |
 |---|-------|---------|--------|
@@ -75,7 +92,7 @@
 
 ---
 
-## Phase 5 — Recycle Bin / Soft-Delete (P2)
+## Phase 5 — Recycle Bin / Soft-Delete (P2) ⬜
 
 See PROJECTPLAN Phase 6.2-6.3 for detailed breakdown.
 
@@ -88,7 +105,7 @@ See PROJECTPLAN Phase 6.2-6.3 for detailed breakdown.
 
 ---
 
-## Phase 6 — Feature Enhancements (P3)
+## Phase 6 — Feature Enhancements (P3) ⬜
 
 Cross-ref PROJECTPLAN Phase 11.
 
@@ -110,17 +127,17 @@ Cross-ref PROJECTPLAN Phase 11.
 
 ## Effort Summary
 
-| Phase | Est. Effort | Risk |
-|-------|-------------|------|
-| Phase 0 — In-Flight Issues | 1.5h | None |
-| Phase 1 — Data Layer & Architecture | 11-17h | Medium |
-| Phase 2 — Type Safety & Cleanup | 11-16h | Low |
-| Phase 3 — File Splitting | 8-14h | Low-Medium |
-| Phase 4 — Testing | 9-13h | None |
-| Phase 5 — Recycle Bin | 8-12h | Low |
-| Phase 6 — Feature Enhancements | Varies | N/A |
+| Phase | Status | Est. Effort | Risk |
+|-------|--------|-------------|------|
+| Phase 0 — In-Flight Issues | ⬜ Not started | 1.5h | None |
+| Phase 1 — Data Layer & Architecture | ⬜ Not started | 11-17h | Medium |
+| Phase 2 — Type Safety & Cleanup | ⬜ Not started | 11-16h | Low |
+| Phase 3 — File Splitting | ⬜ Not started | 8-14h | Low-Medium |
+| Phase 4 — Testing | ⬜ Not started (3 tests exist) | 9-13h | None |
+| Phase 5 — Recycle Bin | ⬜ Not started | 8-12h | Low |
+| Phase 6 — Feature Enhancements | ⬜ Not started | Varies | N/A |
 
-**Total core (Phases 0-5)**: ~48-73h
+**Total remaining (Phases 0-5)**: ~48-73h
 
 ---
 
