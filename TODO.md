@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-05-30
-> **42 completed**, **22 remaining** (Phases 0–6)
+> **46 completed**, **18 remaining** (Phases 0–6)
 
 ---
 
@@ -37,13 +37,13 @@
 - [x] **T-047** Split `LoanGroupCard.tsx` (314→183) → `LoanTable`, `GroupSettleModal` (1h)
 - [x] **T-048** Split `ReportGenerator.tsx` (303→205) → `utils/reportPdf.ts` (1h)
 
-## Phase 4 — Testing
+## Phase 4 — Testing (partial ✅)
 
-- [ ] **T-049** Vitest + supertest setup for API integration tests (1h)
-- [ ] **T-050** Smoke tests for all GET endpoints (2-3h) ← depends T-049
-- [ ] **T-051** CRUD tests for transactions, accounts, loans (3-4h) ← depends T-049
-- [ ] **T-052** Auth middleware tests (1-2h) ← depends T-049
-- [ ] **T-053** Offline queue sync tests (2-3h) ← depends T-049
+- [x] **T-049** Vitest + supertest setup for API integration tests (1h)
+- [x] **T-050** Smoke tests for all GET endpoints (2-3h) ← depends T-049
+- [x] **T-051** CRUD tests for transactions, accounts, loans (3-4h) ← depends T-049
+- [x] **T-052** Auth middleware tests (1-2h) ← depends T-049
+- [ ] **T-053** Offline queue sync tests (2-3h) ← depends T-049, requires IndexedDB mock
 
 ## Phase 5 — Recycle Bin / Soft-Delete
 
