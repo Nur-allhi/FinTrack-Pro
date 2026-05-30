@@ -46,7 +46,6 @@ router.patch("/:id", async (req, res) => {
     const parsed = validate(transactionUpdateSchema, req.body);
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
     const result = await updateTransaction(req.user!.id, Number(req.params.id), parsed.data);
-    if (result.notFound) return sendError(res, 404, "Transaction not found", "NOT_FOUND");
     res.json(result);
   } catch (err: any) {
     logger.error({ requestId: req.requestId, error: err.message }, "PATCH /api/transactions");

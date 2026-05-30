@@ -1,0 +1,21 @@
+<svg width="100%" viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon container -->
+  <rect x="168" y="105" width="88" height="88" rx="18" fill="#1a2d50"/>
+
+  <!-- Bar chart (3 bars, ascending left to right) -->
+  <rect x="188" y="165" width="14" height="20" rx="2" fill="#2a4a8c"/>
+  <rect x="208" y="152" width="14" height="33" rx="2" fill="#2a4a8c"/>
+  <rect x="228" y="136" width="14" height="49" rx="2" fill="#2a4a8c"/>
+
+  <!-- Checkmark tick over the top bar -->
+  <polyline points="224,148 231,156 244,136" fill="none" stroke="#34d399" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Wordmark -->
+  <text x="274" y="167" fill="#0a0b0d" font-family="Georgia, serif" font-size="42px" font-weight="700" letter-spacing="-0.5">FinTrack <tspan fill="#34d399" font-weight="400">Pro</tspan></text>
+
+  <!-- Tagline -->
+  <text x="275" y="185" fill="#7c828a" font-family="Arial, sans-serif" font-size="11px" font-weight="400" letter-spacing="1.5">FINANCIAL CLARITY. SIMPLIFIED.</text>
+
+  <!-- Divider -->
+  <line x1="275" y1="192" x2="512" y2="192" stroke="#dee1e6" stroke-width="0.8"/>
+</svg>

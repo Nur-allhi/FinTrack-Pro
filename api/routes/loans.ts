@@ -45,9 +45,8 @@ router.patch("/:id", async (req, res) => {
   try {
     const parsed = validate(loanUpdateSchema, req.body);
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
-    const result = await updateLoan(req.user!.id, Number(req.params.id), parsed.data);
-    if (result.notFound) return sendError(res, 404, "Loan not found", "NOT_FOUND");
-    res.json(result);
+    await updateLoan(req.user!.id, Number(req.params.id), parsed.data);
+    res.json({ success: true });
   } catch (err: any) {
     logger.error({ requestId: req.requestId, error: err.message }, "PATCH /api/loans");
     sendError(res, 500, err.message, "INTERNAL_ERROR");
