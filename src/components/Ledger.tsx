@@ -173,7 +173,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         });
         const cached = await cacheService.getTransactions(account.id.toString());
         const updatedCache = editingTx
-          ? (cached || []).map(t => t.id === editingTx.id ? optimisticTx : t)
+          ? (cached || []).map((t: Transaction) => t.id === editingTx.id ? optimisticTx : t)
           : [optimisticTx, ...(cached || [])];
         await cacheService.setTransactions(account.id.toString(), updatedCache);
       } catch (e) {
@@ -206,7 +206,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         });
         const cached = await cacheService.getTransactions(account.id.toString());
         const updatedCache = editingTx
-          ? (cached || []).map(t => t.id === editingTx.id ? optimisticTx : t)
+          ? (cached || []).map((t: Transaction) => t.id === editingTx.id ? optimisticTx : t)
           : [optimisticTx, ...(cached || [])];
         await cacheService.setTransactions(account.id.toString(), updatedCache);
         toast("Transaction queued for sync when online.", 'success');
@@ -229,7 +229,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
       await queueDelete();
       const cached = await cacheService.getTransactions(account.id.toString());
       if (cached) {
-        await cacheService.setTransactions(account.id.toString(), cached.filter(t => t.id !== id));
+        await cacheService.setTransactions(account.id.toString(), cached.filter((t: Transaction) => t.id !== id));
       }
       toast("Deletion queued for sync when online.", 'success');
       return;
@@ -245,7 +245,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         await queueDelete();
         const cached = await cacheService.getTransactions(account.id.toString());
         if (cached) {
-          await cacheService.setTransactions(account.id.toString(), cached.filter(t => t.id !== id));
+          await cacheService.setTransactions(account.id.toString(), cached.filter((t: Transaction) => t.id !== id));
         }
         toast("Deletion queued for sync when online.", 'success');
       } else {
