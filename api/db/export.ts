@@ -27,32 +27,15 @@ export async function importAllData(userId: string, data: {
   members?: Member[]; accounts?: Account[]; transactions?: Transaction[];
   investments?: Investment[]; investmentReturns?: InvestmentReturn[]
 }) {
-  if (data.members?.length) await db().from("members").delete().eq("user_id", userId);
-  if (data.accounts?.length) await db().from("accounts").delete().eq("user_id", userId);
-  if (data.transactions?.length) await db().from("transactions").delete().eq("user_id", userId);
-  if (data.investments?.length) await db().from("investments").delete().eq("user_id", userId);
-  if (data.investmentReturns?.length) await db().from("investment_returns").delete().neq("id", 0);
-
-  if (data.members?.length) {
-    const { error } = await db().from("members").insert(data.members.map((m) => ({ ...m, user_id: userId })));
-    if (error) throw error;
-  }
-  if (data.accounts?.length) {
-    const { error } = await db().from("accounts").insert(data.accounts.map((a) => ({ ...a, user_id: userId })));
-    if (error) throw error;
-  }
-  if (data.transactions?.length) {
-    const { error } = await db().from("transactions").insert(data.transactions.map((t) => ({ ...t, user_id: userId })));
-    if (error) throw error;
-  }
-  if (data.investments?.length) {
-    const { error } = await db().from("investments").insert(data.investments.map((i) => ({ ...i, user_id: userId })));
-    if (error) throw error;
-  }
-  if (data.investmentReturns?.length) {
-    const { error } = await db().from("investment_returns").insert(data.investmentReturns);
-    if (error) throw error;
-  }
+  const { error } = await db().rpc("fintrack_import_data", {
+    p_user_id: userId,
+    p_members: JSON.stringify(data.members || []),
+    p_accounts: JSON.stringify(data.accounts || []),
+    p_transactions: JSON.stringify(data.transactions || []),
+    p_investments: JSON.stringify(data.investments || []),
+    p_investment_returns: JSON.stringify(data.investmentReturns || []),
+  });
+  if (error) throw error;
   return { success: true };
 }
 
