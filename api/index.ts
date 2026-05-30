@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initDb, supabase } from "./db.js";
-import { requireAuth } from "./middleware/auth.js";
+import { requireAuth, setSessionCookie, clearSessionCookie } from "./middleware/auth.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
 import { requestLogger } from "./logger.js";
@@ -50,6 +50,7 @@ app.post("/api/auth/login", async (req, res) => {
     if (error) {
       return res.status(401).json({ error: error.message });
     }
+    setSessionCookie(res, access_token);
     res.json({
       success: true,
       user: { id: data.user.id, email: data.user.email },
@@ -59,6 +60,30 @@ app.post("/api/auth/login", async (req, res) => {
     console.error("POST /api/auth/login error:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+app.post("/api/auth/session", async (req, res) => {
+  try {
+    const { access_token } = req.body;
+    if (!access_token) {
+      return res.status(400).json({ error: "access_token is required" });
+    }
+    const { data, error } = await supabase.auth.getUser(access_token);
+    if (error) {
+      clearSessionCookie(res);
+      return res.status(401).json({ error: error.message });
+    }
+    setSessionCookie(res, access_token);
+    res.json({ success: true, user: { id: data.user.id, email: data.user.email } });
+  } catch (err: any) {
+    console.error("POST /api/auth/session error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/auth/logout", (_req, res) => {
+  clearSessionCookie(res);
+  res.json({ success: true });
 });
 
 app.get("/api/auth/config", (_req, res) => {

@@ -125,20 +125,18 @@ export default function App() {
   useEffect(() => {
     const init = async () => {
       initPendingCount();
-      const stored = localStorage.getItem('auth_token');
-      if (stored) {
-        const refreshed = await authService.refreshToken();
-        if (refreshed) {
+      try {
+        const res = await authService.apiFetch('/api/auth/me');
+        if (res.ok) {
           setIsAuthenticated(true);
           const savedTab = sessionStorage.getItem('activeTab');
           const savedAccountId = sessionStorage.getItem('selectedAccountId');
           if (savedTab) setActiveTab(savedTab as any);
           if (savedAccountId) setSelectedAccountId(Number(savedAccountId));
         } else {
-          localStorage.removeItem('auth_token');
           setIsAuthenticated(false);
         }
-      } else {
+      } catch {
         setIsAuthenticated(false);
       }
     };
@@ -147,7 +145,6 @@ export default function App() {
 
   useEffect(() => {
     setOnSessionExpired(() => {
-      localStorage.removeItem('auth_token');
       setIsAuthenticated(false);
       toast("Session expired. Please sign in again.", 'error');
     });
@@ -321,15 +318,14 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  const handleLogin = (token: string) => {
-    localStorage.setItem('auth_token', token);
+  const handleLogin = async (token: string) => {
+    await authService.setSession(token);
     setIsAuthenticated(true);
     setDataLoading(true);
     toast("Login successful.", 'success');
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('auth_token');
     setIsAuthenticated(false);
     await authService.signOut();
   };

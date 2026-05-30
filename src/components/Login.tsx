@@ -16,7 +16,6 @@ export default function Login({ onLogin }: LoginProps) {
   const [mode, setMode] = useState<'choose' | 'email'>('choose');
 
   useEffect(() => {
-    if (localStorage.getItem('auth_token')) return;
     authService.refreshToken().then(token => {
       if (token) {
         onLogin(token);

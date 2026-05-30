@@ -23,14 +23,8 @@ async function getSupabase(): Promise<SupabaseClient | null> {
       _supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
-      _supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
-          if (session?.access_token) {
-            localStorage.setItem('auth_token', session.access_token);
-          }
-        }
+      _supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') {
-          localStorage.removeItem('auth_token');
           _onSessionExpired?.();
         }
       });
@@ -49,10 +43,18 @@ async function refreshTokenInternal(): Promise<string | null> {
   if (!sb) return null;
   const { data } = await sb.auth.getSession();
   if (data.session?.access_token) {
-    localStorage.setItem('auth_token', data.session.access_token);
+    await setSession(data.session.access_token);
     return data.session.access_token;
   }
   return null;
+}
+
+async function setSession(accessToken: string): Promise<void> {
+  await fetch('/api/auth/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_token: accessToken }),
+  });
 }
 
 export const authService = {
@@ -79,6 +81,14 @@ export const authService = {
     return data;
   },
 
+  async setSession(accessToken: string) {
+    return setSession(accessToken);
+  },
+
+  async clearSession() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  },
+
   async getSession() {
     const sb = await getSupabase();
     if (!sb) return null;
@@ -94,6 +104,7 @@ export const authService = {
     const sb = await getSupabase();
     if (!sb) return;
     await sb.auth.signOut();
+    await this.clearSession();
   },
 
   onAuthStateChange(callback: (session: any) => void) {
@@ -105,29 +116,17 @@ export const authService = {
     });
   },
 
-  getToken(): string | null {
-    return localStorage.getItem('auth_token');
-  },
-
   async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const token = this.getToken();
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string> || {}),
     };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
     const res = await fetch(url, { ...options, headers });
     if (res.status === 401) {
       const newToken = await refreshTokenInternal();
-      if (newToken && newToken !== token) {
-        headers['Authorization'] = `Bearer ${newToken}`;
+      if (newToken) {
         return fetch(url, { ...options, headers });
       }
-      if (!newToken) {
-        localStorage.removeItem('auth_token');
-        _onSessionExpired?.();
-      }
+      _onSessionExpired?.();
     }
     return res;
   }
