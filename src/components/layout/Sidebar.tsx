@@ -83,7 +83,7 @@ export default function Sidebar({
                 <circle cx="368" cy="148" r="18" fill="#1ED47A"/>
                 <circle cx="368" cy="148" r="9" fill="#FFFFFF"/>
               </svg>
-              <span className="text-lg md:text-xl font-bold text-ink leading-none cursor-pointer" style={{fontFamily: "'Roboto Slab', serif"}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
+              <span className="text-xl md:text-2xl font-bold text-ink leading-none cursor-pointer" style={{fontFamily: "'Roboto Slab', serif"}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
             </button>
             <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1.5 text-muted hover:text-ink rounded-lg hover:bg-surface-soft shrink-0">
               <X className="w-4 h-4" />
