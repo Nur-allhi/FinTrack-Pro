@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wallet, X, LogOut } from 'lucide-react';
+import { X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { cn } from '../../utils/cn';
 
@@ -59,21 +59,35 @@ export default function Sidebar({
       >
         <div className="h-full flex flex-col">
           {/* Brand header */}
-          <div className="p-5 pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center">
-                  <Wallet className="text-white w-5 h-5" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-ink tracking-tight">FinTrack</h1>
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] leading-none">Institutional</p>
-                </div>
-              </div>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1.5 text-muted hover:text-ink rounded-lg hover:bg-surface-soft">
-                <X className="w-4 h-4" />
-              </button>
+          <div className="flex items-center justify-between px-5 py-5">
+            <div className="flex items-center gap-0 min-w-0">
+              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="110" fill="#FFFFFF" stroke="#E8ECF4" strokeWidth="2"/>
+                <g opacity="0.08">
+                  <circle cx="128" cy="128" r="2" fill="#0D1C45"/>
+                  <circle cx="256" cy="128" r="2" fill="#0D1C45"/>
+                  <circle cx="384" cy="128" r="2" fill="#0D1C45"/>
+                  <circle cx="128" cy="256" r="2" fill="#0D1C45"/>
+                  <circle cx="256" cy="256" r="2" fill="#0D1C45"/>
+                  <circle cx="384" cy="256" r="2" fill="#0D1C45"/>
+                  <circle cx="128" cy="384" r="2" fill="#0D1C45"/>
+                  <circle cx="256" cy="384" r="2" fill="#0D1C45"/>
+                  <circle cx="384" cy="384" r="2" fill="#0D1C45"/>
+                </g>
+                <rect x="108" y="300" width="72" height="130" rx="14" fill="#0D1C45"/>
+                <rect x="220" y="235" width="72" height="195" rx="14" fill="#0D1C45"/>
+                <rect x="332" y="152" width="72" height="278" rx="14" fill="#0D1C45"/>
+                <polyline points="144,296 256,231 368,148" fill="none" stroke="#1ED47A" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="144" cy="296" r="9" fill="#1ED47A"/>
+                <circle cx="256" cy="231" r="9" fill="#1ED47A"/>
+                <circle cx="368" cy="148" r="18" fill="#1ED47A"/>
+                <circle cx="368" cy="148" r="9" fill="#FFFFFF"/>
+              </svg>
+              <span className="text-base md:text-lg font-bold text-ink leading-none" style={{fontFamily: "'Roboto Slab', serif"}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
             </div>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1.5 text-muted hover:text-ink rounded-lg hover:bg-surface-soft shrink-0">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Divider */}
