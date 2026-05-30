@@ -17,12 +17,12 @@
 - [x] **T-033** Swap `supabaseAdmin` for regular client in data queries (1-2h)
 - [x] **T-034** Migrate token from `localStorage` to HttpOnly cookie (4-6h)
 
-## Phase 2 — Type Safety & Cleanup
+## Phase 2 — Type Safety & Cleanup ✅
 
-- [ ] **T-035** Replace `any` types across API layer (4-6h)
-- [ ] **T-036** Replace `any` types across frontend components (4-6h)
-- [ ] **T-037** Wrap `/api/import` in a transaction (1h)
-- [ ] **T-038** Add rate limiting middleware (2-3h)
+- [x] **T-035** Replace `any` types across API layer (4-6h)
+- [x] **T-036** Replace `any` types across frontend components (4-6h)
+- [x] **T-037** Wrap `/api/import` in a DB transaction (1h)
+- [x] **T-038** Add rate limiting middleware (2-3h)
 
 ## Phase 3 — File Splitting (<300 LOC)
 
