@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { initDb, supabase } from "./db.js";
 import { requireAuth, setSessionCookie, clearSessionCookie } from "./middleware/auth.js";
+import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
 import { requestLogger } from "./logger.js";
@@ -40,7 +41,7 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", authLimiter, async (req, res) => {
   try {
     const { access_token } = req.body;
     if (!access_token) {
@@ -97,6 +98,7 @@ app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
+app.use("/api", apiLimiter);
 app.use("/api/members", requireAuth, memberRoutes);
 app.use("/api/accounts", requireAuth, accountRoutes);
 app.use("/api/transactions", requireAuth, transactionRoutes);
