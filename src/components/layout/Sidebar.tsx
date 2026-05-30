@@ -60,7 +60,7 @@ export default function Sidebar({
         <div className="h-full flex flex-col">
           {/* Brand header */}
           <div className="flex items-center justify-between px-5 py-5">
-            <div className="flex items-center gap-0 min-w-0">
+            <button onClick={() => window.location.reload()} className="flex items-center gap-0 min-w-0 cursor-pointer">
               <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0" xmlns="http://www.w3.org/2000/svg">
                 <rect width="512" height="512" rx="110" fill="#FFFFFF" stroke="#E8ECF4" strokeWidth="2"/>
                 <g opacity="0.08">
@@ -83,8 +83,8 @@ export default function Sidebar({
                 <circle cx="368" cy="148" r="18" fill="#1ED47A"/>
                 <circle cx="368" cy="148" r="9" fill="#FFFFFF"/>
               </svg>
-              <span className="text-base md:text-lg font-bold text-ink leading-none" style={{fontFamily: "'Roboto Slab', serif"}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
-            </div>
+              <span className="text-base md:text-lg font-bold text-ink leading-none cursor-pointer" style={{fontFamily: "'Roboto Slab', serif"}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
+            </button>
             <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1.5 text-muted hover:text-ink rounded-lg hover:bg-surface-soft shrink-0">
               <X className="w-4 h-4" />
             </button>
