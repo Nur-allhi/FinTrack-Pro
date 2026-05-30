@@ -340,6 +340,7 @@ export default function Dashboard({
                     <tr className="bg-surface-soft text-muted text-xs font-bold uppercase tracking-[0.2em] border-b border-hairline">
                       <th className="px-5 py-3 whitespace-nowrap">Account</th>
                       <th className="px-5 py-3 whitespace-nowrap">Type</th>
+                      <th className="px-5 py-3 whitespace-nowrap">Group</th>
                       <th className="px-5 py-3 whitespace-nowrap">Member</th>
                       <th className="px-5 py-3 whitespace-nowrap text-right">Balance</th>
                     </tr>
@@ -354,6 +355,7 @@ export default function Dashboard({
                           </div>
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</td>
+                        <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted">{account.parent_name || '-'}</td>
                         <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted">{account.member_name || '-'}</td>
                         <td className="px-5 py-3 whitespace-nowrap text-right text-sm font-bold text-ink financial-number">{settings.currency}{account.current_balance.toLocaleString()}</td>
                       </tr>

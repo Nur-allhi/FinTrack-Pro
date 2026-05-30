@@ -38,22 +38,23 @@ export default function AccountCard({ account, onClick, currency, typeColors, fi
         <div className="flex-1 min-w-0">
           <h5 className="text-base md:text-lg font-semibold text-ink truncate">{account.name}</h5>
           <AnimatePresence mode="popLayout">
-            {showMember && (
-              <motion.p
+            {(showMember || hasParent) && (
+              <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="text-xs text-muted truncate"
+                className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"
               >
-                {account.member_name}
-              </motion.p>
+                {showMember && <span className="text-xs text-muted truncate">{account.member_name}</span>}
+                {showMember && hasParent && <span className="text-muted/40 text-xs">·</span>}
+                {hasParent && <span className="flex items-center gap-1 text-xs text-muted truncate"><Folder className="w-3 h-3 shrink-0" />{account.parent_name}</span>}
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
         <div className="flex flex-col items-end gap-0.5 shrink-0">
           <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
-          {hasParent && <span className="flex items-center gap-1 text-xs md:text-sm text-muted truncate max-w-28"><Folder className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" />{account.parent_name}</span>}
         </div>
       </div>
       <p className="text-xl md:text-2xl font-normal text-ink financial-number tracking-tighter">
