@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X, Sun, Moon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface SearchResult {
@@ -16,6 +16,8 @@ interface HeaderProps {
   accounts: { id: number; name: string; type: string; member_name?: string }[];
   members: { id: number; name: string; relationship?: string }[];
   onSearchSelect: (type: 'account' | 'member', id: number) => void;
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 export default function Header({
@@ -24,7 +26,9 @@ export default function Header({
   activeTabLabel,
   accounts,
   members,
-  onSearchSelect
+  onSearchSelect,
+  darkMode,
+  onToggleDarkMode
 }: HeaderProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -74,8 +78,17 @@ export default function Header({
         </h2>
       </div>
 
-      {/* Search */}
-      <div ref={ref} className="relative">
+      <div className="flex items-center gap-1 md:gap-2">
+        <button
+          onClick={onToggleDarkMode}
+          className="p-2 text-muted hover:bg-surface-soft rounded-pill transition-colors"
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
+        </button>
+
+        {/* Search */}
+        <div ref={ref} className="relative">
         <div className={cn(
           "flex items-center gap-2 bg-surface-soft rounded-pill border border-hairline transition-all",
           focused ? "border-primary bg-canvas shadow-sm" : "hover:border-muted"
@@ -123,6 +136,7 @@ export default function Header({
             ))}
           </div>
         )}
+      </div>
       </div>
     </header>
   );

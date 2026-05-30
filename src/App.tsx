@@ -412,6 +412,12 @@ export default function App() {
           activeTabLabel={navItems.find(i => i.id === activeTab)?.label}
           accounts={adjustedAccounts}
           members={members}
+          darkMode={settings.darkMode}
+          onToggleDarkMode={() => {
+            const next = !settings.darkMode;
+            setSettings({ ...settings, darkMode: next });
+            cacheService.setSettings({ ...settings, darkMode: next });
+          }}
           onSearchSelect={(type, id) => {
             if (type === 'account') { setSelectedAccountId(id); }
             else { setActiveTab('dashboard'); setDashboardFilter(id); }
