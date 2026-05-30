@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-05-30
-> **32 completed**, **32 remaining** (Phases 0–6)
+> **42 completed**, **22 remaining** (Phases 0–6)
 
 ---
 
@@ -24,18 +24,18 @@
 - [x] **T-037** Wrap `/api/import` in a DB transaction (1h)
 - [x] **T-038** Add rate limiting middleware (2-3h)
 
-## Phase 3 — File Splitting (<300 LOC)
+## Phase 3 — File Splitting (<300 LOC) ✅
 
-- [ ] **T-039** Split `Ledger.tsx` (542) → `LedgerTable`, `LedgerFilters`, `LedgerSummary` (2-3h)
-- [ ] **T-040** ~~Split `AdminPanel.tsx` (444)~~ — file deleted (admin removed)
-- [ ] **T-041** Split `LoanManager.tsx` (403) → `LoanForm`, `LoanList`, `LoanDetail` (2-3h)
-- [ ] **T-042** Split `AccountManager.tsx` (398) → `AccountForm`, `AccountList` (1-2h)
-- [ ] **T-043** Split `Dashboard.tsx` (391) → `DashboardHero`, `DashboardGrid`, `DashboardCards` (2-3h)
-- [ ] **T-044** Split `GroupManager.tsx` (341) → `GroupForm`, `GroupList`, `GroupMembers` (1-2h)
-- [ ] **T-045** Split `Settings.tsx` (319) → section-level files (1-2h)
-- [ ] **T-046** Split `InvestmentTracker.tsx` (311) (1h)
-- [ ] **T-047** Split `LoanGroupCard.tsx` (314) (1h)
-- [ ] **T-048** Defer `ReportGenerator.tsx` (303) — just over threshold
+- [x] **T-039** Split `Ledger.tsx` (542→258) → `useTransactions`, `LedgerToolbar` (2-3h)
+- [x] **T-040** ~~Split `AdminPanel.tsx` (444)~~ — file deleted (admin removed)
+- [x] **T-041** Split `LoanManager.tsx` (403→171) → `SettleModal`, `LoanFilters` (2-3h)
+- [x] **T-042** Split `AccountManager.tsx` (398→194) → `AccountForm`, `AccountListView` (1-2h)
+- [x] **T-043** Split `Dashboard.tsx` (393→268) → `DashboardHero`, `DashboardTodos` (2-3h)
+- [x] **T-044** Split `GroupManager.tsx` (341→296) → `GroupForm` (1-2h)
+- [x] **T-045** Split `Settings.tsx` (319→136) → `AppearanceSettings`, `DashboardSettings`, `CategorySettings` (1-2h)
+- [x] **T-046** Split `InvestmentTracker.tsx` (311→175) → `InvestmentDetail` (1h)
+- [x] **T-047** Split `LoanGroupCard.tsx` (314→183) → `LoanTable`, `GroupSettleModal` (1h)
+- [x] **T-048** Split `ReportGenerator.tsx` (303→205) → `utils/reportPdf.ts` (1h)
 
 ## Phase 4 — Testing
 
@@ -64,4 +64,4 @@
 
 ---
 
-**Estimated remaining (Phases 0–5)**: ~36–60h · **Phase 6**: varies
+**Estimated remaining (Phases 4–5)**: ~14–24h · **Phase 6**: varies
