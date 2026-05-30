@@ -16,6 +16,7 @@ import transferRoutes from "./routes/transfers.js";
 import loanRoutes from "./routes/loans.js";
 import groupRoutes from "./routes/groups.js";
 import exportRoutes from "./routes/export.js";
+import recyclebinRoutes from "./routes/recyclebin.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -106,6 +107,7 @@ app.use("/api/investments", requireAuth, investmentRoutes);
 app.use("/api/transfers", requireAuth, transferRoutes);
 app.use("/api/loans", requireAuth, loanRoutes);
 app.use("/api/groups", requireAuth, groupRoutes);
+app.use("/api/recyclebin", requireAuth, recyclebinRoutes);
 app.use("/api/export", requireAuth, exportRoutes);
 app.use("/api/import", requireAuth, exportRoutes);
 

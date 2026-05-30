@@ -21,12 +21,12 @@ function accountRowToAccount(row: SupabaseAccountRow, txSum: number): Account {
 
 export async function getAccounts(userId: string, limit?: number, offset?: number): Promise<Account[]> {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  let query = supabaseAdmin.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", userId);
+  let query = supabaseAdmin.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", userId).is("deleted_at", null);
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
   const { data: accounts, error: accError } = await query;
   if (accError) throw accError;
 
-  const { data: transactions, error: txError } = await supabaseAdmin.from("transactions").select("account_id, amount").eq("user_id", userId);
+  const { data: transactions, error: txError } = await supabaseAdmin.from("transactions").select("account_id, amount").eq("user_id", userId).is("deleted_at", null);
   if (txError) throw txError;
 
   const txMap = new Map<number, number>();
@@ -48,4 +48,14 @@ export async function createAccount(userId: string, data: { name: string; type: 
 
 export async function updateAccount(userId: string, id: number, updates: Partial<Account>) {
   await updateOne("accounts", userId, id, updates as Record<string, any>);
+}
+
+export async function deleteAccount(userId: string, id: number) {
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { error } = await supabaseAdmin
+    .from("accounts")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw error;
 }

@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "../db.js";
-import { insertOne, updateOne, deleteOne } from "./queries.js";
+import { insertOne, updateOne } from "./queries.js";
 
 interface AccountRow {
   id: number; name: string; type: string; parent_id?: number | null;
@@ -18,6 +18,7 @@ export async function getGroups(userId: string) {
     .select("*, members(name)")
     .eq("type", "group")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("name");
   if (error) throw error;
 
@@ -25,6 +26,7 @@ export async function getGroups(userId: string) {
     .from("accounts")
     .select("id, parent_id, name, type, initial_balance, archived, member_id")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .not("parent_id", "is", null);
   if (cError) throw cError;
 
@@ -70,6 +72,7 @@ export async function updateGroup(userId: string, id: number, updates: { name?: 
 
 export async function deleteGroup(userId: string, id: number) {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const now = new Date().toISOString();
   await supabaseAdmin.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
-  await deleteOne("accounts", userId, id);
+  await supabaseAdmin.from("accounts").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
 }

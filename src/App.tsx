@@ -8,7 +8,8 @@ import {
   FileText, 
   Layers,
   Settings as SettingsIcon,
-  Handshake
+  Handshake,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
@@ -40,6 +41,7 @@ const GroupManager = lazy(() => import('./components/GroupManager'));
 const LoanManager = lazy(() => import('./components/LoanManager'));
 const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
+const RecycleBin = lazy(() => import('./components/RecycleBin'));
 const Login = lazy(() => import('./components/Login'));
 
 const defaultTypeColors: Record<string, string> = {
@@ -50,7 +52,7 @@ const defaultTypeColors: Record<string, string> = {
 export default function App() {
   const { toast } = useToast();
   const { isAuthenticated, userEmail, handleLogin, handleLogout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'recyclebin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
@@ -138,6 +140,7 @@ export default function App() {
     { id: 'investments', label: 'Investments', icon: TrendingUp },
     { id: 'loans', label: 'Loans', icon: Handshake },
     { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'recyclebin', label: 'Recycle Bin', icon: Trash2 },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
@@ -159,6 +162,7 @@ export default function App() {
       case 'investments': return <InvestmentTracker accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'loans': return <LoanManager accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
+      case 'recyclebin': return <RecycleBin />;
       case 'settings': return <Settings settings={settings} onUpdateSettings={(s: typeof settings) => { setSettings(s); cacheService.setSettings(s); }} />;
       default: return null;
     }

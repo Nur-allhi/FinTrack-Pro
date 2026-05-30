@@ -1,5 +1,5 @@
 import express from "express";
-import { getAccounts, createAccount, updateAccount } from "../db/index.js";
+import { getAccounts, createAccount, updateAccount, deleteAccount } from "../db/index.js";
 import { accountSchema, accountUpdateSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
@@ -38,6 +38,16 @@ router.patch("/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err: any) {
     logger.error({ requestId: req.requestId, error: err.message }, "PATCH /api/accounts");
+    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    await deleteAccount(req.user!.id, Number(req.params.id));
+    res.json({ success: true });
+  } catch (err: any) {
+    logger.error({ requestId: req.requestId, error: err.message }, "DELETE /api/accounts");
     sendError(res, 500, err.message, "INTERNAL_ERROR");
   }
 });

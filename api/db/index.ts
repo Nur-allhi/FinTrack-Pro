@@ -6,3 +6,4 @@ export * from "./groups.js";
 export * from "./investments.js";
 export * from "./transfers.js";
 export * from "./export.js";
+export * from "./recyclebin.js";

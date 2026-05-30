@@ -9,8 +9,8 @@ function db(): NonNullable<typeof supabaseAdmin> {
 export async function exportAllData(userId: string) {
   const [members, accounts, transactions, investments, returns] = await Promise.all([
     db().from("members").select("*").eq("user_id", userId),
-    db().from("accounts").select("*").eq("user_id", userId),
-    db().from("transactions").select("*").eq("user_id", userId),
+    db().from("accounts").select("*").eq("user_id", userId).is("deleted_at", null),
+    db().from("transactions").select("*").eq("user_id", userId).is("deleted_at", null),
     db().from("investments").select("*").eq("user_id", userId),
     db().from("investment_returns").select("*"),
   ]);

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../db.js";
+import { softDeleteOne } from "./queries.js";
 import type { Transaction } from "../../shared/types.js";
 
 interface SupabaseTransactionRow {
@@ -44,6 +45,7 @@ export async function getCategories(userId: string) {
     .from("transactions")
     .select("category")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .neq("category", "")
     .neq("category", null);
   if (error) throw error;
@@ -57,6 +59,7 @@ export async function getTransactions(accountId: string, userId: string, limit?:
     .select("*")
     .eq("account_id", accountId)
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("date", { ascending: false })
     .order("id", { ascending: false });
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
@@ -73,7 +76,8 @@ export async function getTransactions(accountId: string, userId: string, limit?:
       .from("transactions")
       .select("id, account_id, accounts(name)")
       .in("id", linkedIds)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .is("deleted_at", null);
 
     if (!linkedError && linkedTxs) {
       const linkedMap = new Map((linkedTxs as LinkedTxRow[]).map((lt) => [lt.id, lt.accounts?.[0]?.name]));
@@ -199,7 +203,7 @@ async function updateSettlementForTransaction(
 export async function updateTransaction(userId: string, id: number, updates: {
   date?: string; particulars?: string; category?: string | null; amount?: number; summary?: string | null
 }) {
-  const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
+  const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).is("deleted_at", null).single();
   if (fetchError) {
     const pgError = fetchError as { code?: string };
     if (pgError.code === 'PGRST116') return { success: true };
@@ -232,38 +236,18 @@ export async function updateTransaction(userId: string, id: number, updates: {
 }
 
 export async function deleteTransaction(userId: string, id: number) {
-  const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).single();
+  const { data: transaction, error: fetchError } = await db().from("transactions").select("*").eq("id", id).eq("user_id", userId).is("deleted_at", null).single();
   if (fetchError) {
     const pgError = fetchError as { code?: string };
     if (pgError.code === 'PGRST116') return { success: true };
     throw fetchError;
   }
 
-  if (transaction && transaction.type === 'loan_settle') {
-    const settlement = await findSettlement(transaction.id, transaction.linked_transaction_id, transaction.account_id, transaction.amount);
-    if (settlement) {
-      const { data: loan } = await db()
-        .from("loans")
-        .select("id, remaining, status")
-        .eq("id", settlement.loan_id)
-        .single();
-      if (loan) {
-        const newRemaining = loan.remaining + settlement.amount;
-        const updateData: Record<string, string | number | null> = { remaining: newRemaining };
-        if (loan.status === 'settled') {
-          updateData.status = 'active';
-          updateData.settled_date = null;
-        }
-        await db().from("loans").update(updateData).eq("id", loan.id);
-        await db().from("loan_settlements").delete().eq("id", settlement.id);
-      }
-    }
-  }
-
+  const now = new Date().toISOString();
   if (transaction && transaction.linked_transaction_id) {
-    await db().from("transactions").delete().eq("id", transaction.linked_transaction_id).eq("user_id", userId);
+    await db().from("transactions").update({ deleted_at: now }).eq("id", transaction.linked_transaction_id).eq("user_id", userId);
   }
-  const { error: delError } = await db().from("transactions").delete().eq("id", id).eq("user_id", userId);
+  const { error: delError } = await db().from("transactions").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
   if (delError) throw delError;
   return { success: true };
 }

@@ -33,6 +33,7 @@ export async function getLoans(userId: string, limit?: number, offset?: number) 
     .from("loans")
     .select("*")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("date_given", { ascending: false });
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
   const { data, error } = await query;
@@ -241,6 +242,6 @@ async function settleInterAccountLoan(loan: LoanRow, amount: number, userId: str
 }
 
 export async function deleteLoan(userId: string, id: number) {
-  const { error } = await db().from("loans").delete().eq("id", id).eq("user_id", userId);
+  const { error } = await db().from("loans").update({ deleted_at: new Date().toISOString() }).eq("id", id).eq("user_id", userId);
   if (error) throw error;
 }

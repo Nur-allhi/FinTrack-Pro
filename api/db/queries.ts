@@ -83,3 +83,39 @@ export async function deleteOne(table: string, userId: string, id: number): Prom
   const { error } = await supabaseAdmin.from(table).delete().eq("id", id).eq("user_id", userId);
   if (error) throw error;
 }
+
+export async function softDeleteOne(table: string, userId: string, id: number): Promise<void> {
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { error } = await supabaseAdmin
+    .from(table)
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw error;
+}
+
+export async function restoreOne(table: string, userId: string, id: number): Promise<void> {
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { error } = await supabaseAdmin
+    .from(table)
+    .update({ deleted_at: null })
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw error;
+}
+
+export async function permanentDeleteOne(table: string, userId: string, id: number): Promise<void> {
+  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const { error } = await supabaseAdmin
+    .from(table)
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw error;
+}
+
+const SOFT_DELETE_TABLES = new Set(["transactions", "accounts", "loans"]);
+
+export function isSoftDeleteTable(table: string): boolean {
+  return SOFT_DELETE_TABLES.has(table);
+}
