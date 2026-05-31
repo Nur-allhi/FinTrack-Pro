@@ -13,6 +13,12 @@ const defaultTypeColors: Record<string, string> = {
   investment: '#F59E0B', purpose: '#EC4899', home_exp: '#EF4444',
 };
 
+const darkBgMap: Record<string, string> = {
+  dark: '#0a0b0d',
+  'dark-dim': '#1a1c23',
+  'dark-night': '#000000',
+};
+
 export function useThemeEffects(settings: ThemeSettings) {
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'dark-dim', 'dark-night');
@@ -21,12 +27,22 @@ export function useThemeEffects(settings: ThemeSettings) {
     }
     localStorage.setItem('fintrack_dark', settings.darkMode ? '1' : '0');
     localStorage.setItem('fintrack_dark_style', settings.darkMode ? settings.darkModeStyle : '');
+
+    document.documentElement.style.backgroundColor = settings.darkMode
+      ? darkBgMap[settings.darkModeStyle] || '#0a0b0d'
+      : '#ffffff';
   }, [settings.darkMode, settings.darkModeStyle]);
+
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    meta?.setAttribute('content', settings.darkMode
+      ? darkBgMap[settings.darkModeStyle] || '#0a0b0d'
+      : settings.accentColor);
+  }, [settings.darkMode, settings.darkModeStyle, settings.accentColor]);
 
   useEffect(() => {
     const hex = settings.accentColor;
     document.documentElement.style.setProperty('--color-primary', hex);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex);
 
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);

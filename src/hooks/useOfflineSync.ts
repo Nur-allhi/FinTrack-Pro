@@ -65,18 +65,20 @@ export function useOfflineSync(isAuthenticated: boolean, onInitialLoad?: () => v
   useEffect(() => {
     if (!isAuthenticated) return;
     const interval = setInterval(() => {
-      if (offlineService.isOnline()) fetchData();
+      if (document.visibilityState === 'visible' && offlineService.isOnline()) fetchData();
     }, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    const handleFocus = () => {
-      if (offlineService.isOnline()) fetchData();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && offlineService.isOnline()) {
+        fetchData();
+      }
     };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [isAuthenticated]);
 
   useEffect(() => {
