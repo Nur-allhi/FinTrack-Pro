@@ -194,8 +194,10 @@ export default function App() {
             setSettings({ ...settings, darkMode: next });
             cacheService.setSettings({ ...settings, darkMode: next });
           }}
-          onSearchSelect={(type, id) => {
+          onSearchSelect={(type, id, accountId) => {
             if (type === 'account') { setSelectedAccountId(id); }
+            else if (type === 'transaction' && accountId) { setSelectedAccountId(accountId); }
+            else if (type === 'loan') { setActiveTab('loans'); }
             else { setActiveTab('dashboard'); setDashboardFilter(id); }
           }}
         />
