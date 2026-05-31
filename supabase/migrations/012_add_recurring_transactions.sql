@@ -1,7 +1,7 @@
 -- Recurring transactions table
 CREATE TABLE IF NOT EXISTS recurring_transactions (
   id SERIAL PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   particulars TEXT NOT NULL,
   category TEXT,

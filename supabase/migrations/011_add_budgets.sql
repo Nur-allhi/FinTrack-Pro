@@ -1,7 +1,7 @@
 -- Budgets table for monthly category budgets
 CREATE TABLE IF NOT EXISTS budgets (
   id SERIAL PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   category TEXT NOT NULL,
   amount NUMERIC NOT NULL CHECK (amount > 0),
   month TEXT NOT NULL, -- format: YYYY-MM

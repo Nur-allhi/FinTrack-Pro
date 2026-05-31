@@ -60,7 +60,7 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  const [settings, setSettings] = useState({
+  const defaultSettings = {
     showNetWorth: true,
     showCurrentAssets: true,
     showLiabilities: true,
@@ -74,7 +74,9 @@ export default function App() {
     currency: '৳',
     typeColors: { ...defaultTypeColors },
     accentColor: '#0052FF'
-  });
+  };
+
+  const [settings, setSettings] = useState(defaultSettings);
 
   const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useOfflineSync(!!isAuthenticated);
   useThemeEffects(settings);
@@ -117,7 +119,13 @@ export default function App() {
       const cachedSettings = await cacheService.getSettings();
       if (cachedSettings) {
         const darkStyle = (['dark', 'dark-dim', 'dark-night'].includes(cachedSettings.darkModeStyle) ? cachedSettings.darkModeStyle : 'dark') as 'dark' | 'dark-dim' | 'dark-night';
-        setSettings({ ...cachedSettings, accentColor: cachedSettings.accentColor || '#0052FF', darkModeStyle: darkStyle, typeColors: { ...defaultTypeColors, ...(cachedSettings.typeColors || {}) } });
+        setSettings({
+          ...defaultSettings,
+          ...cachedSettings,
+          accentColor: cachedSettings.accentColor || '#0052FF',
+          darkModeStyle: darkStyle,
+          typeColors: { ...defaultTypeColors, ...(cachedSettings.typeColors || {}) }
+        });
       }
     };
     loadSettings();
