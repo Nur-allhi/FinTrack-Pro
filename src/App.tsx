@@ -131,6 +131,11 @@ export default function App() {
     loadSettings();
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    authService.apiFetch('/api/recurring/process', { method: 'POST' }).catch(() => {});
+  }, [isAuthenticated]);
+
   const handleExportData = async () => {
     const blob = new Blob([JSON.stringify({ members, accounts, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
