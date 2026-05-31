@@ -90,8 +90,10 @@ export default function Dashboard({
     .filter(a => (a.current_balance || 0) < 0)
     .reduce((sum, a) => sum + Math.abs(a.current_balance || 0), 0);
 
+  const showHero = settings.showNetWorth || settings.showCurrentAssets || settings.showLiabilities || settings.showTodos;
+
   return (
-    <div className="space-y-8">
+    <div className={showHero ? "space-y-8" : ""}>
       <DashboardHero
         totalBalance={totalBalance}
         currency={settings.currency}
