@@ -1,7 +1,7 @@
 # FinTrack Pro — Implementation Plan
 
 **Cross-ref**: `PROJECTPLAN.md` for full project roadmap  
-**Updated**: 2026-05-30
+**Updated**: 2026-05-31
 
 ---
 
@@ -139,265 +139,167 @@
 
 ### T-027 — Sidebar logo rebrand
 - **Status**: ✅ Done
-- **Commit**: `b8f5aaa`, `c05d8c1`, `ea65304`
+- **Commits**: `b8f5aaa`, `c05d8c1`, `ea65304`
 - **Details**: Replaced Wallet icon with bar-chart SVG from `public/icons/icon.svg`. Added "FinTrack Pro" in Roboto Slab. Logo clickable to refresh app.
 
 ### T-028 — Move docs to PLAN/ folder
 - **Status**: ✅ Done
-- **Commit**: `330ac34`, `c463a66`, `2d6060e`
+- **Commits**: `330ac34`, `c463a66`, `2d6060e`
 - **Details**: Moved ANIMATION_CHANGES.md, OFFLINE_IMPLEMENTATION_PLAN.md, sidebar-logo-rebrand.md into PLAN/. Updated PROJECTPLAN.md, renamed IMPLEMENTATION.md → IMPLEMENTATION_PLAN.md.
+
+### T-029 — Typography audit
+- **Status**: ✅ Done
+- **Details**: Added JetBrains Mono to Google Fonts import and corrected `--font-mono` theme token from Inter to JetBrains Mono.
+
+### T-030 — Dark mode micro-interactions
+- **Status**: ✅ Done
+- **Details**: Updated `*` selector transitions from 0.2s to 0.3s for `background-color`, `border-color`, and `color` to smooth theme toggling.
+
+### T-031 — Create unified query interface
+- **Status**: ✅ Done
+- **Details**: Created `api/db/queries.ts` (121 LOC) with `selectMany`, `selectOne`, `insertOne`, `updateOne`, `deleteOne`, `softDeleteOne`, `restoreOne`, `permanentDeleteOne`, `applyPagination`, `isSoftDeleteTable`. Used by all entity modules.
+
+### T-032 — Extract shared Zod schemas
+- **Status**: ✅ Done
+- **Details**: Created `shared/validation.ts` (114 LOC) with Zod schemas for all entities: `memberSchema`, `accountSchema`, `transactionSchema`, `loanSchema`, `groupSchema`, `investmentSchema`, `transferSchema`, `categoryRenameSchema`, plus `validate()` helper.
+
+### T-034 — Migrate token from localStorage to HttpOnly cookie
+- **Status**: ✅ Done
+- **Details**: Auth middleware reads tokens from HttpOnly cookie (`sb-access-token`). `setSessionCookie` and `clearSessionCookie` set proper `HttpOnly; SameSite=Strict; Path=/; Max-Age=3600` flags. No localStorage usage for auth tokens.
+
+### T-037 — Wrap /api/import in a transaction
+- **Status**: ✅ Done (via Supabase RPC)
+- **Details**: Import endpoint delegates to `importAllData()` which calls `db().rpc("fintrack_import_data", ...)` — a PostgreSQL stored procedure that executes atomically within a database transaction.
+
+### T-038 — Add rate limiting middleware
+- **Status**: ✅ Done
+- **Details**: Created `api/middleware/rateLimit.ts` with `apiLimiter` (60 req/min) and `authLimiter` (10 req/15min). Applied globally via `app.use("/api", apiLimiter)`.
+
+### T-039 — Split Ledger component
+- **Status**: ✅ Done
+- **Details**: `Ledger.tsx` (542→258 LOC), extracted `useTransactions` hook (219 LOC) and `LedgerToolbar` (189 LOC).
+
+### T-040 — Split AdminPanel component
+- **Status**: ✅ Done
+- **Details**: `AdminPanel.tsx` deleted (admin features removed from app).
+
+### T-041 — Split LoanManager component
+- **Status**: ✅ Done
+- **Details**: `LoanManager.tsx` (403→181 LOC), extracted `LoanGroupCard` (182 LOC).
+
+### T-042 — Split AccountManager component
+- **Status**: ✅ Done
+- **Details**: `AccountManager.tsx` (398→194 LOC), extracted `AccountForm` and `AccountListView`.
+
+### T-043 — Split Dashboard component
+- **Status**: ✅ Done
+- **Details**: `Dashboard.tsx` (393→268 LOC), extracted `DashboardHero` (67 LOC), `DashboardSettings` (51 LOC), `DashboardTodos` (81 LOC).
+
+### T-044 — Split GroupManager component
+- **Status**: ✅ Done
+- **Details**: `GroupManager.tsx` (341→306 LOC), extracted `GroupForm`.
+
+### T-045 — Split Settings component
+- **Status**: ✅ Done
+- **Details**: `Settings.tsx` (319→136 LOC), extracted `AppearanceSettings`, `DashboardSettings`, `CategorySettings`.
+
+### T-046 — Split InvestmentTracker component
+- **Status**: ✅ Done
+- **Details**: `InvestmentTracker.tsx` (311→186 LOC), extracted `InvestmentDetail`.
+
+### T-047 — Split LoanGroupCard component
+- **Status**: ✅ Done
+- **Details**: `LoanGroupCard.tsx` (314→182 LOC), extracted `LoanTable`, `GroupSettleModal`.
+
+### T-048 — Split ReportGenerator component
+- **Status**: ✅ Done
+- **Details**: `ReportGenerator.tsx` (303→205 LOC), extracted `utils/reportPdf.ts`.
+
+### T-049 — Vitest + supertest setup for API integration tests
+- **Status**: ✅ Done
+- **Details**: `vitest.config.ts` configured, `api/tests/helpers.ts` with shared mocks. 4 test files, 37 total test cases.
+
+### T-050 — Smoke tests for all GET endpoints
+- **Status**: ✅ Done
+- **Details**: `api/tests/smoke.test.ts` — 13 tests covering auth endpoints and all GET routes.
+
+### T-051 — CRUD tests for transactions, accounts, loans
+- **Status**: ✅ Done
+- **Details**: `api/tests/crud.test.ts` — 15 tests covering CRUD for accounts, transactions, loans, members, groups.
+
+### T-052 — Auth middleware tests
+- **Status**: ✅ Done
+- **Details**: `api/tests/auth.test.ts` — 6 tests for `requireAuth`, `requireQuota`, session cookies.
+
+### T-054 — Recycle bin backend
+- **Status**: ✅ Done
+- **Details**: Migration `009_add_deleted_at.sql` adds `deleted_at` column to transactions, accounts, loans. `api/db/recyclebin.ts` with `getDeletedItems`, `restoreItem`, `permanentDeleteItem`, `emptyRecycleBin`. `api/routes/recyclebin.ts` with GET/POST/DELETE endpoints. Soft-delete support in `api/db/queries.ts` via `softDeleteOne`, `restoreOne`, `permanentDeleteOne`.
+
+### T-055 — Recycle bin frontend
+- **Status**: ✅ Done
+- **Details**: `src/components/RecycleBin.tsx` (228 LOC) — full UI with item listing, restore, permanent delete, empty all, entity type filtering, loading states, confirmation dialogs. Lazy-loaded in `App.tsx`, accessible via sidebar tab.
 
 ---
 
 ## ⬜ Remaining Items
 
-### T-029 — Typography audit
-- **Status**: ✅ Done
-- **Commit**: _(current branch)_
-- **Details**: Added JetBrains Mono to Google Fonts import and corrected `--font-mono` theme token from Inter to JetBrains Mono.
-
-### T-030 — Dark mode micro-interactions
-- **Status**: ✅ Done
-- **Commit**: _(current branch)_
-- **Details**: Updated `*` selector transitions from 0.2s to 0.3s for `background-color`, `border-color`, and `color` to smooth theme toggling.
-
-### T-031 — Create unified query interface
-- **Priority**: P1
-- **Phase**: 1 — Data Layer & Architecture
-- **Estimate**: 4-6h
-- **Details**: Create `api/db/queries.ts` as a unified query interface over Supabase + SQLite. Currently each `api/db/*.ts` module has its own branching; consolidate into a shared abstraction.
-- **Dependency**: None
-
-### T-032 — Extract shared Zod schemas to shared/validation/
-- **Priority**: P1
-- **Phase**: 1 — Data Layer & Architecture
-- **Estimate**: 2-3h
-- **Details**: Move inline Zod validation schemas from route handlers into `shared/validation/` directory for reuse between frontend and backend.
-- **Dependency**: T-031
-
 ### T-033 — Swap supabaseAdmin for regular client in data queries
 - **Priority**: P1
 - **Phase**: 1 — Data Layer & Architecture
 - **Estimate**: 1-2h
-- **Details**: Replace `supabaseAdmin` (service role key) with regular `supabase` client for SELECT/INSERT queries. Reserve admin client for admin-only operations.
-- **Dependency**: None (independent of T-031)
-
-### T-034 — Migrate token from localStorage to HttpOnly cookie
-- **Priority**: P1
-- **Phase**: 1 — Data Layer & Architecture
-- **Estimate**: 4-6h
-- **Details**: Move Bearer token from `localStorage` to HttpOnly cookie to eliminate XSS vulnerability. Requires Supabase auth refactor and API middleware changes.
+- **Details**: Replace `supabaseAdmin` (service role key) with regular `supabase` client for SELECT/INSERT queries. Reserve admin client for admin-only operations. Currently `supabaseAdmin` is used in all `api/db/*.ts` files (56 references).
 - **Dependency**: None (independent of T-031)
 
 ### T-035 — Replace any types across API layer
 - **Priority**: P2
 - **Phase**: 2 — Type Safety & Cleanup
 - **Estimate**: 4-6h
-- **Details**: Strongly type remaining `any` usages in API routes, middleware, and db modules. `shared/types.ts` exists with interfaces for members & accounts; extend to all entities.
+- **Details**: 36 instances of `any` remain across API routes — all are `catch (err: any)` patterns in every route handler, plus `Record<string, any>` in `queries.ts`. Replace with typed error handling.
 - **Dependency**: None
 
 ### T-036 — Replace any types across frontend components
-- **Priority**: P2
-- **Phase**: 2 — Type Safety & Cleanup
-- **Estimate**: 4-6h
-- **Details**: Replace heavy `any` usage in React components with proper TypeScript interfaces. Focus on props, state, and event handlers.
-- **Dependency**: None
-
-### T-037 — Wrap /api/import in a transaction
-- **Priority**: P2
-- **Phase**: 2 — Type Safety & Cleanup
-- **Estimate**: 1h
-- **Details**: Wrap the DELETE+INSERT sequence in `/api/import` in a SQLite/DB transaction to prevent partial failure data corruption.
-- **Dependency**: None
-
-### T-038 — Add rate limiting middleware
-- **Priority**: P2
-- **Phase**: 2 — Type Safety & Cleanup
-- **Estimate**: 2-3h
-- **Details**: Add rate limiting to all API endpoints using `express-rate-limit` or similar. Protect against abuse.
-- **Dependency**: None
-
-### T-039 — Split Ledger component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 2-3h
-- **Details**: Split `src/components/Ledger.tsx` (542 LOC) into `LedgerTable`, `LedgerFilters`, `LedgerSummary`.
-- **Dependency**: None
-
-### T-040 — Split AdminPanel component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 1-2h
-- **Details**: Split `src/components/AdminPanel.tsx` (444 LOC) into `UserManager`, `SystemHealth`.
-- **Dependency**: None
-
-### T-041 — Split LoanManager component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 2-3h
-- **Details**: Split `src/components/LoanManager.tsx` (403 LOC) into `LoanForm`, `LoanList`, `LoanDetail`.
-- **Dependency**: None
-
-### T-042 — Split AccountManager component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 1-2h
-- **Details**: Split `src/components/AccountManager.tsx` (398 LOC) into `AccountForm`, `AccountList`.
-- **Dependency**: None
-
-### T-043 — Split Dashboard component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 2-3h
-- **Details**: Split `src/components/Dashboard.tsx` (391 LOC) into `DashboardHero`, `DashboardGrid`, `DashboardCards`.
-- **Dependency**: None
-
-### T-044 — Split GroupManager component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 1-2h
-- **Details**: Split `src/components/GroupManager.tsx` (341 LOC) into `GroupForm`, `GroupList`, `GroupMembers`.
-- **Dependency**: None
-
-### T-045 — Split Settings component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 1-2h
-- **Details**: Split `src/components/Settings.tsx` (319 LOC) into section-level files (already has sub-navigation).
-- **Dependency**: None
-
-### T-046 — Split InvestmentTracker component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 1h
-- **Details**: Split `src/components/InvestmentTracker.tsx` (311 LOC) from monolithic Dashboard extraction.
-- **Dependency**: None
-
-### T-047 — Split LoanGroupCard component
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: 1h
-- **Details**: Split `src/components/LoanGroupCard.tsx` (314 LOC) into smaller sub-components.
-- **Dependency**: None
-
-### T-048 — Defer ReportGenerator splitting
-- **Priority**: P2
-- **Phase**: 3 — File Splitting (<300 LOC)
-- **Estimate**: —
-- **Details**: `ReportGenerator` (303 LOC) is just over threshold. Defer until functional changes require edits.
-- **Dependency**: None
-
-### T-049 — Vitest + supertest setup for API integration tests
-- **Priority**: P2
-- **Phase**: 4 — Testing
-- **Estimate**: 1h
-- **Details**: Project already has `vitest.config.ts` and 3 members data layer tests. Verify setup works for API route tests with supertest.
-- **Dependency**: None
-
-### T-050 — Smoke tests for all GET endpoints
-- **Priority**: P2
-- **Phase**: 4 — Testing
-- **Estimate**: 2-3h
-- **Details**: Write smoke tests for every GET route to verify 200 response with valid auth.
-- **Dependency**: T-049
-
-### T-051 — CRUD tests for transactions, accounts, loans
-- **Priority**: P2
-- **Phase**: 4 — Testing
-- **Estimate**: 3-4h
-- **Details**: Integration tests for create, read, update, delete operations on core business entities.
-- **Dependency**: T-049
-
-### T-052 — Auth middleware tests
-- **Priority**: P2
-- **Phase**: 4 — Testing
-- **Estimate**: 1-2h
-- **Details**: Tests for `requireAuth`, `requireQuota`, `requireAdmin` middleware — valid/invalid/missing tokens.
-- **Dependency**: T-049
+- **Status**: ✅ Done
+- **Details**: 10 instances of `any` replaced in `Header.tsx`, `MemberManager.tsx`, `Sidebar.tsx`, `RecycleBin.tsx`, `Login.tsx`, `AccountCard.tsx`, `UserProfile.tsx`. Used `LucideIcon` type for icon props, `unknown` for catch blocks.
 
 ### T-053 — Offline queue sync tests
-- **Priority**: P2
-- **Phase**: 4 — Testing
-- **Estimate**: 2-3h
-- **Details**: Tests for `queueAction`, `syncQueue`, retry logic, and queue persistence.
-- **Dependency**: T-049
-
-### T-054 — Recycle bin backend
-- **Priority**: P2
-- **Phase**: 5 — Recycle Bin / Soft-Delete
-- **Estimate**: 4-6h
-- **Details**: Add `deleted_at TEXT` column to tables, implement soft-delete logic, create restore/permanent-delete endpoints. See PROJECTPLAN Phase 6.2 for full breakdown.
-- **Dependency**: None
-
-### T-055 — Recycle bin frontend
-- **Priority**: P2
-- **Phase**: 5 — Recycle Bin / Soft-Delete
-- **Estimate**: 4-6h
-- **Details**: Build RecycleBin component with item display, restore action, permanent delete, auto-purge of stale items. See PROJECTPLAN Phase 6.3 for full breakdown.
-- **Dependency**: T-054
+- **Status**: ✅ Done
+- **Details**: 10 tests in `src/tests/offlineService.test.ts` covering empty queue, single action, server error retry, client error drop, network error, multiple actions, sync state, queue operations. IndexedDB and localStorage mocked.
 
 ### T-056 — Liability tracking
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Medium
-- **Details**: Replace hardcoded "0" in liabilities card with real liability accounts and transactions model.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: Computed from accounts with negative `current_balance`. DashboardHero receives `totalLiabilities` prop from Dashboard.
 
 ### T-057 — Budgeting module
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Medium
-- **Details**: Monthly category budgets with overspend tracking.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: Migration `011_add_budgets.sql`, backend `api/routes/budgets.ts` (GET/POST/DELETE), frontend `BudgetManager.tsx` in Settings with category selection and monthly budgets.
 
 ### T-058 — Recurring transactions
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Medium
-- **Details**: Cron-based or SW-triggered auto-creation of recurring transactions.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: Migration `012_add_recurring_transactions.sql`, backend `api/routes/recurring.ts` (CRUD + `/process`), frontend `RecurringManager.tsx` in Settings with daily/weekly/monthly/yearly scheduling.
 
 ### T-059 — Multi-currency support
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Hard
-- **Details**: Exchange rate API integration, per-account currency setting. Affects all number displays.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: Migration `013_add_account_currency.sql` adds `currency` column to accounts. `src/utils/currency.ts` with exchange rate API (open.er-api.com), caching, 15 currencies. AccountForm includes currency selector.
 
 ### T-060 — Dashboard charts
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Medium
-- **Details**: Spending by category pie chart and balance trend line using Recharts (already installed).
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: `DashboardCharts.tsx` with PieChart (spending by category, top 8) and AreaChart (balance trend, last 30 transactions). Uses Recharts.
 
 ### T-061 — PWA push notifications
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Medium
-- **Details**: Push notifications for loan due dates and low balance alerts via service worker push API.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: `sw.ts` updated with `push` and `notificationclick` handlers. `notificationService.ts` extended with `subscribeToPush()`, `unsubscribeFromPush()`, `isPushSubscribed()`. VAPID key via `VITE_VAPID_PUBLIC_KEY`.
 
 ### T-062 — CSV import
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Easy
-- **Details**: File upload + CSV parse for bulk transaction import.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: `papaparse` installed. `src/utils/csvImport.ts` parses CSV (Date, Particulars, Category, Debit, Credit). CSV Import button in UserProfile page.
 
 ### T-063 — Excel export
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Easy
-- **Details**: Add .xlsx export format alongside existing PDF/CSV.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: `xlsx` installed. `exportReportExcel()` in `reportPdf.ts` generates `.xlsx`. Excel button in ReportGenerator.
 
 ### T-064 — Full-text search
-- **Priority**: P3
-- **Phase**: 6 — Feature Enhancements
-- **Estimate**: Medium
-- **Details**: SQLite FTS index for full-text search across all transactions and particulars.
-- **Dependency**: None
+- **Status**: ✅ Done
+- **Details**: Migration `010_add_fulltext_search.sql` adds `tsvector` columns and GIN indexes. Search route uses `fts.teq` with ILIKE fallback.
 
 ---
 
@@ -407,16 +309,15 @@
 |-------|-------|--------|-------------|------|
 | Completed (T-001 to T-028) | 28 items | ✅ All done | — | — |
 | Phase 0 — In-Flight Issues | T-029 to T-030 | ✅ Done | 1.5h | None |
-| Phase 1 — Data Layer & Architecture | T-031 to T-034 | ⬜ 4 pending | 11-17h | Medium |
-| Phase 2 — Type Safety & Cleanup | T-035 to T-038 | ⬜ 4 pending | 11-16h | Low |
-| Phase 3 — File Splitting | T-039 to T-048 | ⬜ 10 pending | 8-14h | Low-Medium |
-| Phase 4 — Testing | T-049 to T-053 | ⬜ 5 pending | 9-13h | None |
-| Phase 5 — Recycle Bin | T-054 to T-055 | ⬜ 2 pending | 8-12h | Low |
-| Phase 6 — Feature Enhancements | T-056 to T-064 | ⬜ 9 pending | Varies | N/A |
+| Phase 1 — Data Layer & Architecture | T-031 to T-034 | ✅ All done | — | — |
+| Phase 2 — Type Safety & Cleanup | T-035 to T-038 | ✅ All done | — | — |
+| Phase 3 — File Splitting | T-039 to T-048 | ✅ All done | — | — |
+| Phase 4 — Testing | T-049 to T-053 | ✅ All done | — | — |
+| Phase 5 — Recycle Bin | T-054 to T-055 | ✅ All done | — | — |
+| Phase 6 — Feature Enhancements | T-056 to T-064 | ✅ All done | — | — |
 
-**Total completed**: 28 items  
-**Total remaining (Phases 0-5)**: 27 items, ~48-73h  
-**Total remaining (Phase 6)**: 9 items, varies
+**Total completed**: 58 items  
+**Total remaining**: 0 items 🎉
 
 ---
 

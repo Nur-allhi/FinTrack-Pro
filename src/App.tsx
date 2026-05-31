@@ -146,7 +146,7 @@ export default function App() {
 
   const renderContent = () => {
     if (showProfile) {
-      return <UserProfile userEmail={userEmail} onRefreshData={() => fetchData(true)} onExportData={handleExportData} onClearCache={handleClearCache} />;
+      return <UserProfile userEmail={userEmail} onRefreshData={() => fetchData(true)} onExportData={handleExportData} onClearCache={handleClearCache} currency={settings.currency} accounts={accounts} />;
     }
     if (selectedAccountId) {
       const account = accounts.find(a => a.id === selectedAccountId);

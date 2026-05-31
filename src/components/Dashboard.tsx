@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import DashboardHero from './DashboardHero';
+import DashboardCharts from './DashboardCharts';
 
 interface DashboardProps {
   accounts: Account[];
@@ -83,6 +84,9 @@ export default function Dashboard({
   const unassignedAccounts = groupFilteredAccounts.filter(a => !a.member_id);
 
   const totalBalance = activeAccounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0);
+  const totalLiabilities = activeAccounts
+    .filter(a => (a.current_balance || 0) < 0)
+    .reduce((sum, a) => sum + Math.abs(a.current_balance || 0), 0);
 
   return (
     <div className="space-y-8">
@@ -95,7 +99,10 @@ export default function Dashboard({
         userName={userName}
         dataLoading={dataLoading}
         accountsLength={accounts.length}
+        totalLiabilities={totalLiabilities}
       />
+
+      <DashboardCharts accounts={accounts} currency={settings.currency} />
 
       <div className="space-y-4 md:space-y-6">
         <div className="flex items-center justify-between gap-3">

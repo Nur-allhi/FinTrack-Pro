@@ -11,11 +11,12 @@ interface DashboardHeroProps {
   userName?: string;
   dataLoading?: boolean;
   accountsLength: number;
+  totalLiabilities?: number;
 }
 
 export default function DashboardHero({
   totalBalance, currency, showNetWorth, showCurrentAssets, showLiabilities,
-  userName, dataLoading, accountsLength,
+  userName, dataLoading, accountsLength, totalLiabilities = 0,
 }: DashboardHeroProps) {
   if (!showNetWorth && !showCurrentAssets && !showLiabilities) return null;
 
@@ -53,7 +54,7 @@ export default function DashboardHero({
               <div className="bg-canvas p-3 md:p-5 rounded-xl border border-hairline">
                 <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Liabilities</p>
                 <p className="text-base md:text-xl font-normal text-ink financial-number tracking-tighter mt-0.5 md:mt-1">
-                  {currency}0
+                  {currency}{totalLiabilities.toLocaleString()}
                 </p>
               </div>
             )}

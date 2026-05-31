@@ -26,8 +26,8 @@ export default function Login({ onLogin }: LoginProps) {
   const handleGoogleSignIn = async () => {
     try {
       await authService.signInWithGoogle();
-    } catch (err: any) {
-      setError(err?.message || 'Google sign-in failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed');
     }
   };
 
@@ -43,8 +43,8 @@ export default function Login({ onLogin }: LoginProps) {
         setError('No session returned');
         setIsLoading(false);
       }
-    } catch (err: any) {
-      setError(err?.message || 'Invalid email or password');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password');
       setIsLoading(false);
     }
   };

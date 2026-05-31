@@ -19,9 +19,10 @@ router.get("/", async (req, res) => {
     }
     const items = await getDeletedItems(req.user!.id, type as RecycleBinEntityType | undefined);
     res.json(items);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/recyclebin");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "GET /api/recyclebin");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -33,9 +34,10 @@ router.post("/:type/:id/restore", async (req, res) => {
     }
     await restoreItem(req.user!.id, type, Number(id));
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/recyclebin/:type/:id/restore");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "POST /api/recyclebin/:type/:id/restore");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -47,9 +49,10 @@ router.delete("/:type/:id", async (req, res) => {
     }
     await permanentDeleteItem(req.user!.id, type, Number(id));
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "DELETE /api/recyclebin/:type/:id");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "DELETE /api/recyclebin/:type/:id");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -61,9 +64,10 @@ router.delete("/", async (req, res) => {
     }
     await emptyRecycleBin(req.user!.id, type as RecycleBinEntityType | undefined);
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "DELETE /api/recyclebin");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "DELETE /api/recyclebin");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 

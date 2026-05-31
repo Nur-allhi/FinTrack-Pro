@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, Folder } from 'lucide-react';
+import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, Folder, type LucideIcon } from 'lucide-react';
 import { Account } from '../types';
 
-const typeIcons: Record<string, any> = {
+const typeIcons: Record<string, LucideIcon> = {
   cash: Wallet,
   bank: Building2,
   mobile: Smartphone,

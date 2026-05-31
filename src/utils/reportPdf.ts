@@ -1,6 +1,7 @@
 import { Transaction } from '../types';
 import jsPDF from 'jspdf';
 import { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency } from './pdf';
+import * as XLSX from 'xlsx';
 
 export function exportReportPDF(
   reportData: Transaction[],
@@ -101,4 +102,35 @@ export function exportReportCSV(
   a.download = `FinTrack_Report_${filters.startDate}_${filters.endDate}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export function exportReportExcel(
+  reportData: Transaction[],
+  filters: { startDate: string; endDate: string },
+  currency: string
+) {
+  const rows = reportData.map(t => ({
+    Date: t.date,
+    Particulars: t.particulars,
+    Category: t.category || '',
+    Debit: t.amount < 0 ? Math.abs(t.amount) : '',
+    Credit: t.amount > 0 ? t.amount : '',
+  }));
+
+  const totalDebit = reportData.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const totalCredit = reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+
+  rows.push({ Date: '', Particulars: 'Total', Category: '', Debit: totalDebit, Credit: totalCredit });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 12 },
+    { wch: 40 },
+    { wch: 20 },
+    { wch: 15 },
+    { wch: 15 },
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Report');
+  XLSX.writeFile(wb, `FinTrack_Report_${filters.startDate}_${filters.endDate}.xlsx`);
 }

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Eye, Palette, Tags } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, Palette, Tags, PiggyBank, Repeat } from 'lucide-react';
 import { cn } from '../utils/cn';
 import RenameModal from './RenameModal';
 import { authService } from '../services/authService';
 import AppearanceSettings from './AppearanceSettings';
 import DashboardSettings from './DashboardSettings';
 import CategorySettings from './CategorySettings';
+import BudgetManager from './BudgetManager';
+import RecurringManager from './RecurringManager';
 
 interface AppSettings {
   showNetWorth: boolean;
@@ -29,7 +31,15 @@ interface SettingsProps {
 export default function Settings({ settings, onUpdateSettings }: SettingsProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'appearance' | 'dashboard' | 'categories'>('appearance');
+  const [activeSection, setActiveSection] = useState<'appearance' | 'dashboard' | 'categories' | 'budgets' | 'recurring'>('appearance');
+  const [settingsAccounts, setSettingsAccounts] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    authService.apiFetch('/api/accounts')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setSettingsAccounts(data); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     authService.apiFetch('/api/transactions/categories')
@@ -78,13 +88,13 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
       </div>
 
       <div className="flex md:hidden gap-1.5 overflow-x-auto pb-1 -mx-3 px-3">
-        {(['appearance', 'dashboard', 'categories'] as const).map(s => (
+        {(['appearance', 'dashboard', 'categories', 'budgets', 'recurring'] as const).map(s => (
           <button key={s} onClick={() => setActiveSection(s)}
             className={cn("shrink-0 px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-all",
               activeSection === s ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted hover:text-ink'
             )}
           >
-            {s === 'appearance' ? 'Appearance' : s === 'dashboard' ? 'Dashboard' : 'Categories'}
+            {s === 'appearance' ? 'Appearance' : s === 'dashboard' ? 'Dashboard' : s === 'categories' ? 'Categories' : s === 'budgets' ? 'Budgets' : 'Recurring'}
           </button>
         ))}
       </div>
@@ -95,6 +105,8 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
             { id: 'appearance', label: 'Appearance', icon: Palette },
             { id: 'dashboard', label: 'Dashboard', icon: Eye },
             { id: 'categories', label: 'Categories', icon: Tags },
+            { id: 'budgets', label: 'Budgets', icon: PiggyBank },
+            { id: 'recurring', label: 'Recurring', icon: Repeat },
           ] as const).map(s => {
             const Icon = s.icon;
             const active = activeSection === s.id;
@@ -120,6 +132,12 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
           )}
           {activeSection === 'categories' && (
             <CategorySettings categories={categories} onRename={(cat) => setRenameTarget(cat)} />
+          )}
+          {activeSection === 'budgets' && (
+            <BudgetManager currency={settings.currency} categories={categories} />
+          )}
+          {activeSection === 'recurring' && (
+            <RecurringManager accounts={settingsAccounts} currency={settings.currency} />
           )}
         </div>
       </div>

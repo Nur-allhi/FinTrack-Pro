@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trash2, RotateCcw, AlertTriangle, Wallet, Handshake, Receipt, Clock } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle, Wallet, Handshake, Receipt, Clock, type LucideIcon } from 'lucide-react';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
 import { motion, AnimatePresence } from 'motion/react';
@@ -12,7 +12,7 @@ interface DeletedItem {
   summary: string;
 }
 
-const typeConfig: Record<string, { icon: any; color: string }> = {
+const typeConfig: Record<string, { icon: LucideIcon; color: string }> = {
   transactions: { icon: Receipt, color: 'text-amber-500' },
   accounts: { icon: Wallet, color: 'text-emerald-500' },
   loans: { icon: Handshake, color: 'text-violet-500' },

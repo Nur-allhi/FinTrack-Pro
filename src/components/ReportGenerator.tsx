@@ -6,7 +6,7 @@ import { cn } from '../utils/cn';
 import Select from './Select';
 import { authService } from '../services/authService';
 import DatePicker from './DatePicker';
-import { exportReportPDF, exportReportCSV } from '../utils/reportPdf';
+import { exportReportPDF, exportReportCSV, exportReportExcel } from '../utils/reportPdf';
 
 interface ReportGeneratorProps {
   accounts: Account[];
@@ -112,6 +112,10 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
                   <button onClick={() => exportReportCSV(reportData, filters, currency)} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
                     <Download className="w-3 md:w-4 h-3 md:h-4" />
                     CSV
+                  </button>
+                  <button onClick={() => exportReportExcel(reportData, filters, currency)} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
+                    <Download className="w-3 md:w-4 h-3 md:h-4" />
+                    Excel
                   </button>
                   <button onClick={() => exportReportPDF(reportData, filters, accounts, currency)} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
                     <Download className="w-3 md:w-4 h-3 md:h-4" />

@@ -12,9 +12,10 @@ router.get("/", async (req, res) => {
     const offset = req.query.offset ? Number(req.query.offset) : undefined;
     const data = await getAccounts(req.user!.id, limit, offset);
     res.json(data);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/accounts");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "GET /api/accounts");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -24,9 +25,10 @@ router.post("/", async (req, res) => {
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
     const result = await createAccount(req.user!.id, parsed.data);
     res.json(result);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/accounts");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "POST /api/accounts");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -36,9 +38,10 @@ router.patch("/:id", async (req, res) => {
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
     await updateAccount(req.user!.id, Number(req.params.id), parsed.data);
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "PATCH /api/accounts");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "PATCH /api/accounts");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -46,9 +49,10 @@ router.delete("/:id", async (req, res) => {
   try {
     await deleteAccount(req.user!.id, Number(req.params.id));
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "DELETE /api/accounts");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "DELETE /api/accounts");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 

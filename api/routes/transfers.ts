@@ -12,9 +12,10 @@ router.post("/", async (req, res) => {
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
     const result = await createTransfer(req.user!.id, parsed.data);
     res.json(result);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/transfers");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "POST /api/transfers");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 

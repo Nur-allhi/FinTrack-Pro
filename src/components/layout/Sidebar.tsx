@@ -1,18 +1,18 @@
 import React from 'react';
-import { X, LogOut } from 'lucide-react';
+import { X, LogOut, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
   activeTab: string;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: string) => void;
   selectedAccountId: number | null;
   setSelectedAccountId: (id: number | null) => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
-  settings: any;
+  settings: { darkMode: boolean; fontSize: string; currency: string };
   onLogout: () => void;
-  navItems: { id: string; label: string; icon: any }[];
+  navItems: { id: string; label: string; icon: LucideIcon }[];
   userEmail?: string;
   showProfile?: boolean;
   onOpenProfile?: () => void;

@@ -3,6 +3,7 @@ import { Account, Member } from '../types';
 import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import Select from './Select';
+import { CURRENCY_OPTIONS } from '../utils/currency';
 
 const colors = [
   '#0052ff', '#05b169', '#cf202f', '#f59e0b', '#7c828a', 
@@ -18,6 +19,7 @@ interface AccountFormProps {
     parent_id: string;
     color: string;
     initial_balance: string;
+    currency?: string;
   };
   setNewAcc: (v: AccountFormProps['newAcc']) => void;
   members: Member[];
@@ -25,9 +27,10 @@ interface AccountFormProps {
   saving: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
+  defaultCurrency?: string;
 }
 
-export default function AccountForm({ title, newAcc, setNewAcc, members, groups, saving, onSubmit, onCancel }: AccountFormProps) {
+export default function AccountForm({ title, newAcc, setNewAcc, members, groups, saving, onSubmit, onCancel, defaultCurrency = 'USD' }: AccountFormProps) {
   return (
     <>
       <div className="flex items-center justify-between mb-4">
@@ -60,6 +63,11 @@ export default function AccountForm({ title, newAcc, setNewAcc, members, groups,
           <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Group</label>
           <Select value={newAcc.parent_id} onChange={v => setNewAcc({...newAcc, parent_id: v})}
             options={[{ value: '', label: 'None' }, ...groups.map(g => ({ value: String(g.id), label: g.name }))]} />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Currency</label>
+          <Select value={newAcc.currency || defaultCurrency} onChange={v => setNewAcc({...newAcc, currency: v})}
+            options={CURRENCY_OPTIONS} />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Opening Balance</label>

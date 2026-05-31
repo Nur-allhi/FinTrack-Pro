@@ -17,7 +17,7 @@ export async function selectMany<T>(
   table: string,
   columns: string,
   userId: string,
-  opts?: PaginationOpts & { filters?: Record<string, any>; order?: { column: string; ascending?: boolean } }
+  opts?: PaginationOpts & { filters?: Record<string, unknown>; order?: { column: string; ascending?: boolean } }
 ): Promise<T[]> {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
   let query = supabaseAdmin.from(table).select(columns).eq("user_id", userId);
@@ -54,13 +54,13 @@ export async function selectOne<T>(
     .eq("user_id", userId)
     .single();
   if (error) {
-    if ((error as any).code === "PGRST116") return null;
+    if ((error as { code?: string }).code === "PGRST116") return null;
     throw error;
   }
   return data as T;
 }
 
-export async function insertOne<T>(table: string, data: Record<string, any>): Promise<T> {
+export async function insertOne<T>(table: string, data: Record<string, unknown>): Promise<T> {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
   const { data: result, error } = await supabaseAdmin.from(table).insert([data]).select().single();
   if (error) throw error;
@@ -71,7 +71,7 @@ export async function updateOne(
   table: string,
   userId: string,
   id: number,
-  updates: Record<string, any>
+  updates: Record<string, unknown>
 ): Promise<void> {
   if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
   const { error } = await supabaseAdmin.from(table).update(updates).eq("id", id).eq("user_id", userId);

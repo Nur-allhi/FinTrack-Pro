@@ -28,7 +28,7 @@ router.get("/", async (req, res) => {
     }
 
     const userId = req.user!.id;
-    const pattern = `%${q}%`;
+    const tsQuery = q.split(/\s+/).filter(Boolean).join(' & ');
     const results: SearchResult[] = [];
 
     const { data: transactions } = await db()
@@ -36,12 +36,12 @@ router.get("/", async (req, res) => {
       .select("id, particulars, category, amount, date, account_id, accounts(name)")
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .or(`particulars.ilike.${pattern},category.ilike.${pattern}`)
+      .or(`fts.teq.${tsQuery},particulars.ilike.%${q}%`)
       .order("date", { ascending: false })
       .limit(20);
 
     for (const tx of transactions || []) {
-      const accountName = Array.isArray(tx.accounts) ? tx.accounts[0]?.name : (tx.accounts as any)?.name;
+      const accountName = Array.isArray(tx.accounts) ? tx.accounts[0]?.name : (tx.accounts as { name?: string })?.name;
       results.push({
         type: 'transaction',
         id: tx.id,
@@ -58,7 +58,7 @@ router.get("/", async (req, res) => {
       .select("id, name, type")
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .ilike("name", pattern)
+      .or(`fts.teq.${tsQuery},name.ilike.%${q}%`)
       .limit(10);
 
     for (const acc of accounts || []) {
@@ -75,7 +75,7 @@ router.get("/", async (req, res) => {
       .select("id, borrower_name, amount, date_given, particulars, status")
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .or(`borrower_name.ilike.${pattern},particulars.ilike.${pattern}`)
+      .or(`fts.teq.${tsQuery},borrower_name.ilike.%${q}%,particulars.ilike.%${q}%`)
       .order("date_given", { ascending: false })
       .limit(10);
 
@@ -91,9 +91,10 @@ router.get("/", async (req, res) => {
     }
 
     res.json(results);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/search");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "GET /api/search");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 

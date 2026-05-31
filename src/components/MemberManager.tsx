@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Member, Account } from '../types';
-import { Plus, X, User, Trash2, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ArrowLeft } from 'lucide-react';
+import { Plus, X, User, Trash2, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ArrowLeft, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
@@ -14,7 +14,7 @@ interface MemberManagerProps {
   typeColors?: Record<string, string>;
 }
 
-const typeIcons: Record<string, any> = {
+const typeIcons: Record<string, LucideIcon> = {
   cash: Wallet, bank: Building2, mobile: Smartphone,
   investment: TrendingUp, purpose: Target, home_exp: Home,
 };

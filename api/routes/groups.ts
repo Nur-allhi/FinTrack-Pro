@@ -10,9 +10,10 @@ router.get("/", async (req, res) => {
   try {
     const data = await getGroups(req.user!.id);
     res.json(data);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "GET /api/groups");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "GET /api/groups");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -22,9 +23,10 @@ router.post("/", async (req, res) => {
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
     const result = await createGroup(req.user!.id, parsed.data.name, parsed.data.member_id, parsed.data.color);
     res.json(result);
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "POST /api/groups");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "POST /api/groups");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -34,9 +36,10 @@ router.patch("/:id", async (req, res) => {
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
     await updateGroup(req.user!.id, Number(req.params.id), parsed.data);
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "PATCH /api/groups");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "PATCH /api/groups");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 
@@ -44,9 +47,10 @@ router.delete("/:id", async (req, res) => {
   try {
     await deleteGroup(req.user!.id, Number(req.params.id));
     res.json({ success: true });
-  } catch (err: any) {
-    logger.error({ requestId: req.requestId, error: err.message }, "DELETE /api/groups");
-    sendError(res, 500, err.message, "INTERNAL_ERROR");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "DELETE /api/groups");
+    sendError(res, 500, message, "INTERNAL_ERROR");
   }
 });
 

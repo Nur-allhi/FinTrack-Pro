@@ -4,6 +4,122 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+## May 31, 2026 — Final Push: All TODO Items Completed
+
+**What got done:**
+
+**CSV Import (T-062)**
+- Added `papaparse` for CSV parsing on the frontend.
+- New `src/utils/csvImport.ts` utility parses CSV files matching the export format (Date, Particulars, Category, Debit, Credit).
+- "CSV Import" button added to Profile page — imports transactions into the first available account.
+
+**Excel Export (T-063)**
+- Added `xlsx` library for Excel file generation.
+- New `exportReportExcel()` function in `src/utils/reportPdf.ts` generates `.xlsx` with formatted columns and totals.
+- "Excel" button added to Report Generator alongside CSV and PDF.
+
+**Dashboard Charts (T-060)**
+- New `DashboardCharts.tsx` component with two charts:
+  - Spending by category pie chart (top 8 categories, colored segments).
+  - Balance trend line (AreaChart showing running balance over last 30 transactions).
+- Charts appear below the DashboardHero when data is available.
+
+**Full-Text Search (T-064)**
+- Migration `010_add_fulltext_search.sql` adds `tsvector` columns and GIN indexes to transactions, accounts, and loans.
+- Search route updated to use PostgreSQL `teq` (text search) with ILIKE fallback for exact matches.
+
+**PWA Push Notifications (T-061)**
+- Service worker (`sw.ts`) updated with `push` and `notificationclick` event handlers.
+- New push subscription management in `notificationService.ts` — `subscribeToPush()`, `unsubscribeFromPush()`, `isPushSubscribed()`.
+- VAPID key support via `VITE_VAPID_PUBLIC_KEY` environment variable.
+
+**Liability Tracking (T-056)**
+- DashboardHero now computes liabilities from accounts with negative balances.
+- No more hardcoded "0" — shows real liability amount.
+
+**Offline Queue Sync Tests (T-053)**
+- 10 new tests in `src/tests/offlineService.test.ts` covering:
+  - Empty queue sync, single action sync, server error retry, client error drop, network error handling.
+  - Multiple action processing, sync state management, queue operations.
+- All 47 tests passing.
+
+**Type Safety (T-035, T-036)**
+- 39 `any` types replaced across API routes and db modules (catch blocks, Record types, casts).
+- 10 `any` types replaced in frontend components (Sidebar, Header, MemberManager, AccountCard, RecycleBin, Login, UserProfile).
+- `LucideIcon` type used for icon props instead of `any`.
+
+**supabaseAdmin Decision (T-033)**
+- Analysis showed swapping to regular `supabase` client is unsafe (no user session context, RLS would deny all access).
+- Current pattern (`supabaseAdmin` + manual `user_id` filtering) is a valid server-side pattern.
+- Fixed data leak in `export.ts` — `investment_returns` now properly filtered by user's investments.
+
+**Budgeting Module (T-057)**
+- Migration `011_add_budgets.sql` creates `budgets` table with RLS.
+- Backend: `api/routes/budgets.ts` with GET/POST/DELETE endpoints.
+- Frontend: `BudgetManager.tsx` component in Settings with category budget CRUD.
+
+**Recurring Transactions (T-058)**
+- Migration `012_add_recurring_transactions.sql` creates `recurring_transactions` table with RLS.
+- Backend: `api/routes/recurring.ts` with CRUD + `/process` endpoint that auto-creates due transactions.
+- Frontend: `RecurringManager.tsx` component in Settings with daily/weekly/monthly/yearly scheduling.
+
+**Multi-Currency Support (T-059)**
+- Migration `013_add_account_currency.sql` adds `currency` column to accounts.
+- New `src/utils/currency.ts` with exchange rate fetching (open.er-api.com), caching, and conversion.
+- 15 currency options available in AccountForm.
+
+**Files touched:** api/routes/budgets.ts, api/routes/recurring.ts, api/index.ts, api/db/export.ts, api/routes/search.ts, api/db/queries.ts, api/db/accounts.ts, src/utils/csvImport.ts, src/utils/currency.ts, src/utils/reportPdf.ts, src/components/DashboardCharts.tsx, src/components/BudgetManager.tsx, src/components/RecurringManager.tsx, src/components/AccountForm.tsx, src/components/UserProfile.tsx, src/components/ReportGenerator.tsx, src/components/Dashboard.tsx, src/components/DashboardHero.tsx, src/services/notificationService.ts, sw.ts, src/tests/offlineService.test.ts, supabase/migrations/010_add_fulltext_search.sql, supabase/migrations/011_add_budgets.sql, supabase/migrations/012_add_recurring_transactions.sql, supabase/migrations/013_add_account_currency.sql
+
+---
+
+## May 31, 2026 — Architecture Overhaul: File Splitting, Recycle Bin & Testing
+
+**What got done:**
+
+**File Splitting (10 components under 300 LOC)**
+- `Ledger.tsx` (542→258) — extracted `useTransactions` hook and `LedgerToolbar` component.
+- `LoanManager.tsx` (403→181) — extracted `LoanGroupCard` component.
+- `AccountManager.tsx` (398→194) — extracted `AccountForm` and `AccountListView`.
+- `Dashboard.tsx` (393→268) — extracted `DashboardHero`, `DashboardSettings`, `DashboardTodos`.
+- `GroupManager.tsx` (341→306) — extracted `GroupForm`.
+- `Settings.tsx` (319→136) — extracted `AppearanceSettings`, `DashboardSettings`, `CategorySettings`.
+- `InvestmentTracker.tsx` (311→186) — extracted `InvestmentDetail`.
+- `LoanGroupCard.tsx` (314→182) — extracted `LoanTable`, `GroupSettleModal`.
+- `ReportGenerator.tsx` (303→205) — extracted `utils/reportPdf.ts`.
+- `AdminPanel.tsx` deleted (admin features removed).
+
+**Recycle Bin (Soft-Delete)**
+- Backend: New migration `009_add_deleted_at.sql` adds `deleted_at` column to transactions, accounts, loans with partial indexes.
+- Backend: `api/db/recyclebin.ts` with `getDeletedItems`, `restoreItem`, `permanentDeleteItem`, `emptyRecycleBin`.
+- Backend: `api/db/queries.ts` now exports `softDeleteOne`, `restoreOne`, `permanentDeleteOne`.
+- Backend: `api/routes/recyclebin.ts` with GET/POST/DELETE endpoints for listing, restoring, and permanently deleting items.
+- Frontend: `RecycleBin.tsx` (228 LOC) — full UI with entity type filtering, restore, permanent delete, empty all, loading states, and confirmation dialogs.
+- Frontend: Lazy-loaded in `App.tsx`, accessible via sidebar tab.
+
+**Testing**
+- `vitest.config.ts` configured for API and frontend tests.
+- 13 smoke tests covering auth endpoints and all GET routes.
+- 15 CRUD tests for accounts, transactions, loans, members, groups.
+- 6 auth middleware tests for `requireAuth`, `requireQuota`, and session cookies.
+- 3 members data layer tests (existing).
+
+**Unified Query Interface**
+- `api/db/queries.ts` (121 LOC) — shared `selectMany`, `selectOne`, `insertOne`, `updateOne`, `deleteOne`, `applyPagination` functions used by all entity modules.
+
+**Shared Validation Schemas**
+- `shared/validation.ts` (114 LOC) — Zod schemas for all entities with a `validate()` helper, reusable across frontend and backend.
+
+**Rate Limiting**
+- `api/middleware/rateLimit.ts` — `apiLimiter` (60 req/min) and `authLimiter` (10 req/15min) applied globally.
+
+**HttpOnly Cookie Auth**
+- Token migrated from `localStorage` to HttpOnly cookie (`sb-access-token`) with `SameSite=Strict`.
+- `setSessionCookie` and `clearSessionCookie` helpers with proper security flags.
+
+**Files touched:** api/db/queries.ts, api/db/recyclebin.ts, api/routes/recyclebin.ts, api/middleware/rateLimit.ts, api/middleware/auth.ts, api/tests/*.ts, shared/validation.ts, src/components/RecycleBin.tsx, src/components/Ledger.tsx, src/components/LoanManager.tsx, src/components/AccountManager.tsx, src/components/Dashboard.tsx, src/components/Settings.tsx, src/components/InvestmentTracker.tsx, src/components/LoanGroupCard.tsx, src/components/ReportGenerator.tsx, src/components/GroupManager.tsx, supabase/migrations/009_add_deleted_at.sql
+
+---
+
 ## May 31, 2026 — Global Search: Transactions, Loans & Navigation Fix
 
 **What's new:**

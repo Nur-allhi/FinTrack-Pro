@@ -10,11 +10,11 @@ interface SupabaseAccountRow {
 }
 
 function accountRowToAccount(row: SupabaseAccountRow, txSum: number): Account {
-  const memberName = Array.isArray(row.members) ? row.members[0]?.name : (row.members as any)?.name;
+  const memberName = Array.isArray(row.members) ? row.members[0]?.name : (row.members as { name?: string })?.name;
   return {
     ...row,
     member_name: memberName,
-    parent_name: (row.parents as any)?.name,
+    parent_name: (row.parents as { name?: string })?.name,
     current_balance: Number(row.initial_balance || 0) + txSum,
   };
 }
@@ -47,7 +47,7 @@ export async function createAccount(userId: string, data: { name: string; type: 
 }
 
 export async function updateAccount(userId: string, id: number, updates: Partial<Account>) {
-  await updateOne("accounts", userId, id, updates as Record<string, any>);
+  await updateOne("accounts", userId, id, updates as Record<string, unknown>);
 }
 
 export async function deleteAccount(userId: string, id: number) {

@@ -18,6 +18,8 @@ import groupRoutes from "./routes/groups.js";
 import exportRoutes from "./routes/export.js";
 import recyclebinRoutes from "./routes/recyclebin.js";
 import searchRoutes from "./routes/search.js";
+import budgetRoutes from "./routes/budgets.js";
+import recurringRoutes from "./routes/recurring.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,9 +61,10 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
       user: { id: data.user.id, email: data.user.email },
       access_token
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
     console.error("POST /api/auth/login error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: message });
   }
 });
 
@@ -78,9 +81,10 @@ app.post("/api/auth/session", async (req, res) => {
     }
     setSessionCookie(res, access_token);
     res.json({ success: true, user: { id: data.user.id, email: data.user.email } });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
     console.error("POST /api/auth/session error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: message });
   }
 });
 
@@ -112,6 +116,8 @@ app.use("/api/recyclebin", requireAuth, recyclebinRoutes);
 app.use("/api/export", requireAuth, exportRoutes);
 app.use("/api/import", requireAuth, exportRoutes);
 app.use("/api/search", requireAuth, searchRoutes);
+app.use("/api/budgets", requireAuth, budgetRoutes);
+app.use("/api/recurring", requireAuth, recurringRoutes);
 
 app.use(errorHandler);
 

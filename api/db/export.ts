@@ -12,7 +12,9 @@ export async function exportAllData(userId: string) {
     db().from("accounts").select("*").eq("user_id", userId).is("deleted_at", null),
     db().from("transactions").select("*").eq("user_id", userId).is("deleted_at", null),
     db().from("investments").select("*").eq("user_id", userId),
-    db().from("investment_returns").select("*"),
+    db().from("investment_returns").select("*").in("investment_id",
+      (await db().from("investments").select("id").eq("user_id", userId)).data?.map((i: { id: number }) => i.id) || []
+    ),
   ]);
   return {
     members: (members.data || []) as Member[],
@@ -40,8 +42,10 @@ export async function importAllData(userId: string, data: {
 }
 
 export async function clearAllData(userId: string) {
+  const userInvestments = await db().from("investments").select("id").eq("user_id", userId);
+  const investmentIds = userInvestments.data?.map((i: { id: number }) => i.id) || [];
   await Promise.all([
-    db().from("investment_returns").delete().neq("id", 0),
+    investmentIds.length > 0 ? db().from("investment_returns").delete().in("investment_id", investmentIds) : Promise.resolve(),
     db().from("investments").delete().eq("user_id", userId),
     db().from("transactions").delete().eq("user_id", userId),
     db().from("accounts").delete().eq("user_id", userId),

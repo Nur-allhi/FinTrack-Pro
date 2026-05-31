@@ -51,7 +51,7 @@ export default function Header({
         const res = await authService.apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
-          setResults(data.map((r: any) => ({
+          setResults(data.map((r: { type: string; id: number; title: string; subtitle: string; amount?: number; accountId?: number }) => ({
             type: r.type,
             id: r.id,
             label: r.title,
