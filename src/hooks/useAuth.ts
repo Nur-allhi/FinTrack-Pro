@@ -49,7 +49,15 @@ export function useAuth() {
 
   const handleLogout = async () => {
     setIsAuthenticated(false);
+    setUserEmail('');
     await authService.signOut();
+    // Clear Supabase local storage sessions
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    sessionStorage.clear();
   };
 
   return { isAuthenticated, userEmail, handleLogin, handleLogout };

@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 let _supabase: SupabaseClient | null = null;
 let _initPromise: Promise<SupabaseClient | null> | null = null;
 let _onSessionExpired: (() => void) | null = null;
+let _signedOut = false;
 
 export function setOnSessionExpired(callback: () => void) {
   _onSessionExpired = callback;
@@ -82,6 +83,7 @@ export const authService = {
   },
 
   async setSession(accessToken: string) {
+    _signedOut = false;
     return setSession(accessToken);
   },
 
@@ -101,9 +103,11 @@ export const authService = {
   },
 
   async signOut() {
+    _signedOut = true;
     const sb = await getSupabase();
-    if (!sb) return;
-    await sb.auth.signOut();
+    if (sb) {
+      await sb.auth.signOut();
+    }
     await this.clearSession();
   },
 
@@ -117,6 +121,9 @@ export const authService = {
   },
 
   async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    if (_signedOut && !url.includes('/api/auth/logout')) {
+      return new Response(JSON.stringify({ error: 'Signed out' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string> || {}),
     };
