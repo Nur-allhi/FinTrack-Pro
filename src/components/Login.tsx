@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { authService } from '../services/authService';
 
@@ -62,11 +62,22 @@ export default function Login({ onLogin }: LoginProps) {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-12">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/20">
-            <ShieldCheck className="w-10 h-10 text-on-primary" />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0 drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
+              <rect width="512" height="512" rx="110" fill="#FFFFFF" />
+              <rect x="108" y="300" width="72" height="130" rx="14" fill="#0D1C45"/>
+              <rect x="220" y="235" width="72" height="195" rx="14" fill="#0D1C45"/>
+              <rect x="332" y="152" width="72" height="278" rx="14" fill="#0D1C45"/>
+              <polyline points="144,296 256,231 368,148" fill="none" stroke="#1ED47A" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="144" cy="296" r="9" fill="#1ED47A"/>
+              <circle cx="256" cy="231" r="9" fill="#1ED47A"/>
+              <circle cx="368" cy="148" r="18" fill="#1ED47A"/>
+              <circle cx="368" cy="148" r="9" fill="#FFFFFF"/>
+            </svg>
+            <span className="text-3xl font-bold text-ink leading-none" style={{fontFamily: "'Roboto Slab', serif"}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
           </div>
           <h1 className="text-4xl font-normal text-ink tracking-tight mb-3">Welcome back</h1>
-          <p className="text-muted font-medium">Sign in to access your financial dashboard.</p>
+          <p className="text-muted font-medium">Smart financial management.</p>
         </div>
 
         <div className="bg-canvas rounded-xl border border-hairline p-10 md:p-12 shadow-2xl shadow-ink/5">
@@ -196,11 +207,8 @@ export default function Login({ onLogin }: LoginProps) {
             </form>
           )}
 
-          <div className="mt-12 pt-8 border-t border-hairline flex items-center justify-between">
+          <div className="mt-12 pt-8 border-t border-hairline flex items-center justify-center">
             <span className="text-[10px] font-medium text-muted">v{document.querySelector('meta[name="app-version"]')?.getAttribute('content') || ''}</span>
-            <p className="text-xs font-medium text-muted uppercase tracking-widest">
-              Secured by <span className="text-ink font-bold">Institutional Flow</span>
-            </p>
           </div>
         </div>
       </motion.div>
