@@ -7,6 +7,8 @@ import { Transaction, Account } from '../types';
 interface DashboardChartsProps {
   accounts: Account[];
   currency: string;
+  showSpendingChart?: boolean;
+  showBalanceTrend?: boolean;
 }
 
 const CATEGORY_COLORS = [
@@ -14,7 +16,7 @@ const CATEGORY_COLORS = [
   '#00BFA5', '#FFD600', '#6200EA', '#00B0FF', '#F50057',
 ];
 
-export default function DashboardCharts({ accounts, currency }: DashboardChartsProps) {
+export default function DashboardCharts({ accounts, currency, showSpendingChart = true, showBalanceTrend = true }: DashboardChartsProps) {
   const [categoryData, setCategoryData] = useState<{ name: string; value: number }[]>([]);
   const [trendData, setTrendData] = useState<{ date: string; balance: number }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function DashboardCharts({ accounts, currency }: DashboardChartsP
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-      {categoryData.length > 0 && (
+      {showSpendingChart && categoryData.length > 0 && (
         <div className="bg-canvas border border-hairline rounded-xl p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <PieChartIcon className="w-4 h-4 text-primary" />
@@ -106,7 +108,7 @@ export default function DashboardCharts({ accounts, currency }: DashboardChartsP
         </div>
       )}
 
-      {trendData.length > 1 && (
+      {showBalanceTrend && trendData.length > 1 && (
         <div className="bg-canvas border border-hairline rounded-xl p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-primary" />

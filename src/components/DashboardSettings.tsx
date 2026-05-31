@@ -8,6 +8,8 @@ interface DashboardSettingsProps {
     showCurrentAssets: boolean;
     showLiabilities: boolean;
     showTodos: boolean;
+    showSpendingChart: boolean;
+    showBalanceTrend: boolean;
   };
   toggleSetting: (key: string) => void;
 }
@@ -25,6 +27,8 @@ export default function DashboardSettings({ settings, toggleSetting }: Dashboard
           { key: 'showCurrentAssets' as const, label: 'Liquid Assets', desc: 'Primary asset card visibility' },
           { key: 'showLiabilities' as const, label: 'Total Liabilities', desc: 'Debt summary visibility' },
           { key: 'showTodos' as const, label: 'Quick Tasks', desc: 'Todo widget visibility' },
+          { key: 'showSpendingChart' as const, label: 'Spending Chart', desc: 'Pie chart showing spending by category' },
+          { key: 'showBalanceTrend' as const, label: 'Balance Trend', desc: 'Line chart showing balance over time' },
         ]).map(item => (
           <div key={item.key} className="flex items-center justify-between">
             <div className="flex items-center gap-4">

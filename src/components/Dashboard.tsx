@@ -30,6 +30,8 @@ interface DashboardProps {
     showCurrentAssets: boolean;
     showLiabilities: boolean;
     showTodos?: boolean;
+    showSpendingChart?: boolean;
+    showBalanceTrend?: boolean;
     darkMode: boolean;
     fontSize: string;
     currency: string;
@@ -102,7 +104,7 @@ export default function Dashboard({
         totalLiabilities={totalLiabilities}
       />
 
-      <DashboardCharts accounts={accounts} currency={settings.currency} />
+      <DashboardCharts accounts={accounts} currency={settings.currency} showSpendingChart={settings.showSpendingChart} showBalanceTrend={settings.showBalanceTrend} />
 
       <div className="space-y-4 md:space-y-6">
         <div className="flex items-center justify-between gap-3">

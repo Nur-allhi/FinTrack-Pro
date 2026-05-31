@@ -14,6 +14,8 @@ interface AppSettings {
   showCurrentAssets: boolean;
   showLiabilities: boolean;
   showTodos: boolean;
+  showSpendingChart: boolean;
+  showBalanceTrend: boolean;
   enableNotifications: boolean;
   darkMode: boolean;
   darkModeStyle: 'dark' | 'dark-dim' | 'dark-night';

@@ -65,6 +65,8 @@ export default function App() {
     showCurrentAssets: true,
     showLiabilities: true,
     showTodos: true,
+    showSpendingChart: true,
+    showBalanceTrend: true,
     enableNotifications: true,
     darkMode: false,
     darkModeStyle: 'dark' as 'dark' | 'dark-dim' | 'dark-night',
