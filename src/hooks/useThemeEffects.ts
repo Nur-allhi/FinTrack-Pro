@@ -37,8 +37,8 @@ export function useThemeEffects(settings: ThemeSettings) {
     const meta = document.querySelector('meta[name="theme-color"]');
     meta?.setAttribute('content', settings.darkMode
       ? darkBgMap[settings.darkModeStyle] || '#0a0b0d'
-      : settings.accentColor);
-  }, [settings.darkMode, settings.darkModeStyle, settings.accentColor]);
+      : '#ffffff');
+  }, [settings.darkMode, settings.darkModeStyle]);
 
   useEffect(() => {
     const hex = settings.accentColor;
