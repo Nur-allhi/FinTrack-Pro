@@ -12,12 +12,7 @@ export default defineConfig(({mode}) => {
   const APP_URL = env.APP_URL || process.env.APP_URL;
 
   const getVersion = () => {
-    try {
-      const hash = execSync('git rev-parse --short HEAD').toString().trim();
-      return `${pkg.version}+${hash}`;
-    } catch {
-      return pkg.version;
-    }
+    return pkg.version;
   };
 
   return {
