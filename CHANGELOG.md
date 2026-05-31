@@ -4,6 +4,24 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+## May 31, 2026 — Global Search: Transactions, Loans & Navigation Fix
+
+**What's new:**
+- Global search now finds **transactions** and **loans** in addition to accounts and members.
+- Clicking a transaction from search results navigates directly to that account's ledger.
+- Clicking a loan from search results navigates to the Loans tab.
+- Search results show amount for transactions and loans.
+- Loading spinner appears while the API search is in progress.
+- Search falls back to local account/member filtering if the API is unreachable.
+
+**Bugs fixed:**
+- Search route (`/api/search`) existed but was never registered in the server — the endpoint returned 404 on deployment. Now properly mounted.
+- Clicking a transaction from search previously showed a blank dashboard (was setting a transaction ID as a member filter). Now correctly navigates to the transaction's account ledger.
+
+**Files touched:** api/routes/search.ts, api/index.ts, src/components/layout/Header.tsx, src/App.tsx
+
+---
+
 ## May 19, 2026 — Auth Stability, Smoother UI & Live Version
 
 **What got better:**

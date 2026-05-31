@@ -48,7 +48,7 @@ A complete family finance tracker that helps you manage money across multiple ac
 ### Data Management
 - **Export/Import** — Full JSON backup and restore from Profile page
 - **Category Management** — Rename categories across all transactions at once
-- **Global Search** — Search accounts and members from the header
+- **Global Search** — Search accounts, transactions, loans, and members from the header; click a transaction to open its account ledger
 
 ## Tech Stack
 
@@ -137,6 +137,7 @@ api/                          # Express backend
     ├── loans.ts              # Full loan lifecycle + settlement
     ├── investments.ts        # Investment + return tracking
     ├── groups.ts             # Account groups with aggregation
+    ├── search.ts             # Global search (transactions, accounts, loans)
     └── export.ts             # Data export/import/clear
 
 src/                          # React frontend
