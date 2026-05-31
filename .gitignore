@@ -7,7 +7,6 @@ coverage/
 .env*
 !.env.example
 *.db
-.build-number
 
 # Orphaned design mockups
 Design/
