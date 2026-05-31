@@ -59,6 +59,7 @@ export default function App() {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [dataReady, setDataReady] = useState(false);
 
   const defaultSettings = {
     showNetWorth: true,
@@ -78,7 +79,7 @@ export default function App() {
 
   const [settings, setSettings] = useState(defaultSettings);
 
-  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useOfflineSync(!!isAuthenticated);
+  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useOfflineSync(!!isAuthenticated, () => setDataReady(true));
   useThemeEffects(settings);
 
   useEffect(() => {
@@ -183,7 +184,7 @@ export default function App() {
     }
   };
 
-  if (isAuthenticated === null) return <LoadingScreen fullScreen />;
+  if (isAuthenticated === null || !dataReady) return <LoadingScreen fullScreen />;
   if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
 
   return (

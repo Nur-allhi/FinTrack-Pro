@@ -5,7 +5,7 @@ import { authService } from '../services/authService';
 import { offlineService, syncState } from '../services/offlineService';
 import { useToast } from '../components/Toast';
 
-export function useOfflineSync(isAuthenticated: boolean) {
+export function useOfflineSync(isAuthenticated: boolean, onInitialLoad?: () => void) {
   const { toast } = useToast();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<number | null>(offlineService.getLastSync());
@@ -54,10 +54,11 @@ export function useOfflineSync(isAuthenticated: boolean) {
     if (!isAuthenticated) return;
     loadFromCache();
     if (offlineService.isOnline()) {
-      fetchData();
+      fetchData().finally(() => onInitialLoad?.());
     } else {
       setIsOnline(false);
       setDataLoading(false);
+      onInitialLoad?.();
     }
   }, [isAuthenticated]);
 
