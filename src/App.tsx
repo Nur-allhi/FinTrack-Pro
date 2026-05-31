@@ -184,7 +184,9 @@ export default function App() {
     }
   };
 
-  if (isAuthenticated === null || !dataReady) return <LoadingScreen fullScreen />;
+  if (isAuthenticated === null) return <LoadingScreen fullScreen />;
+  if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
+  if (!dataReady) return <LoadingScreen fullScreen />;
   if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
 
   return (
