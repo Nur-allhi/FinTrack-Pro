@@ -50,7 +50,7 @@ export default defineConfig(({mode}) => {
         name: 'FinTrack Pro',
         short_name: 'FinTrack',
         description: 'Smart financial management for family accounts, members, and investments.',
-        theme_color: '#0a0b0d',
+        theme_color: '#ffffff',
         background_color: '#0a0b0d',
         display: 'fullscreen',
         display_override: ['fullscreen', 'window-controls-overlay', 'standalone'],

@@ -190,7 +190,7 @@ export default function App() {
   if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
 
   return (
-    <><div className="min-h-[100dvh] bg-background flex flex-col md:flex-row">
+    <><div className="min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         selectedAccountId={selectedAccountId} setSelectedAccountId={setSelectedAccountId}
