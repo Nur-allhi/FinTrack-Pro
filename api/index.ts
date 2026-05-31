@@ -17,6 +17,7 @@ import loanRoutes from "./routes/loans.js";
 import groupRoutes from "./routes/groups.js";
 import exportRoutes from "./routes/export.js";
 import recyclebinRoutes from "./routes/recyclebin.js";
+import searchRoutes from "./routes/search.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -110,6 +111,7 @@ app.use("/api/groups", requireAuth, groupRoutes);
 app.use("/api/recyclebin", requireAuth, recyclebinRoutes);
 app.use("/api/export", requireAuth, exportRoutes);
 app.use("/api/import", requireAuth, exportRoutes);
+app.use("/api/search", requireAuth, searchRoutes);
 
 app.use(errorHandler);
 
