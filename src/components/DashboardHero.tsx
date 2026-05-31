@@ -8,6 +8,7 @@ interface DashboardHeroProps {
   showNetWorth: boolean;
   showCurrentAssets: boolean;
   showLiabilities: boolean;
+  showTodos?: boolean;
   userName?: string;
   dataLoading?: boolean;
   accountsLength: number;
@@ -15,10 +16,10 @@ interface DashboardHeroProps {
 }
 
 export default function DashboardHero({
-  totalBalance, currency, showNetWorth, showCurrentAssets, showLiabilities,
+  totalBalance, currency, showNetWorth, showCurrentAssets, showLiabilities, showTodos = true,
   userName, dataLoading, accountsLength, totalLiabilities = 0,
 }: DashboardHeroProps) {
-  if (!showNetWorth && !showCurrentAssets && !showLiabilities) return null;
+  if (!showNetWorth && !showCurrentAssets && !showLiabilities && !showTodos) return null;
 
   return (
     <div className="bg-primary/5 p-6 md:p-12 lg:p-16 rounded-xl relative overflow-hidden border border-primary/10">
@@ -61,7 +62,7 @@ export default function DashboardHero({
           </div>
         </div>
 
-        <DashboardTodos />
+        {showTodos && <DashboardTodos />}
       </div>
     </div>
   );

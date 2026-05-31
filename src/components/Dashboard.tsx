@@ -98,6 +98,7 @@ export default function Dashboard({
         showNetWorth={settings.showNetWorth}
         showCurrentAssets={settings.showCurrentAssets}
         showLiabilities={settings.showLiabilities}
+        showTodos={settings.showTodos}
         userName={userName}
         dataLoading={dataLoading}
         accountsLength={accounts.length}
