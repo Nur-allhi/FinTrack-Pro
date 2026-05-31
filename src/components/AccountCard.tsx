@@ -44,7 +44,7 @@ export default function AccountCard({ account, onClick, currency, typeColors, fi
         <div className="flex flex-col items-end gap-0.5 shrink-0">
           <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
           {hasParent && (
-            <span className="flex items-center gap-1 text-[10px] md:text-xs text-muted truncate max-w-[100px]"><Folder className="w-3 h-3 shrink-0" />{account.parent_name}</span>
+            <span className="flex items-center gap-1 text-[10px] md:text-xs text-muted truncate max-w-[120px]"><Folder className="w-3 h-3 shrink-0" />{account.parent_name}</span>
           )}
         </div>
       </div>
