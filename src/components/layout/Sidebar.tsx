@@ -61,8 +61,8 @@ export default function Sidebar({
           {/* Brand header */}
           <div className="flex items-center justify-between px-5 py-5">
             <button onClick={() => window.location.reload()} className="flex items-end gap-2.5 min-w-0 cursor-pointer">
-              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0" xmlns="http://www.w3.org/2000/svg">
-                <rect width="512" height="512" rx="110" fill="#FFFFFF" stroke="#0a0b0d" strokeWidth="2"/>
+              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0 drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="110" fill="#FFFFFF" />
                 <g opacity="0.08">
                   <circle cx="128" cy="128" r="2" fill="#0D1C45"/>
                   <circle cx="256" cy="128" r="2" fill="#0D1C45"/>
