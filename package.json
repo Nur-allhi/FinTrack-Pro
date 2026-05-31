@@ -1,7 +1,7 @@
 {
   "name": "fintrack-pro",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx --env-file .env api/index.ts",
