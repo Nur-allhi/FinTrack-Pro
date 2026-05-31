@@ -103,23 +103,27 @@ export default function TransactionRow({
           </div>
         </td>
       </motion.tr>
-      {isExpanded && (
-        <motion.tr
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'tween', duration: 0.15 }}
-        >
-          <td colSpan={6} className="px-5 py-4 bg-primary/5 border-b border-primary/10">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-6 text-xs text-muted">
-                <span>ID: <span className="font-mono text-ink">#{tx.id}</span></span>
-                {tx.linked_transaction_id && <span>Linked: <span className="font-mono text-ink">#{tx.linked_transaction_id}</span></span>}
-                {tx.summary && <span className="italic">{tx.summary}</span>}
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.tr
+            key={`expanded-${tx.id}`}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ type: 'tween', duration: 0.15 }}
+          >
+            <td colSpan={6} className="px-5 py-4 bg-primary/5 border-b border-primary/10">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-6 text-xs text-muted">
+                  <span>ID: <span className="font-mono text-ink">#{tx.id}</span></span>
+                  {tx.linked_transaction_id && <span>Linked: <span className="font-mono text-ink">#{tx.linked_transaction_id}</span></span>}
+                  {tx.summary && <span className="italic">{tx.summary}</span>}
+                </div>
               </div>
-            </div>
-          </td>
-        </motion.tr>
-      )}
+            </td>
+          </motion.tr>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {editingTxId === tx.id && renderEditForm && (
           <motion.tr

@@ -128,17 +128,27 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
         <span className="text-xs font-bold text-muted uppercase tracking-wider">Total: <span className="text-ink font-mono">{currency || '৳'}{totalAccumulated.toLocaleString()}</span></span>
       </div>
 
-      {isAdding && (
-        <GroupForm
-          editingGroup={!!editingGroup}
-          newGroup={newGroup}
-          setNewGroup={setNewGroup}
-          members={members}
-          saving={saving}
-          onSubmit={handleCreateOrUpdate}
-          onCancel={() => { setIsAdding(false); setEditingGroup(null); }}
-        />
-      )}
+      <AnimatePresence>
+        {isAdding && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <GroupForm
+              editingGroup={!!editingGroup}
+              newGroup={newGroup}
+              setNewGroup={setNewGroup}
+              members={members}
+              saving={saving}
+              onSubmit={handleCreateOrUpdate}
+              onCancel={() => { setIsAdding(false); setEditingGroup(null); }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

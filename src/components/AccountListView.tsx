@@ -1,6 +1,7 @@
 import React from 'react';
 import { Account } from '../types';
 import { Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target, Home } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 
 const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -65,18 +66,40 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
             })}
           </tbody>
         </table>
-        {editingAccount && (
-          <div className="p-4 border-t border-hairline bg-primary/5">
-            {renderForm()}
-          </div>
-        )}
+        <AnimatePresence>
+          {editingAccount && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="p-4 border-t border-hairline bg-primary/5">
+                {renderForm()}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <div className="md:hidden space-y-2">
-        {accounts.map(acc => {
-          const isEditing = editingAccount?.id === acc.id;
-          if (isEditing) {
-            return <div key={acc.id} className="card-xl border-primary/20 bg-primary/5">{renderForm()}</div>;
-          }
+        <AnimatePresence initial={false}>
+          {accounts.map(acc => {
+            const isEditing = editingAccount?.id === acc.id;
+            if (isEditing) {
+              return (
+                <motion.div
+                  key={acc.id}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="card-xl border-primary/20 bg-primary/5">{renderForm()}</div>
+                </motion.div>
+              );
+            }
           const Icon = typeIcons[acc.type] || Wallet;
           return (
             <div key={acc.id} className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
@@ -108,6 +131,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
             </div>
           );
         })}
+        </AnimatePresence>
       </div>
     </>
   );

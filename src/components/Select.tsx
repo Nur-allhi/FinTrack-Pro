@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 
 interface Option {
@@ -76,24 +77,35 @@ export default function Select({ value, onChange, options, placeholder, classNam
         <span className="truncate">{displayLabel}</span>
         <ChevronDown className={cn("w-3.5 h-3.5 text-muted shrink-0 transition-transform", open && "rotate-180")} />
       </button>
-      {open && createPortal(
-        <div style={menuStyle} className="bg-canvas border border-hairline rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { onChange(String(opt.value)); close(); }}
-              className={cn(
-                "w-full px-4 py-2.5 text-left text-sm transition-colors",
-                opt.value === value
-                  ? "bg-primary/5 text-primary font-semibold"
-                  : "text-ink hover:bg-surface-soft font-medium"
-              )}
+      {createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              style={menuStyle}
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="bg-canvas border border-hairline rounded-xl shadow-xl max-h-[200px] overflow-y-auto"
             >
-              {opt.label}
-            </button>
-          ))}
-        </div>,
+              {options.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { onChange(String(opt.value)); close(); }}
+                  className={cn(
+                    "w-full px-4 py-2.5 text-left text-sm transition-colors",
+                    opt.value === value
+                      ? "bg-primary/5 text-primary font-semibold"
+                      : "text-ink hover:bg-surface-soft font-medium"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </div>

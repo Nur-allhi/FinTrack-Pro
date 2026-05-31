@@ -72,30 +72,40 @@ export default function TransactionCard({
               {tx.category || 'PENDING'}
             </span>
           </div>
-          {isExpanded && (
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-hairline">
-              <span className="text-xs font-bold text-muted uppercase tracking-wider">
-                Balance: <span className="text-ink font-mono font-bold">{currency}{tx.runningBalance.toLocaleString()}</span>
-              </span>
-              <div className="flex items-center gap-1">
-                {deletingId === tx.id ? (
-                  <>
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="px-3 py-1 bg-semantic-down text-white rounded-pill text-[10px] font-bold">Delete</button>
-                    <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="px-3 py-1 bg-canvas border border-hairline rounded-pill text-[10px] font-bold">Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={(e) => { e.stopPropagation(); onEdit(tx as Transaction); }} className="p-1 text-muted hover:text-primary transition-colors" title="Edit">
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }} className="p-1 text-muted hover:text-semantic-down transition-colors" title="Delete">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+          <AnimatePresence initial={false}>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-hairline">
+                  <span className="text-xs font-bold text-muted uppercase tracking-wider">
+                    Balance: <span className="text-ink font-mono font-bold">{currency}{tx.runningBalance.toLocaleString()}</span>
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {deletingId === tx.id ? (
+                      <>
+                        <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="px-3 py-1 bg-semantic-down text-white rounded-pill text-[10px] font-bold">Delete</button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="px-3 py-1 bg-canvas border border-hairline rounded-pill text-[10px] font-bold">Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={(e) => { e.stopPropagation(); onEdit(tx as Transaction); }} className="p-1 text-muted hover:text-primary transition-colors" title="Edit">
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }} className="p-1 text-muted hover:text-semantic-down transition-colors" title="Delete">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
       <AnimatePresence>

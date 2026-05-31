@@ -161,23 +161,22 @@ export default function LoanGroupCard({
         )}
       </AnimatePresence>
 
-      {showGroupSettle && (
-        <GroupSettleModal
-          borrowerDisplay={borrowerName}
-          totalRemaining={totalRemaining}
-          currency={currency}
-          activeLoans={activeLoans}
-          selectedLoanId={selectedLoanId}
-          setSelectedLoanId={setSelectedLoanId}
-          settleAmount={settleAmount}
-          setSettleAmount={setSettleAmount}
-          settleError={settleError}
-          setSettleError={setSettleError}
-          onSettle={handleGroupSettleSubmit}
-          onCancel={() => setShowGroupSettle(false)}
-          settling={settling}
-        />
-      )}
+      <GroupSettleModal
+        open={showGroupSettle}
+        borrowerDisplay={borrowerName}
+        totalRemaining={totalRemaining}
+        currency={currency}
+        activeLoans={activeLoans}
+        selectedLoanId={selectedLoanId}
+        setSelectedLoanId={setSelectedLoanId}
+        settleAmount={settleAmount}
+        setSettleAmount={setSettleAmount}
+        settleError={settleError}
+        setSettleError={setSettleError}
+        onSettle={handleGroupSettleSubmit}
+        onCancel={() => setShowGroupSettle(false)}
+        settling={settling}
+      />
     </div>
   );
 }

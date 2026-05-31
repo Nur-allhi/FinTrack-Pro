@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Member, Account } from '../types';
 import { Plus, X, User, Trash2, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
 
@@ -111,32 +112,42 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
         </button>
       </div>
 
-      {isAdding && (
-        <div className="card-xl border-primary/20 bg-primary/5">
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h4 className="text-base md:text-lg font-normal text-ink">New Member</h4>
-            <button onClick={() => setIsAdding(false)} className="p-1 md:p-2 text-muted hover:text-ink">
-              <X className="w-5 md:w-6 h-5 md:h-6" />
-            </button>
-          </div>
-          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div className="space-y-1 md:space-y-2">
-              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Name</label>
-              <input type="text" required value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})}
-                placeholder="e.g. John Doe" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
+      <AnimatePresence>
+        {isAdding && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="card-xl border-primary/20 bg-primary/5">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h4 className="text-base md:text-lg font-normal text-ink">New Member</h4>
+                <button onClick={() => setIsAdding(false)} className="p-1 md:p-2 text-muted hover:text-ink">
+                  <X className="w-5 md:w-6 h-5 md:h-6" />
+                </button>
+              </div>
+              <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="space-y-1 md:space-y-2">
+                  <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Name</label>
+                  <input type="text" required value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})}
+                    placeholder="e.g. John Doe" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
+                </div>
+                <div className="space-y-1 md:space-y-2">
+                  <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Relationship</label>
+                  <input type="text" value={newMember.relationship} onChange={e => setNewMember({...newMember, relationship: e.target.value})}
+                    placeholder="e.g. Spouse, Self" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
+                </div>
+                <div className="md:col-span-2 flex justify-end gap-3 md:gap-4 pt-4 md:pt-6">
+                  <button type="button" onClick={() => setIsAdding(false)} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3">Cancel</button>
+                  <button type="submit" disabled={saving} className="btn-primary text-xs md:text-sm px-6 md:px-10 py-2 md:py-3">{saving ? 'Saving...' : 'Add'}</button>
+                </div>
+              </form>
             </div>
-            <div className="space-y-1 md:space-y-2">
-              <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Relationship</label>
-              <input type="text" value={newMember.relationship} onChange={e => setNewMember({...newMember, relationship: e.target.value})}
-                placeholder="e.g. Spouse, Self" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm font-medium" />
-            </div>
-            <div className="md:col-span-2 flex justify-end gap-3 md:gap-4 pt-4 md:pt-6">
-              <button type="button" onClick={() => setIsAdding(false)} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3">Cancel</button>
-              <button type="submit" disabled={saving} className="btn-primary text-xs md:text-sm px-6 md:px-10 py-2 md:py-3">{saving ? 'Saving...' : 'Add'}</button>
-            </div>
-          </form>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
         {members.map(member => (

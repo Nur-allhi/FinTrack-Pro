@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Investment, InvestmentReturn } from '../types';
 import { Plus, TrendingUp, ArrowUpRight, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -63,33 +64,43 @@ export default function InvestmentDetail({ investment, returns, currency, onAddR
         </button>
       </div>
 
-      {isAddingReturn && (
-        <div className="p-8 bg-semantic-up/5 rounded-xl border border-semantic-up/10 shadow-sm shadow-semantic-up/5">
-          <div className="flex items-center justify-between mb-6">
-            <h5 className="text-sm font-bold text-semantic-up uppercase tracking-widest">Log Institutional Yield</h5>
-            <button onClick={() => setIsAddingReturn(false)} className="p-1 text-semantic-up/40 hover:text-semantic-up">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <form onSubmit={handleAddReturn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Value Date</label>
-              <DatePicker value={newReturn.date} onChange={v => setNewReturn({...newReturn, date: v})} />
+      <AnimatePresence>
+        {isAddingReturn && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="p-8 bg-semantic-up/5 rounded-xl border border-semantic-up/10 shadow-sm shadow-semantic-up/5">
+              <div className="flex items-center justify-between mb-6">
+                <h5 className="text-sm font-bold text-semantic-up uppercase tracking-widest">Log Institutional Yield</h5>
+                <button onClick={() => setIsAddingReturn(false)} className="p-1 text-semantic-up/40 hover:text-semantic-up">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleAddReturn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Value Date</label>
+                  <DatePicker value={newReturn.date} onChange={v => setNewReturn({...newReturn, date: v})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Return ({currency})</label>
+                  <input type="number" required value={newReturn.amount} onChange={e => setNewReturn({...newReturn, amount: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Yield %</label>
+                  <input type="number" step="0.01" required value={newReturn.percentage} onChange={e => setNewReturn({...newReturn, percentage: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
+                </div>
+                <div className="md:col-span-3 flex justify-end gap-4 pt-2">
+                  <button type="submit" className="btn-primary h-[48px] px-10 bg-semantic-up hover:bg-semantic-up/90 border-none">Save Yield Entry</button>
+                </div>
+              </form>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Return ({currency})</label>
-              <input type="number" required value={newReturn.amount} onChange={e => setNewReturn({...newReturn, amount: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Yield %</label>
-              <input type="number" step="0.01" required value={newReturn.percentage} onChange={e => setNewReturn({...newReturn, percentage: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
-            </div>
-            <div className="md:col-span-3 flex justify-end gap-4 pt-2">
-              <button type="submit" className="btn-primary h-[48px] px-10 bg-semantic-up hover:bg-semantic-up/90 border-none">Save Yield Entry</button>
-            </div>
-          </form>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 bg-surface-soft rounded-xl border border-hairline">

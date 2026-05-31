@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, Search, X, Sun, Moon, Receipt, Handshake } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../utils/cn';
 import { authService } from '../../services/authService';
 
@@ -140,8 +141,15 @@ export default function Header({
         </div>
 
         {/* Results dropdown */}
-        {focused && (results.length > 0 || searching) && (
-          <div className="absolute top-full right-0 mt-1.5 w-64 md:w-80 bg-canvas border border-hairline rounded-xl shadow-xl overflow-hidden z-50">
+        <AnimatePresence>
+          {focused && (results.length > 0 || searching) && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="absolute top-full right-0 mt-1.5 w-64 md:w-80 bg-canvas border border-hairline rounded-xl shadow-xl overflow-hidden z-50"
+            >
             {searching && (
               <div className="px-4 py-3 text-xs text-muted flex items-center gap-2">
                 <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -178,8 +186,9 @@ export default function Header({
                 )}
               </button>
             ))}
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       </div>
     </header>

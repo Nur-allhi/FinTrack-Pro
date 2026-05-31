@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Loan, Account } from '../types';
 import { Plus, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
@@ -145,7 +146,19 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
         </button>
       </div>
 
-      {showForm && <LoanForm editingId={editingId} loanType={loanType} form={form} loading={loading} accounts={accounts} onFormChange={setForm} onLoanTypeChange={(t) => { setLoanType(t); setForm({ ...form, borrower_account_id: '', borrower_name: '' }); }} onSubmit={editingId ? handleUpdate : handleCreate} onCancel={closeForm} />}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <LoanForm editingId={editingId} loanType={loanType} form={form} loading={loading} accounts={accounts} onFormChange={setForm} onLoanTypeChange={(t) => { setLoanType(t); setForm({ ...form, borrower_account_id: '', borrower_name: '' }); }} onSubmit={editingId ? handleUpdate : handleCreate} onCancel={closeForm} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <LoanFilters statusFilter={statusFilter} setStatusFilter={setStatusFilter} groupingMode={groupingMode} setGroupingMode={setGroupingMode} />
 
@@ -162,9 +175,7 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
         ))}
       </div>
 
-      {settleModal && (
-        <SettleModal borrowerName={settleModal.borrowerName} amount={settleModal.amount} remaining={settleModal.remaining} currency={currency} settleAmount={settleAmount} setSettleAmount={setSettleAmount} settleError={settleError} setSettleError={setSettleError} onSettle={handleSettleSubmit} onCancel={() => { setSettleModal(null); setSettleAmount(''); setSettleError(''); }} settling={settlingId !== null} />
-      )}
+      <SettleModal open={!!settleModal} borrowerName={settleModal?.borrowerName || ''} amount={settleModal?.amount || 0} remaining={settleModal?.remaining || 0} currency={currency} settleAmount={settleAmount} setSettleAmount={setSettleAmount} settleError={settleError} setSettleError={setSettleError} onSettle={handleSettleSubmit} onCancel={() => { setSettleModal(null); setSettleAmount(''); setSettleError(''); }} settling={settlingId !== null} />
     </div>
   );
 }
