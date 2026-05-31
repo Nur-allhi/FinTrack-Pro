@@ -1,4 +1,5 @@
 import {execSync} from 'child_process';
+import fs from 'fs';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import {VitePWA} from 'vite-plugin-pwa';
@@ -6,13 +7,25 @@ import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 import pkg from './package.json';
 
+const BUILD_NUMBER_FILE = '.build-number';
+
+function getAndIncrementBuildNumber(): number {
+  let buildNumber = 1;
+  try {
+    buildNumber = parseInt(fs.readFileSync(BUILD_NUMBER_FILE, 'utf-8').trim(), 10) + 1;
+  } catch { /* file doesn't exist yet, start at 1 */ }
+  fs.writeFileSync(BUILD_NUMBER_FILE, String(buildNumber));
+  return buildNumber;
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   const APP_URL = env.APP_URL || process.env.APP_URL;
+  const buildNumber = getAndIncrementBuildNumber();
 
   const getVersion = () => {
-    return pkg.version;
+    return `${pkg.version}+${buildNumber}`;
   };
 
   return {
