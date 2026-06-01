@@ -1,30 +1,35 @@
 # TODO — FinTrack Pro
 
-> Generated from `IMPLEMENTATION_PLAN.md` · 2026-05-31
-> **58 completed**, **0 remaining** (Phases 0–6) 🎉
+> Generated from `IMPLEMENTATION_PLAN.md` · 2026-06-02
+> **62 completed**, **0 remaining** (Phases 0–8)
 
 ---
+
+## Phase 0 — Critical Fixes ✅
+
+- [x] **T-065** Fix 3 TypeScript errors (App.tsx, Settings.tsx, csvImport.ts) (1-2h)
 
 ## Phase 0 — In-Flight Issues ✅
 
 - [x] **T-029** Typography audit (30m)
 - [x] **T-030** Dark mode micro-interactions (1h)
 
-## Phase 1 — Data Layer & Architecture ✅
+## Phase 1 — Data Layer & Architecture ⏳
 
 - [x] **T-031** Create unified query interface `api/db/queries.ts` (4-6h)
 - [x] **T-032** Extract shared Zod schemas to `shared/validation.ts` (2-3h)
-- [x] **T-033** Swap `supabaseAdmin` for regular client in data queries (1-2h) — kept with documented rationale
+- [x] **T-033** Swap `supabaseAdmin` for regular client in data queries (1-2h) — AsyncLocalStorage per-request client
 - [x] **T-034** Migrate token from `localStorage` to HttpOnly cookie (4-6h)
 
-## Phase 2 — Type Safety & Cleanup ✅
+## Phase 2 — Type Safety & Cleanup ⏳
 
-- [x] **T-035** Replace `any` types across API layer (4-6h) — 39 instances fixed
+- [x] **T-035** Replace `any` types across API layer (1-2h) — 2 instances fixed
 - [x] **T-036** Replace `any` types across frontend components (4-6h) — 10 instances fixed
 - [x] **T-037** Wrap `/api/import` in a DB transaction (1h)
 - [x] **T-038** Add rate limiting middleware (2-3h)
+- [x] **T-066** Replace `any` types in frontend services (2-3h) — 12 instances fixed
 
-## Phase 3 — File Splitting (<300 LOC) ✅
+## Phase 3 — File Splitting (<300 LOC) ⏳
 
 - [x] **T-039** Split `Ledger.tsx` (542→258) → `useTransactions`, `LedgerToolbar` (2-3h)
 - [x] **T-040** ~~Split `AdminPanel.tsx` (444)~~ — file deleted (admin removed)
@@ -36,6 +41,8 @@
 - [x] **T-046** Split `InvestmentTracker.tsx` (311→186) → `InvestmentDetail` (1h)
 - [x] **T-047** Split `LoanGroupCard.tsx` (314→182) → `LoanTable`, `GroupSettleModal` (1h)
 - [x] **T-048** Split `ReportGenerator.tsx` (303→205) → `utils/reportPdf.ts` (1h)
+- [x] **T-067** Split `UserProfile.tsx` (318→245 LOC) → `useProfileData` hook (1-2h)
+- [x] **T-068** Split `GroupManager.tsx` (306→240 LOC) → `GroupGridView` (1-2h) — from audit #6
 
 ## Phase 4 — Testing ✅
 
@@ -64,4 +71,10 @@
 
 ---
 
-**Estimated remaining**: 0h 🎉
+## Phase 8 — Audit Leftovers ✅
+
+- [x] **T-069** Input sanitization — sanitizeHtml transform on all user-input Zod fields (2-3h) — from audit #13
+
+---
+
+**Estimated remaining**: 0h — all tasks complete

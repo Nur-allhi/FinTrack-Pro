@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
 
 let _supabase: SupabaseClient | null = null;
 let _initPromise: Promise<SupabaseClient | null> | null = null;
@@ -111,7 +111,7 @@ export const authService = {
     await this.clearSession();
   },
 
-  onAuthStateChange(callback: (session: any) => void) {
+  onAuthStateChange(callback: (session: Session | null) => void) {
     getSupabase().then(sb => {
       if (!sb) return;
       sb.auth.onAuthStateChange((_event, session) => {

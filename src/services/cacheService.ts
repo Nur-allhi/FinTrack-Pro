@@ -1,4 +1,5 @@
 import { openDB, IDBPDatabase } from 'idb';
+import type { Member, Account, Transaction, OfflineActionBody } from '../types';
 
 const DB_NAME = 'ledger_cache';
 const DB_VERSION = 2;
@@ -9,30 +10,38 @@ interface CachedEntry<T> {
   timestamp: number;
 }
 
+interface OfflineAction {
+  id: string;
+  type: 'create' | 'update' | 'delete';
+  endpoint: string;
+  body?: OfflineActionBody;
+  timestamp: number;
+}
+
 interface LedgerDB {
   members: {
     key: string;
-    value: CachedEntry<any[]>;
+    value: CachedEntry<Member[]>;
   };
   accounts: {
     key: string;
-    value: CachedEntry<any[]>;
+    value: CachedEntry<Account[]>;
   };
   transactions: {
     key: string;
     value: {
       accountId: string;
-      data: any[];
+      data: Transaction[];
       timestamp: number;
     };
   };
   metadata: {
     key: string;
-    value: any;
+    value: Record<string, unknown>;
   };
   offline_queue: {
     key: string;
-    value: any;
+    value: OfflineAction[];
   };
 }
 
@@ -62,7 +71,7 @@ function isExpired(timestamp: number, ttl: number = DEFAULT_TTL): boolean {
 }
 
 export const cacheService = {
-  async setMembers(data: any[]) {
+  async setMembers(data: Member[]) {
     const db = await getDB();
     await db.put('members', { data, timestamp: Date.now() }, 'list');
   },
@@ -78,7 +87,7 @@ export const cacheService = {
     return entry.data;
   },
 
-  async setAccounts(data: any[]) {
+  async setAccounts(data: Account[]) {
     const db = await getDB();
     await db.put('accounts', { data, timestamp: Date.now() }, 'list');
   },
@@ -94,7 +103,7 @@ export const cacheService = {
     return entry.data;
   },
 
-  async setTransactions(accountId: string, data: any[]) {
+  async setTransactions(accountId: string, data: Transaction[]) {
     const db = await getDB();
     await db.put('transactions', {
       accountId,
@@ -122,7 +131,7 @@ export const cacheService = {
     await db.clear('metadata');
   },
 
-  async setSettings(settings: any) {
+  async setSettings(settings: Record<string, unknown>) {
     const db = await getDB();
     await db.put('metadata', settings, 'app_settings');
   },

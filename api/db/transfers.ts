@@ -1,13 +1,8 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 
 interface AccountWithMembers {
   name: string;
   members?: { name: string }[] | null;
-}
-
-function db(): NonNullable<typeof supabaseAdmin> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  return supabaseAdmin;
 }
 
 export async function createTransfer(userId: string, data: {

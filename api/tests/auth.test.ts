@@ -2,19 +2,21 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 process.env.NODE_ENV = "production";
 
-const { mockGetUser } = vi.hoisted(() => ({
-  mockGetUser: vi.fn(),
-}));
+const { mockGetUser, mockClient } = vi.hoisted(() => {
+  const mockGetUser = vi.fn();
+  const mockClient = {
+    auth: { getUser: mockGetUser },
+    from: vi.fn(),
+  };
+  return { mockGetUser, mockClient };
+});
 
 vi.mock("../db.js", () => ({
-  supabase: {
-    auth: { getUser: mockGetUser },
-    from: vi.fn(),
-  },
-  supabaseAdmin: {
-    auth: { getUser: mockGetUser },
-    from: vi.fn(),
-  },
+  supabase: mockClient,
+  supabaseAdmin: mockClient,
+  db: () => mockClient,
+  createClientForToken: () => mockClient,
+  runWithClient: (_client: unknown, fn: () => unknown) => fn(),
   initDb: vi.fn().mockResolvedValue(undefined),
 }));
 

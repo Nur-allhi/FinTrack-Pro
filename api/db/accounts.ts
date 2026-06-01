@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import { insertOne, updateOne } from "./queries.js";
 import type { Account } from "../../shared/types.js";
 
@@ -20,13 +20,13 @@ function accountRowToAccount(row: SupabaseAccountRow, txSum: number): Account {
 }
 
 export async function getAccounts(userId: string, limit?: number, offset?: number): Promise<Account[]> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  let query = supabaseAdmin.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", userId).is("deleted_at", null);
+  const client = db();
+  let query = client.from("accounts").select("*, members(name), parents:parent_id(name)").eq("user_id", userId).is("deleted_at", null);
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
   const { data: accounts, error: accError } = await query;
   if (accError) throw accError;
 
-  const { data: transactions, error: txError } = await supabaseAdmin.from("transactions").select("account_id, amount").eq("user_id", userId).is("deleted_at", null);
+  const { data: transactions, error: txError } = await db().from("transactions").select("account_id, amount").eq("user_id", userId).is("deleted_at", null);
   if (txError) throw txError;
 
   const txMap = new Map<number, number>();
@@ -51,8 +51,7 @@ export async function updateAccount(userId: string, id: number, updates: Partial
 }
 
 export async function deleteAccount(userId: string, id: number) {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  const { error } = await supabaseAdmin
+  const { error } = await db()
     .from("accounts")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)

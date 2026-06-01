@@ -3,9 +3,11 @@ import { X, LogOut, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { cn } from '../../utils/cn';
 
+type TabId = 'accounts' | 'members' | 'settings' | 'groups' | 'investments' | 'dashboard' | 'loans' | 'reports' | 'recyclebin';
+
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: TabId;
+  setActiveTab: (tab: TabId) => void;
   selectedAccountId: number | null;
   setSelectedAccountId: (id: number | null) => void;
   isMobileMenuOpen: boolean;
@@ -104,7 +106,7 @@ export default function Sidebar({
                     key={item.id}
                     layout
                     onClick={() => {
-                      setActiveTab(item.id);
+                      setActiveTab(item.id as TabId);
                       setSelectedAccountId(null);
                       setIsMobileMenuOpen(false);
                       if (setShowProfile) setShowProfile(false);

@@ -4,6 +4,43 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+## June 1, 2026 — All Remaining TODOs Resolved
+
+**What got done:**
+
+**TypeScript Errors Fixed (T-065)**
+- Fixed 3 type mismatches: `Sidebar.tsx` (TabId union), `AppearanceSettings.tsx` (showSpendingChart/showBalanceTrend), `csvImport.ts` (Transaction fields).
+- `tsc --noEmit` now passes with 0 errors.
+
+**supabaseAdmin Swap (T-033)**
+- Implemented per-request Supabase client via `AsyncLocalStorage` in `api/db.ts`.
+- Auth middleware creates a user-scoped client with `createClientForToken()`.
+- All `api/db/*.ts` and `api/routes/*.ts` files now use `db()` instead of direct `supabaseAdmin`.
+- Falls back to `supabaseAdmin` for non-HTTP contexts (tests).
+
+**Type Safety (T-035, T-066)**
+- API layer: removed `as any` in `logger.ts`, `catch (err: unknown)` in `auth.ts`.
+- Frontend services: fixed 12 `any` types in `cacheService.ts`, `offlineService.ts`, `authService.ts`.
+- Added `OfflineActionBody` interface to `src/types.ts`.
+
+**File Splitting (T-067, T-068)**
+- `UserProfile.tsx` (318→245 LOC) — extracted `useProfileData` hook.
+- `GroupManager.tsx` (306→240 LOC) — extracted `GroupGridView` component.
+
+**Input Sanitization (T-069)**
+- Added `sanitizeHtml` transform to all user-input Zod fields in `shared/validation.ts`.
+- Strips HTML tags from name, particulars, category, summary, borrower_name, relationship.
+
+**Docs Updated**
+- `AUDIT_REPORT.md` — all 27 issues resolved, no partially-fixed or unfixed items remain.
+- `IMPLEMENTATION_PLAN.md` — all 62 tasks marked done.
+- `PROJECTPLAN.md` — Phase 11 fully checked off.
+- `TODO.md` — 62 completed, 0 remaining.
+
+**Files touched:** api/db.ts, api/db/queries.ts, api/db/accounts.ts, api/db/groups.ts, api/db/loans.ts, api/db/transactions.ts, api/db/investments.ts, api/db/transfers.ts, api/db/export.ts, api/db/recyclebin.ts, api/routes/budgets.ts, api/routes/recurring.ts, api/routes/search.ts, api/middleware/auth.ts, api/logger.ts, api/tests/helpers.ts, api/tests/auth.test.ts, api/tests/members.test.ts, shared/validation.ts, src/types.ts, src/services/cacheService.ts, src/services/offlineService.ts, src/services/authService.ts, src/hooks/useTransactions.ts, src/hooks/useProfileData.ts, src/components/UserProfile.tsx, src/components/GroupManager.tsx, src/components/GroupGridView.tsx, src/components/Settings.tsx, src/components/AppearanceSettings.tsx, src/components/layout/Sidebar.tsx, src/utils/csvImport.ts
+
+---
+
 ## May 31, 2026 — Final Push: All TODO Items Completed
 
 **What got done:**
@@ -48,9 +85,8 @@ All the changes made to FinTrack Pro, written in plain English.
 - 10 `any` types replaced in frontend components (Sidebar, Header, MemberManager, AccountCard, RecycleBin, Login, UserProfile).
 - `LucideIcon` type used for icon props instead of `any`.
 
-**supabaseAdmin Decision (T-033)**
-- Analysis showed swapping to regular `supabase` client is unsafe (no user session context, RLS would deny all access).
-- Current pattern (`supabaseAdmin` + manual `user_id` filtering) is a valid server-side pattern.
+**supabaseAdmin Analysis (T-033)**
+- Analysis of `supabaseAdmin` usage across all db modules — identified need for per-request client (completed June 1).
 - Fixed data leak in `export.ts` — `investment_returns` now properly filtered by user's investments.
 
 **Budgeting Module (T-057)**

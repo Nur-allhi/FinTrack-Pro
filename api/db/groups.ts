@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import { insertOne, updateOne } from "./queries.js";
 
 interface AccountRow {
@@ -12,8 +12,8 @@ interface TxRow {
 }
 
 export async function getGroups(userId: string) {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  const { data: groups, error } = await supabaseAdmin
+  const client = db();
+  const { data: groups, error } = await client
     .from("accounts")
     .select("*, members(name)")
     .eq("type", "group")
@@ -22,7 +22,7 @@ export async function getGroups(userId: string) {
     .order("name");
   if (error) throw error;
 
-  const { data: children, error: cError } = await supabaseAdmin
+  const { data: children, error: cError } = await client
     .from("accounts")
     .select("id, parent_id, name, type, initial_balance, archived, member_id")
     .eq("user_id", userId)
@@ -30,7 +30,7 @@ export async function getGroups(userId: string) {
     .not("parent_id", "is", null);
   if (cError) throw cError;
 
-  const { data: allTx, error: txErr } = await supabaseAdmin.from("transactions").select("account_id, amount").eq("user_id", userId);
+  const { data: allTx, error: txErr } = await client.from("transactions").select("account_id, amount").eq("user_id", userId);
   if (txErr) throw txErr;
 
   const balances: Record<number, number> = {};
@@ -71,8 +71,8 @@ export async function updateGroup(userId: string, id: number, updates: { name?: 
 }
 
 export async function deleteGroup(userId: string, id: number) {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
+  const client = db();
   const now = new Date().toISOString();
-  await supabaseAdmin.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
-  await supabaseAdmin.from("accounts").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
+  await client.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
+  await client.from("accounts").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
 }

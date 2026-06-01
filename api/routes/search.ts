@@ -1,14 +1,9 @@
 import express from "express";
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
 const router = express.Router();
-
-function db(): NonNullable<typeof supabaseAdmin> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  return supabaseAdmin;
-}
 
 interface SearchResult {
   type: 'transaction' | 'account' | 'loan';

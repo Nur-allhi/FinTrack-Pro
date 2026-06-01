@@ -15,6 +15,8 @@ interface AppearanceSettingsProps {
     showCurrentAssets: boolean;
     showLiabilities: boolean;
     showTodos: boolean;
+    showSpendingChart: boolean;
+    showBalanceTrend: boolean;
     enableNotifications: boolean;
   };
   onUpdateSettings: (s: AppearanceSettingsProps['settings']) => void;

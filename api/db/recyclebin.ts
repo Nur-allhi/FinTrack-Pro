@@ -1,10 +1,5 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import { restoreOne, permanentDeleteOne } from "./queries.js";
-
-function db(): NonNullable<typeof supabaseAdmin> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  return supabaseAdmin;
-}
 
 export type RecycleBinEntityType = "transactions" | "accounts" | "loans";
 

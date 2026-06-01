@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import { softDeleteOne } from "./queries.js";
 import type { Transaction } from "../../shared/types.js";
 
@@ -35,10 +35,6 @@ interface CategoryRow {
   category: string | null;
 }
 
-function db(): NonNullable<typeof supabaseAdmin> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  return supabaseAdmin;
-}
 
 export async function getCategories(userId: string) {
   const { data, error } = await db()

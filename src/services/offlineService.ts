@@ -1,10 +1,11 @@
 import { getDB, cacheService } from './cacheService';
+import type { OfflineActionBody } from '../types';
 
 type OfflineAction = {
   id: string;
   type: 'create' | 'update' | 'delete';
   endpoint: string;
-  body?: any;
+  body?: OfflineActionBody;
   timestamp: number;
 };
 
@@ -56,7 +57,7 @@ async function registerBackgroundSync() {
   try {
     if ('sync' in navigator && 'serviceWorker' in navigator) {
       const reg = await navigator.serviceWorker.ready;
-      await (reg as any).sync.register('sync-offline-queue');
+      await (reg as unknown as { sync: { register: (tag: string) => Promise<void> } }).sync.register('sync-offline-queue');
     }
   } catch {
     // Background Sync not available — fall back to online event

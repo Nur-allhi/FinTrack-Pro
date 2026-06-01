@@ -32,29 +32,31 @@ export function useTransactions(account: Account, lastUpdate?: number) {
         data = data.filter(t => t.id !== id);
       }
       const pendingCreates = queue.filter(a =>
-        a.type === 'create' && a.endpoint === '/api/transactions'
+        a.type === 'create' && a.endpoint === '/api/transactions' && a.body
       );
       for (const create of pendingCreates) {
+        const b = create.body!;
         data.unshift({
           id: Date.now() + Math.random(),
           account_id: account.id,
-          date: create.body.date,
-          particulars: create.body.particulars,
-          category: create.body.category || 'Uncategorized',
-          amount: create.body.amount,
+          date: b.date || '',
+          particulars: b.particulars || '',
+          category: b.category || 'Uncategorized',
+          amount: b.amount || 0,
           type: 'normal',
-          summary: create.body.summary || null,
+          summary: b.summary || null,
           linked_transaction_id: null,
         } as Transaction);
       }
       const pendingUpdates = queue.filter(a =>
-        a.type === 'update' && a.body?.account_id === account.id
+        a.type === 'update' && a.body?.account_id === account.id && a.body
       );
       for (const update of pendingUpdates) {
         const id = parseInt(update.endpoint.split('/').pop()!, 10);
         const idx = data.findIndex(t => t.id === id);
+        const b = update.body!;
         if (idx >= 0) {
-          data[idx] = { ...data[idx], date: update.body.date, particulars: update.body.particulars, category: update.body.category || 'Uncategorized', amount: update.body.amount };
+          data[idx] = { ...data[idx], date: b.date || '', particulars: b.particulars || '', category: b.category || 'Uncategorized', amount: b.amount || 0 };
         }
       }
 

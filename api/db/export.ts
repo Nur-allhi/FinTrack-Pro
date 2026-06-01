@@ -1,10 +1,5 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import type { Member, Account, Transaction, Investment, InvestmentReturn } from "../../shared/types.js";
-
-function db(): NonNullable<typeof supabaseAdmin> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  return supabaseAdmin;
-}
 
 export async function exportAllData(userId: string) {
   const [members, accounts, transactions, investments, returns] = await Promise.all([

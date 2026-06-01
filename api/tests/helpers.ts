@@ -48,15 +48,17 @@ function createChain() {
 
 // ─── Mock Setup (called once per test file) ──────────────────────────────────
 
+const mockClient = {
+  auth: { getUser: mockGetUser },
+  from: (..._args: unknown[]) => createChain(),
+};
+
 vi.mock("../db.js", () => ({
-  supabase: {
-    auth: { getUser: mockGetUser },
-    from: (..._args: unknown[]) => createChain(),
-  },
-  supabaseAdmin: {
-    auth: { getUser: mockGetUser },
-    from: (..._args: unknown[]) => createChain(),
-  },
+  supabase: mockClient,
+  supabaseAdmin: mockClient,
+  db: () => mockClient,
+  createClientForToken: () => mockClient,
+  runWithClient: (_client: unknown, fn: () => unknown) => fn(),
   initDb: vi.fn().mockResolvedValue(undefined),
 }));
 

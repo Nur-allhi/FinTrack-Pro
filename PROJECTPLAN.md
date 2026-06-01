@@ -31,7 +31,7 @@
 - [x] **3.5** Color palette — aligned with DESIGN.md spec (Coinbase tokens)
 - [x] **3.6** Dark mode — CSS variable system + toggle in Settings
 - [x] **3.7** Micro-interactions — bounce animations removed, replaced with clean slide-in/slide-out
-- [ ] **3.8** Typography audit — Inter/JetBrains Mono verified in CSS
+- [x] **3.8** Typography audit — Inter/JetBrains Mono verified in CSS
 
 ---
 
@@ -101,9 +101,9 @@ Completed in audit commit `e00c6a2`:
 - [x] **7.12** Add request ID tracing (UUID middleware)
 - [x] **7.13** Shared types (`shared/types.ts`) created
 
-### Partial
-- [~] **7.14** Replace `any` types — `shared/types.ts` created, members & accounts typed
-- [~] **7.15** Vitest tests — 3 passing tests for members data layer
+### Completed post-audit
+- [x] **7.14** Replace `any` types — all API (T-035) and frontend service (T-066) instances fixed
+- [x] **7.15** Vitest tests — 47 passing tests across 5 test files
 
 ---
 
@@ -146,24 +146,27 @@ Completed in audit commit `e00c6a2`:
 
 - [x] **11.1** Data-access layer — `api/db/queries.ts` unified query interface
 - [x] **11.2** Request validation — `shared/validation.ts` with Zod schemas
-- [ ] **11.3** Swap `supabaseAdmin` for `supabase` client in data queries — 56 references remain
-- [x] **11.4** Testing infrastructure — 37 Vitest tests across 4 test files
-- [x] **11.5** File splitting — all 10 files split to under 300 LOC
-- [ ] **11.6** Type safety — 46 `any` instances remain (36 API, 10 frontend)
+- [x] **11.3** Swap `supabaseAdmin` for per-request client via AsyncLocalStorage (T-033)
+- [x] **11.4** Testing infrastructure — 47 Vitest tests across 5 test files
+- [x] **11.5** File splitting — all files under 300 LOC (UserProfile 245, GroupManager 240)
+- [x] **11.6** Type safety — all `any` types fixed (T-035, T-036, T-066)
 - [x] **11.7** Recycle bin / soft-delete — backend + frontend complete
-- [ ] **11.8** Liability tracking — replace hardcoded "0" with real model
-- [ ] **11.9** Budgeting module
-- [ ] **11.10** Recurring transactions
-- [ ] **11.11** Multi-currency support
+- [x] **11.8** Liability tracking — computed from negative-balance accounts (T-056)
+- [x] **11.9** Budgeting module — monthly category budgets (T-057)
+- [x] **11.10** Recurring transactions — daily/weekly/monthly/yearly (T-058)
+- [x] **11.11** Multi-currency support — per-account currency, exchange rates (T-059)
 - [x] **11.12** Rate limiting middleware — `apiLimiter` (60 req/min) + `authLimiter` (10 req/15min)
-- [ ] **11.13** PWA push notifications — only basic browser Notification API exists
-- [ ] **11.14** CSV import for bulk transactions
-- [ ] **11.15** Dashboard charts — spending by category pie, balance trend line
-- [ ] **11.16** Excel (.xlsx) export alongside PDF/CSV
-- [ ] **11.17** Full-text search across transactions/particulars — currently uses ILIKE
+- [x] **11.13** PWA push notifications — service worker push handler (T-061)
+- [x] **11.14** CSV import — papaparse-based (T-062)
+- [x] **11.15** Dashboard charts — pie chart + area chart via Recharts (T-060)
+- [x] **11.16** Excel (.xlsx) export — xlsx library (T-063)
+- [x] **11.17** Full-text search — PostgreSQL FTS with GIN indexes (T-064)
 - [x] **11.18** Dark mode micro-interactions — theme transition animations
 - [x] **11.19** Typography audit — JetBrains Mono verified in CSS
 - [x] **11.20** Migrate token from localStorage to HttpOnly cookie
+- [x] **11.21** Input sanitization — HTML tag stripping on all user-input Zod fields (T-069)
+- [x] **11.22** Split UserProfile.tsx — extracted `useProfileData` hook (T-067)
+- [x] **11.23** Split GroupManager.tsx — extracted `GroupGridView` component (T-068)
 
 ---
 
@@ -181,4 +184,4 @@ Completed in audit commit `e00c6a2`:
 | Phase 8: Animation Overhaul | ✅ Done (3 items) |
 | Phase 9: Offline Mode | ✅ Done (13 items) |
 | Phase 10: Branding & UI Polish | ✅ Done (4 items) |
-| Phase 11: Future Enhancements | 📋 Backlog (10 items remaining, 10 completed) |
+| Phase 11: Future Enhancements | ✅ All done (23 items) |

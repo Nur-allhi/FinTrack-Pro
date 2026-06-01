@@ -1,7 +1,7 @@
 # FinTrack Pro — Implementation Plan
 
 **Cross-ref**: `PROJECTPLAN.md` for full project roadmap  
-**Updated**: 2026-05-31
+**Updated**: 2026-06-02
 
 ---
 
@@ -243,19 +243,33 @@
 
 ## ⬜ Remaining Items
 
+### T-065 — Fix TypeScript errors (3 type mismatches)
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: 3 TypeScript errors fixed:
+  1. `src/components/layout/Sidebar.tsx` — added `TabId` union type to `activeTab`/`setActiveTab` props
+  2. `src/components/AppearanceSettings.tsx` — added `showSpendingChart` and `showBalanceTrend` to settings interface
+  3. `src/utils/csvImport.ts` — added `linked_transaction_id: null` and fixed `category` type from `null` to `''`
+
+### T-066 — Replace any types in frontend services (12 instances)
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: All 12 instances fixed:
+  - `cacheService.ts` — imported `Member`, `Account`, `Transaction`, `OfflineActionBody` types
+  - `offlineService.ts` — typed `body` as `OfflineActionBody`, proper Background Sync cast
+  - `authService.ts` — `Session | null` for auth state callback
+  - Added `OfflineActionBody` interface to `src/types.ts`
+  - Fixed `useTransactions.ts` null guards for the new body type
+
+### T-067 — Split UserProfile.tsx (318 LOC)
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: Extracted `useProfileData` hook (84 LOC) to `src/hooks/useProfileData.ts`. UserProfile.tsx reduced from 318→245 LOC.
+
 ### T-033 — Swap supabaseAdmin for regular client in data queries
-- **Priority**: P1
-- **Phase**: 1 — Data Layer & Architecture
-- **Estimate**: 1-2h
-- **Details**: Replace `supabaseAdmin` (service role key) with regular `supabase` client for SELECT/INSERT queries. Reserve admin client for admin-only operations. Currently `supabaseAdmin` is used in all `api/db/*.ts` files (56 references).
-- **Dependency**: None (independent of T-031)
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: Implemented per-request Supabase client via `AsyncLocalStorage` in `api/db.ts`. Auth middleware creates a client with the user's JWT via `createClientForToken()`. All `api/db/*.ts` files now use `db()` (request-scoped) instead of direct `supabaseAdmin`. Falls back to `supabaseAdmin` for non-HTTP contexts (tests).
 
 ### T-035 — Replace any types across API layer
-- **Priority**: P2
-- **Phase**: 2 — Type Safety & Cleanup
-- **Estimate**: 4-6h
-- **Details**: 36 instances of `any` remain across API routes — all are `catch (err: any)` patterns in every route handler, plus `Record<string, any>` in `queries.ts`. Replace with typed error handling.
-- **Dependency**: None
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: Fixed `logger.ts:12` — removed `as any` cast (requestId type already globally augmented). Fixed `middleware/auth.ts:69` — `catch (err: unknown)` with `instanceof Error` check.
 
 ### T-036 — Replace any types across frontend components
 - **Status**: ✅ Done
@@ -301,6 +315,14 @@
 - **Status**: ✅ Done
 - **Details**: Migration `010_add_fulltext_search.sql` adds `tsvector` columns and GIN indexes. Search route uses `fts.teq` with ILIKE fallback.
 
+### T-068 — Split GroupManager.tsx (306 LOC)
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: Extracted `GroupGridView` component (95 LOC) to `src/components/GroupGridView.tsx`. GroupManager.tsx reduced from 306→240 LOC.
+
+### T-069 — Input sanitization improvements
+- **Status**: ✅ Done (2026-06-02)
+- **Details**: Added `sanitizeHtml` transform to all user-input string fields in `shared/validation.ts` — strips HTML tags from name, particulars, category, summary, borrower_name, relationship across all schemas.
+
 ---
 
 ## Effort Summary
@@ -310,14 +332,16 @@
 | Completed (T-001 to T-028) | 28 items | ✅ All done | — | — |
 | Phase 0 — In-Flight Issues | T-029 to T-030 | ✅ Done | 1.5h | None |
 | Phase 1 — Data Layer & Architecture | T-031 to T-034 | ✅ All done | — | — |
-| Phase 2 — Type Safety & Cleanup | T-035 to T-038 | ✅ All done | — | — |
-| Phase 3 — File Splitting | T-039 to T-048 | ✅ All done | — | — |
+| Phase 2 — Type Safety & Cleanup | T-035 to T-038, T-066 | ✅ All done | — | — |
+| Phase 3 — File Splitting | T-039 to T-048, T-067, T-068 | ✅ All done | — | — |
 | Phase 4 — Testing | T-049 to T-053 | ✅ All done | — | — |
 | Phase 5 — Recycle Bin | T-054 to T-055 | ✅ All done | — | — |
 | Phase 6 — Feature Enhancements | T-056 to T-064 | ✅ All done | — | — |
+| Phase 7 — Critical Fixes | T-065 | ✅ Done | 1-2h | — |
+| Phase 8 — Audit Leftovers | T-068, T-069 | ✅ Done | 3-5h | — |
 
-**Total completed**: 58 items  
-**Total remaining**: 0 items 🎉
+**Total completed**: 62 items
+**Total remaining**: 0 items
 
 ---
 

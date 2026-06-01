@@ -38,9 +38,11 @@ export function parseCsvTransactions(csvText: string, currency: string): Omit<Tr
         account_id: 0,
         date: row.Date.trim(),
         particulars: row.Particulars?.trim() || '',
-        category: row.Category?.trim() || null,
+        category: row.Category?.trim() || '',
         amount,
         type: 'normal' as const,
+        linked_transaction_id: null,
+        summary: null,
       };
     });
 }

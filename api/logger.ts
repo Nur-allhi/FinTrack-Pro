@@ -9,6 +9,6 @@ export const logger = pino({
 });
 
 export function requestLogger(req: Request, _res: Response, next: NextFunction) {
-  logger.info({ requestId: (req as any).requestId, method: req.method, url: req.url }, "request");
+  logger.info({ requestId: req.requestId, method: req.method, url: req.url }, "request");
   next();
 }

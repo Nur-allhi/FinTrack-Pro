@@ -119,6 +119,67 @@ Full audit remediation based on `AUDIT_REPORT.md` — 14 items fixed, 20 API tes
 
 ---
 
+## Session 15 — 1 June 2026 (All Remaining TODOs Resolved)
+
+### Changes
+
+Completed all 6 remaining TODO items (T-033, T-035, T-065, T-066, T-067, T-068, T-069).
+
+**T-065 — TypeScript Errors Fixed**
+- `Sidebar.tsx`: added `TabId` union type for `activeTab`/`setActiveTab` props
+- `AppearanceSettings.tsx`: added `showSpendingChart` and `showBalanceTrend` to settings interface
+- `csvImport.ts`: added `linked_transaction_id: null`, fixed `category` type
+
+**T-033 — supabaseAdmin Swap**
+- Implemented per-request Supabase client via `AsyncLocalStorage` in `api/db.ts`
+- Auth middleware creates user-scoped client with `createClientForToken(token)`
+- All `api/db/*.ts` and `api/routes/*.ts` now use `db()` instead of direct `supabaseAdmin`
+- Falls back to `supabaseAdmin` for non-HTTP contexts (tests)
+- Updated all 3 test mock files to export `db`, `createClientForToken`, `runWithClient`
+
+**T-035 — API `any` Types**
+- `logger.ts`: removed `as any` cast on `req.requestId`
+- `auth.ts`: `catch (err: unknown)` with `instanceof Error` check
+
+**T-066 — Frontend Service `any` Types**
+- `cacheService.ts`: imported `Member`, `Account`, `Transaction`, `OfflineActionBody` types
+- `offlineService.ts`: typed `body` as `OfflineActionBody`, proper Background Sync cast
+- `authService.ts`: `Session | null` for auth state callback
+- Added `OfflineActionBody` interface to `src/types.ts`
+- Fixed `useTransactions.ts` null guards for the new body type
+
+**T-067 — Split UserProfile.tsx**
+- Extracted `useProfileData` hook (84 LOC) to `src/hooks/useProfileData.ts`
+- UserProfile.tsx reduced from 318→245 LOC
+
+**T-068 — Split GroupManager.tsx**
+- Extracted `GroupGridView` component (95 LOC) to `src/components/GroupGridView.tsx`
+- GroupManager.tsx reduced from 306→240 LOC
+
+**T-069 — Input Sanitization**
+- Added `sanitizeHtml` transform to all user-input Zod fields in `shared/validation.ts`
+- Strips HTML tags from name, particulars, category, summary, borrower_name, relationship
+
+**Docs Updated**
+- `AUDIT_REPORT.md`: all 27 issues resolved, no partially-fixed items
+- `IMPLEMENTATION_PLAN.md`: all 62 tasks marked done
+- `PROJECTPLAN.md`: Phase 11 fully completed
+- `TODO.md`: 62 completed, 0 remaining
+- `CHANGELOG.md`: added June 1 entry
+
+### Files Changed
+api/db.ts, api/db/*.ts (all), api/routes/budgets.ts, api/routes/recurring.ts, api/routes/search.ts, api/middleware/auth.ts, api/logger.ts, api/tests/helpers.ts, api/tests/auth.test.ts, api/tests/members.test.ts, shared/validation.ts, src/types.ts, src/services/cacheService.ts, src/services/offlineService.ts, src/services/authService.ts, src/hooks/useTransactions.ts, src/hooks/useProfileData.ts, src/components/UserProfile.tsx, src/components/GroupManager.tsx, src/components/GroupGridView.tsx, src/components/AppearanceSettings.tsx, src/components/layout/Sidebar.tsx, src/utils/csvImport.ts
+
+---
+
+## Session 14 — 31 May 2026 (Feature Enhancements)
+
+### Changes
+
+Completed T-056 through T-064 (liability tracking, budgeting, recurring transactions, multi-currency, dashboard charts, push notifications, CSV import, Excel export, full-text search).
+
+---
+
 ## Sessions 8–12 — 17–19 May 2026 (QA, Loans, Docs, Auth)
 
 ### Session 8 — 17 May 2026 (QA fixes + UX polish)

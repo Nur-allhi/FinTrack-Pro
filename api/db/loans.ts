@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../db.js";
+import { db } from "../db.js";
 import type { Loan } from "../../shared/types.js";
 
 interface LoanRow {
@@ -21,11 +21,6 @@ interface SettleLoanResult {
   remaining?: number;
   settled?: boolean;
   transaction_id?: number;
-}
-
-function db(): NonNullable<typeof supabaseAdmin> {
-  if (!supabaseAdmin) throw new Error("Supabase admin client not configured");
-  return supabaseAdmin;
 }
 
 export async function getLoans(userId: string, limit?: number, offset?: number) {

@@ -46,6 +46,16 @@ export interface InvestmentReturn {
   percentage: number;
 }
 
+export interface OfflineActionBody {
+  account_id?: number;
+  amount?: number;
+  date?: string;
+  particulars?: string;
+  category?: string;
+  summary?: string | null;
+  [key: string]: unknown;
+}
+
 export interface Loan {
   id: number;
   lender_account_id: number;

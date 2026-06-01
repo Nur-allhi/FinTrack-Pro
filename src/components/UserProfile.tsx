@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, ShieldCheck, KeyRound, Database, Upload, RefreshCw, Loader2, CheckCircle2, Eye, EyeOff, Calendar, Info, FileSpreadsheet } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useToast } from './Toast';
-import { parseCsvTransactions } from '../utils/csvImport';
+import { useProfileData } from '../hooks/useProfileData';
 
 interface UserProfileProps {
   userEmail: string;
@@ -15,8 +15,7 @@ interface UserProfileProps {
 
 export default function UserProfile({ userEmail, onRefreshData, onExportData, onClearCache, currency = '৳', accounts = [] }: UserProfileProps) {
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const csvFileInputRef = useRef<HTMLInputElement>(null);
+  const { fileInputRef, csvFileInputRef, handleExport, handleImport, handleCsvImport, handleClearAll } = useProfileData({ currency, accounts, toast });
   const [name, setName] = useState('');
   const [originalName, setOriginalName] = useState('');
   const [provider, setProvider] = useState('');
@@ -24,8 +23,6 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
   const [userId, setUserId] = useState('');
   const [showUserId, setShowUserId] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [csvImporting, setCsvImporting] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -74,76 +71,6 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
     } finally {
       setChangingPassword(false);
     }
-  };
-
-  const handleExport = async () => {
-    try {
-      const res = await authService.apiFetch('/api/export');
-      if (!res.ok) throw new Error('Export failed');
-      const data = await res.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `fintrack-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('Data exported successfully.', 'success');
-    } catch { toast('Failed to export data.', 'error'); }
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      if (!data.members || !data.accounts) throw new Error('Invalid format');
-      const res = await authService.apiFetch('/api/import', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
-      });
-      if (!res.ok) { const errData = await res.json().catch(() => ({})); throw new Error(errData.error || `Server error (${res.status})`); }
-      toast('Data imported. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err) { toast(err instanceof Error ? err.message : 'Failed to import.', 'error'); }
-    finally { setImporting(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
-  };
-
-  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCsvImporting(true);
-    try {
-      const text = await file.text();
-      const transactions = parseCsvTransactions(text, currency);
-      if (transactions.length === 0) throw new Error('No valid transactions found in CSV');
-      const defaultAccountId = accounts.length > 0 ? accounts[0].id : 0;
-      if (!defaultAccountId) throw new Error('No accounts available. Create an account first.');
-      const txsWithAccount = transactions.map(tx => ({ ...tx, account_id: defaultAccountId }));
-      const res = await authService.apiFetch('/api/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactions: txsWithAccount }),
-      });
-      if (!res.ok) { const errData = await res.json().catch(() => ({})); throw new Error(errData.error || `Server error (${res.status})`); }
-      toast(`Imported ${transactions.length} transactions from CSV.`, 'success');
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err) { toast(err instanceof Error ? err.message : 'Failed to import CSV.', 'error'); }
-    finally { setCsvImporting(false); if (csvFileInputRef.current) csvFileInputRef.current.value = ''; }
-  };
-
-  const handleClearAll = async () => {
-    if (!confirm('This will permanently delete ALL data. Are you sure?')) return;
-    if (!confirm('Final confirmation: this cannot be undone. Clear everything?')) return;
-    try {
-      const res = await authService.apiFetch('/api/export/clear-all', { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed');
-      localStorage.clear();
-      sessionStorage.clear();
-      toast('All data cleared. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1500);
-    } catch { toast('Failed to clear data.', 'error'); }
   };
 
   return (
@@ -262,11 +189,11 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
               </div>
             </div>
           </button>
-          <button onClick={() => fileInputRef.current?.click()} disabled={importing}
+          <button onClick={() => fileInputRef.current?.click()}
             className="p-4 bg-surface-soft border border-hairline rounded-xl text-left hover:bg-canvas hover:border-primary transition-all group">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-canvas flex items-center justify-center border border-hairline group-hover:border-primary transition-colors shrink-0">
-                {importing ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Upload className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />}
+                <Upload className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-ink">Import</p>
@@ -275,11 +202,11 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
             </div>
             <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           </button>
-          <button onClick={() => csvFileInputRef.current?.click()} disabled={csvImporting}
+          <button onClick={() => csvFileInputRef.current?.click()}
             className="p-4 bg-surface-soft border border-hairline rounded-xl text-left hover:bg-canvas hover:border-primary transition-all group">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-canvas flex items-center justify-center border border-hairline group-hover:border-primary transition-colors shrink-0">
-                {csvImporting ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <FileSpreadsheet className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />}
+                <FileSpreadsheet className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-ink">CSV Import</p>

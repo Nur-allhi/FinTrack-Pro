@@ -1,30 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Layers, ChevronDown, Wallet, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Layers, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
 import GroupForm from './GroupForm';
-
-interface GroupChild {
-  id: number;
-  name: string;
-  type: string;
-  current_balance: number;
-  member_name?: string;
-}
-
-interface Group {
-  id: number;
-  name: string;
-  member_id: number | null;
-  member_name?: string;
-  color: string;
-  archived: number;
-  child_count: number;
-  accumulated_balance: number;
-  children: GroupChild[];
-}
+import GroupGridView, { type Group } from './GroupGridView';
 
 const colors = ['#0052ff', '#05b169', '#cf202f', '#f59e0b', '#7c828a', '#0a0b0d', '#14B8A6', '#EC4899', '#64748B', '#F97316'];
 
@@ -151,62 +132,15 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
       </AnimatePresence>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <AnimatePresence initial={false}>
-          {groups.map(group => (
-            <motion.div key={group.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md group">
-              <div className="h-1" style={{ backgroundColor: group.color }} />
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: group.color + '15', color: group.color }}>
-                      <Layers className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-base font-semibold text-ink truncate">{group.name}</h4>
-                      <p className="text-xs font-bold text-muted uppercase tracking-wider">{group.member_name || 'GENERAL'}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => startEdit(group)} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => handleDelete(group.id, group.name)} disabled={deletingId === group.id} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors disabled:opacity-50" title="Delete">
-                      {deletingId === group.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-1">{currency || '৳'}{group.accumulated_balance?.toLocaleString() || '0'}</p>
-                <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">{group.child_count} account{group.child_count !== 1 ? 's' : ''}</p>
-                <button onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
-                  className="w-full flex items-center justify-between pt-3 border-t border-hairline text-[10px] font-bold text-muted uppercase tracking-wider hover:text-ink transition-colors">
-                  <span>{expandedId === group.id ? 'Hide' : 'Show'} accounts</span>
-                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", expandedId === group.id && "rotate-180")} />
-                </button>
-                {expandedId === group.id && group.children && (
-                  <div className="mt-3 space-y-2 pt-3 border-t border-hairline">
-                    {group.children.length === 0 ? (
-                      <p className="text-xs text-muted italic">No accounts assigned</p>
-                    ) : (
-                      group.children.map((child: GroupChild) => (
-                        <div key={child.id} className="flex items-center justify-between py-1.5 px-3 bg-surface-soft rounded-lg">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Wallet className="w-3 h-3 text-muted shrink-0" />
-                            <span className="text-xs font-medium text-ink truncate">{child.name}</span>
-                          </div>
-                          <span className="text-xs font-bold text-ink financial-number shrink-0 ml-2">{currency || '৳'}{child.current_balance?.toLocaleString() || '0'}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-          </AnimatePresence>
-        </div>
+        <GroupGridView
+          groups={groups}
+          currency={currency || '৳'}
+          expandedId={expandedId}
+          setExpandedId={setExpandedId}
+          deletingId={deletingId}
+          onEdit={startEdit}
+          onDelete={handleDelete}
+        />
       ) : (
         <>
           <div className="hidden md:block bg-canvas border border-hairline rounded-xl overflow-x-auto">
