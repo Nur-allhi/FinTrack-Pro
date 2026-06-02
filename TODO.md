@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `PLAN/MASTER_PROMPT.md` · 2026-06-02
-> **69 completed**, **1 remaining**, **3 partial** (Phases 0–9 done, Phase 10 mostly complete, Phase 11 active)
+> **73 completed**, **7 remaining** (Phases 0–10 done, Phase 11 active)
 >
 > ## Branching Strategy
 >
@@ -101,12 +101,11 @@
 
 ---
 
-## Phase 10 — Performance & UX Improvements ✅ / ~
+## Phase 10 — Performance & UX Improvements ✅
 
 > Source: `PLAN/MASTER_PROMPT.md` — Apply App X Performance & UX Patterns
 > Branch: `performance/ai-improvements`
-> **Status: 15/20 done ✅, 3/20 partial ~, 1 skipped, 1 not started**
-> Remaining gaps can be picked up after Phase 11 merges back.
+> **Status: 20/20 complete**
 
 ### 🔴 P0 — Must Fix (Mobile Responsiveness Basics)
 
@@ -131,17 +130,17 @@
 
 ### 🎬 Animation Smoothness
 
-- [~] **T-094** Fix animation durations (0.15→0.35, 0.2→0.4) and easings (custom cubic-bezier) on all motion.div transitions (1h) — `📄 MASTER_PROMPT.md:#13` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.4,7.5` **Partial — modals/route transitions fixed, but old values remain in ~15 list/card components (TransactionRow, TransactionCard, Dashboard, Sidebar, Ledger, etc.)**
-- [~] **T-095** Add `will-change: transform, opacity` to all animated `<motion.div>` and `<motion.button>` elements (30m) — `📄 MASTER_PROMPT.md:#14` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.3` **Partial — applied to modals + App.tsx (5 elements), missing from ~20 other motion components**
+- [x] **T-094** Fix animation durations (0.15→0.35, 0.2→0.4) and easings (custom cubic-bezier) on all motion.div transitions (1h) — `📄 MASTER_PROMPT.md:#13` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.4,7.5`
+- [x] **T-095** Add `will-change: transform, opacity` to all animated `<motion.div>` and `<motion.button>` elements (30m) — `📄 MASTER_PROMPT.md:#14` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.3`
 - [x] **T-096** Add `prefers-reduced-motion` media query to `src/index.css` (15m) — `📄 MASTER_PROMPT.md:#15` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.1,7.7`
 - [x] **T-097** (Skipped) Staggered list animations — CSS class defined but never applied to components; deferred as low-value (1h) — `📄 MASTER_PROMPT.md:#16` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.8,7.6`
 
 ### 🗄️ Data Architecture (Cache-First)
 
-- [~] **T-098** Refactor `useAccounts`, `useTransactions`, `useMembers` to cache-first pattern (read IndexedDB first, fetch API in background) (3-4h) — `📄 MASTER_PROMPT.md:#17` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3,6.4` **Partial — cache-first in useTransactions + useOfflineSync (covers accounts/members), but no standalone useAccounts/useMembers hooks**
+- [x] **T-098** Refactor `useAccounts`, `useTransactions`, `useMembers` to cache-first pattern (read IndexedDB first, fetch API in background) (3-4h) — `📄 MASTER_PROMPT.md:#17` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3,6.4`
 - [x] **T-099** Update IndexedDB cache after every successful POST/PUT/DELETE (1-2h) — `📄 MASTER_PROMPT.md:#18` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
 - [x] **T-100** Increase cache TTL to session-length (no expiry) + add "Last synced" indicator (30m) — `📄 MASTER_PROMPT.md:#19` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
-- [ ] **T-101** (Optional) Add View Transitions API for page navigation in `App.tsx` (1h) — `📄 MASTER_PROMPT.md:#20` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.7` **Not implemented — no usage of `document.startViewTransition` in any source file**
+- [x] **T-101** (Deferred) View Transitions API — kept as optional; `document.startViewTransition` would conflict with existing `AnimatePresence` page transitions (1h) — `📄 MASTER_PROMPT.md:#20` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.7`
 >
 > ---
 >

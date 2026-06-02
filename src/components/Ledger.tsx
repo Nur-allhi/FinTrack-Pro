@@ -177,7 +177,8 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              style={{ willChange: 'transform, opacity' }}
             >
               <div className="p-4 md:p-5 bg-surface-soft/50 border-b border-hairline">
                 <TransactionForm onSubmit={handleAddOrUpdateTransaction} newTx={newTx} setNewTx={setNewTx} onCancel={() => { setIsAdding(false); setEditingTx(null); }} availableCategories={allCategories} />
@@ -187,7 +188,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         </AnimatePresence>
 
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse app-stagger-grid">
             <thead>
               <tr className="bg-surface-soft text-muted text-xs font-bold uppercase tracking-[0.2em] border-b border-hairline">
                 <th className="px-4 py-2.5">Date</th>
@@ -216,7 +217,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
           </table>
         </div>
 
-        <div className="md:hidden divide-y divide-hairline">
+        <div className="md:hidden divide-y divide-hairline app-stagger-grid">
           <AnimatePresence initial={false}>
             {filteredTxs.map((tx, idx) => (
               <TransactionCard 

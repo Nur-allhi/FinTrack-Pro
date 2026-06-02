@@ -53,6 +53,8 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              style={{ willChange: 'transform, opacity' }}
               onClick={() => {
                 onNewTransfer();
                 close();
@@ -69,7 +71,8 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: 0.05 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
+              style={{ willChange: 'transform, opacity' }}
               onClick={() => {
                 onNewTransaction();
                 close();

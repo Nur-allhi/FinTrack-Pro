@@ -183,6 +183,8 @@ export default function RecycleBin() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  style={{ willChange: 'transform, opacity' }}
                   className="bg-canvas p-3 md:p-4 rounded-xl border border-hairline flex items-center gap-3"
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-surface-soft shrink-0`}>

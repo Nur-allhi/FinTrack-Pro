@@ -35,13 +35,15 @@ interface GroupGridViewProps {
 
 export default function GroupGridView({ groups, currency, expandedId, setExpandedId, deletingId, onEdit, onDelete }: GroupGridViewProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 app-stagger-grid">
       <AnimatePresence initial={false}>
       {groups.map(group => (
         <motion.div key={group.id}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          style={{ willChange: 'transform, opacity' }}
           className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md group">
           <div className="h-1" style={{ backgroundColor: group.color }} />
           <div className="p-4">

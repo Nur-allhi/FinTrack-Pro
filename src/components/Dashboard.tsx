@@ -159,7 +159,8 @@ export default function Dashboard({
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              style={{ willChange: 'transform, opacity' }}
             >
               <div className="bg-canvas rounded-xl border border-hairline p-3">
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -187,7 +188,7 @@ export default function Dashboard({
           )}
         </AnimatePresence>
 
-        <motion.div key={String(filterMemberId) + '-' + viewMode + '-' + filterType} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-4 md:space-y-6">
+        <motion.div key={String(filterMemberId) + '-' + viewMode + '-' + filterType} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} style={{ willChange: 'transform, opacity' }} className="space-y-4 md:space-y-6">
           {viewMode === 'grid' ? (
             filterMemberId === 'all' ? (
               <>

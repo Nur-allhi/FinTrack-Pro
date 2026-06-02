@@ -49,8 +49,9 @@ export default React.memo(function TransactionRow({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        transition={{ type: 'tween', duration: 0.2 }}
+        transition={{ type: 'tween', duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         onClick={onToggleExpand}
+        style={{ willChange: 'transform, opacity' }}
         className={cn(
           "cursor-pointer transition-all group border-b border-hairline",
           isExpanded ? "bg-primary/5" : "hover:bg-surface-soft/30"
@@ -110,7 +111,8 @@ export default React.memo(function TransactionRow({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ type: 'tween', duration: 0.15 }}
+            transition={{ type: 'tween', duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
           >
             <td colSpan={6} className="px-5 py-4 bg-primary/5 border-b border-primary/10">
               <div className="flex items-center justify-between gap-4">
@@ -130,7 +132,8 @@ export default React.memo(function TransactionRow({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ type: 'tween', duration: 0.15 }}
+            transition={{ type: 'tween', duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
           >
             <td colSpan={6} className="p-0">
               {renderEditForm()}

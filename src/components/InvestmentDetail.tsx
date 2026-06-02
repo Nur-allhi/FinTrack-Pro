@@ -70,7 +70,8 @@ export default function InvestmentDetail({ investment, returns, currency, onAddR
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
             className="overflow-hidden"
           >
             <div className="p-8 bg-semantic-up/5 rounded-xl border border-semantic-up/10 shadow-sm shadow-semantic-up/5">

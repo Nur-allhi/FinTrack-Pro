@@ -118,7 +118,8 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
             className="overflow-hidden"
           >
             <div className="card-xl border-primary/20 bg-primary/5">

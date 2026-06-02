@@ -118,19 +118,19 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
 
       <AnimatePresence>
         {isAdding && !editingAccount && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} style={{ willChange: 'transform, opacity' }} className="overflow-hidden">
             <div className="card-xl border-primary/20 bg-primary/5 mb-3">{renderForm('Add Account')}</div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 app-stagger-grid">
           <AnimatePresence>
             {filteredAccounts.map(acc => {
               const isEditing = editingAccount?.id === acc.id;
               return (
-                <motion.div key={acc.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
+                <motion.div key={acc.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} style={{ willChange: 'transform, opacity' }}>
                   {isEditing ? (
                     <div className="card-xl border-primary/20 bg-primary/5">{renderForm('Edit Account')}</div>
                   ) : (

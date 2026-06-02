@@ -115,7 +115,8 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
             className="overflow-hidden"
           >
             <GroupForm
@@ -161,6 +162,8 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                    style={{ willChange: 'transform, opacity' }}
                     className="hover:bg-surface-soft/30 transition-colors">
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -192,6 +195,8 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                style={{ willChange: 'transform, opacity' }}
                 className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: group.color + '15', color: group.color }}>
                   <Layers className="w-4 h-4" />

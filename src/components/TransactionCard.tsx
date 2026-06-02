@@ -47,8 +47,9 @@ export default React.memo(function TransactionCard({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -12 }}
-        transition={{ type: 'tween', duration: 0.2 }}
+        transition={{ type: 'tween', duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         onClick={onToggleExpand}
+        style={{ willChange: 'transform, opacity' }}
         className={cn(
           "px-4 py-3 transition-all cursor-pointer border-b border-hairline",
           isExpanded ? "bg-primary/5" : "bg-canvas hover:bg-surface-soft/30"
@@ -78,7 +79,8 @@ export default React.memo(function TransactionCard({
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                style={{ willChange: 'transform, opacity' }}
                 className="overflow-hidden"
               >
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-hairline">
@@ -114,7 +116,8 @@ export default React.memo(function TransactionCard({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ type: 'tween', duration: 0.15 }}
+            transition={{ type: 'tween', duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
           >
             {renderEditForm()}
           </motion.div>

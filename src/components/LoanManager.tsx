@@ -152,7 +152,8 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            style={{ willChange: 'transform, opacity' }}
             className="overflow-hidden"
           >
             <LoanForm editingId={editingId} loanType={loanType} form={form} loading={loading} accounts={accounts} onFormChange={setForm} onLoanTypeChange={(t) => { setLoanType(t); setForm({ ...form, borrower_account_id: '', borrower_name: '' }); }} onSubmit={editingId ? handleUpdate : handleCreate} onCancel={closeForm} />
