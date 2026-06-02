@@ -124,7 +124,7 @@ export default function Header({
           "flex items-center gap-2 bg-surface-soft rounded-pill border border-hairline transition-all",
           focused ? "border-primary bg-canvas shadow-sm" : "hover:border-muted"
         )}>
-          <Search className="w-3.5 h-3.5 text-muted ml-3 md:ml-4 shrink-0" />
+          <Search className="w-3.5 h-3.5 text-muted ml-3 md:ml-4 shrink-0" aria-hidden="true" />
           <input
             type="text"
             value={query}
@@ -134,7 +134,7 @@ export default function Header({
             className="bg-transparent border-none outline-none text-xs text-ink font-medium py-2 pr-2 w-24 md:w-36 lg:w-48 placeholder:text-muted/60"
           />
           {query && (
-            <button onClick={() => { setQuery(''); setResults([]); }} className="p-1 text-muted hover:text-ink mr-1">
+            <button onClick={() => { setQuery(''); setResults([]); }} aria-label="Clear search" className="p-1 text-muted hover:text-ink mr-1">
               <X className="w-3 h-3" />
             </button>
           )}
@@ -147,7 +147,7 @@ export default function Header({
               initial={{ opacity: 0, y: -8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               className="absolute top-full right-0 mt-1.5 w-64 md:w-80 bg-canvas border border-hairline rounded-xl shadow-xl overflow-hidden z-50"
             >
             {searching && (

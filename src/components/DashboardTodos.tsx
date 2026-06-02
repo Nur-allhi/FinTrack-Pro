@@ -41,7 +41,7 @@ export default function DashboardTodos() {
           <span className="text-xs font-bold text-primary">{todos.filter(t => !t.done).length} pending</span>
         )}
       </div>
-      <div className="space-y-1 mb-3 max-h-[180px] overflow-y-auto">
+      <div className="space-y-1 mb-3 max-h-[180px] overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
         {todos.length === 0 ? (
           <p className="text-xs text-muted italic">No tasks yet. Add one below.</p>
         ) : (

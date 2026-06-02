@@ -40,12 +40,12 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
         close();
       }
     };
-    document.addEventListener('pointerdown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside, { passive: true });
     return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, [isOpen]);
 
   return (
-    <div ref={containerRef} className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+    <div ref={containerRef} className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <AnimatePresence>
         {isOpen && !isAnyModalOpen && (
           <div className="flex flex-col items-end gap-3 mb-2">

@@ -222,7 +222,7 @@ export default function App() {
         <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} />
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <AnimatePresence mode="wait">
-            <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.2 }}>
+            <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="contain-layout-style" style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 300px', willChange: 'transform, opacity' }}>
               <Suspense fallback={<LoadingScreen />}>{renderContent()}</Suspense>
             </motion.div>
           </AnimatePresence>

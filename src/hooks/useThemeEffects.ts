@@ -19,6 +19,9 @@ const darkBgMap: Record<string, string> = {
   'dark-night': '#000000',
 };
 
+const lightMeta = document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme:light)"]');
+const darkMeta = document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme:dark)"]');
+
 export function useThemeEffects(settings: ThemeSettings) {
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'dark-dim', 'dark-night');
@@ -28,16 +31,13 @@ export function useThemeEffects(settings: ThemeSettings) {
     localStorage.setItem('fintrack_dark', settings.darkMode ? '1' : '0');
     localStorage.setItem('fintrack_dark_style', settings.darkMode ? settings.darkModeStyle : '');
 
-    document.documentElement.style.backgroundColor = settings.darkMode
+    const bg = settings.darkMode
       ? darkBgMap[settings.darkModeStyle] || '#0a0b0d'
       : '#ffffff';
-  }, [settings.darkMode, settings.darkModeStyle]);
+    document.documentElement.style.backgroundColor = bg;
 
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute('content', settings.darkMode
-      ? darkBgMap[settings.darkModeStyle] || '#0a0b0d'
-      : '#ffffff');
+    if (lightMeta) lightMeta.setAttribute('content', settings.darkMode ? bg : '#ffffff');
+    if (darkMeta) darkMeta.setAttribute('content', settings.darkMode ? bg : '#0a0b0d');
   }, [settings.darkMode, settings.darkModeStyle]);
 
   useEffect(() => {

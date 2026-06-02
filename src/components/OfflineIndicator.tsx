@@ -7,8 +7,23 @@ interface OfflineIndicatorProps {
   lastSyncAt?: number | null;
 }
 
+function formatLastSync(ts: number | null): string {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  return `${Math.floor(diff / 86400000)}d ago`;
+}
+
 export default function OfflineIndicator({ isOnline, isSyncing = false, pendingCount = 0, lastSyncAt }: OfflineIndicatorProps) {
-  if (isOnline && pendingCount === 0 && !isSyncing) return null;
+  if (isOnline && pendingCount === 0 && !isSyncing) {
+    return lastSyncAt ? (
+      <div className="flex items-center justify-center gap-2 px-4 py-1 text-[10px] font-medium text-muted/60">
+        <span>Last synced {formatLastSync(lastSyncAt)}</span>
+      </div>
+    ) : null;
+  }
 
   if (isSyncing) {
     return (

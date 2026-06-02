@@ -25,25 +25,32 @@ export default function Select({ value, onChange, options, placeholder, classNam
 
   const close = useCallback(() => setOpen(false), []);
 
+  const rafRef = useRef<number>(0);
+
   const updateMenuPosition = useCallback(() => {
     if (!open || !buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    setMenuStyle({
-      position: 'fixed',
-      top: rect.bottom + 4,
-      left: rect.left,
-      width: rect.width,
-      minWidth: '200px',
-      zIndex: 9999,
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        minWidth: '200px',
+        zIndex: 9999,
+      });
     });
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
     updateMenuPosition();
-    window.addEventListener('scroll', updateMenuPosition, true);
-    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('scroll', updateMenuPosition, { capture: true, passive: true });
+    window.addEventListener('resize', updateMenuPosition, { passive: true });
     return () => {
+      cancelAnimationFrame(rafRef.current);
       window.removeEventListener('scroll', updateMenuPosition, true);
       window.removeEventListener('resize', updateMenuPosition);
     };
@@ -81,11 +88,11 @@ export default function Select({ value, onChange, options, placeholder, classNam
         <AnimatePresence>
           {open && (
             <motion.div
-              style={menuStyle}
+              style={{ ...menuStyle, overscrollBehavior: 'contain' }}
               initial={{ opacity: 0, y: -8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               className="bg-canvas border border-hairline rounded-xl shadow-xl max-h-[200px] overflow-y-auto"
             >
               {options.map(opt => (

@@ -26,6 +26,17 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [closing, setClosing] = useState(false);
 
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, []);
+
   const handleClose = () => {
     setClosing(true);
     setTimeout(onClose, 200);
@@ -124,8 +135,8 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.15 }} className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-surface-dark/40 backdrop-blur-sm">
-      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="bg-canvas w-full max-w-lg rounded-xl border border-hairline shadow-2xl overflow-hidden">
+    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-surface-dark/40 backdrop-blur-sm" style={{ willChange: 'opacity' }}>
+      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="bg-canvas w-full max-w-lg rounded-xl border border-hairline shadow-2xl overflow-hidden" style={{ willChange: 'transform, opacity' }}>
         <div className="p-8 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
           <h3 className="text-2xl font-normal text-ink tracking-tight">Post Transaction</h3>
           <button onClick={handleClose} className="p-2 text-muted hover:text-ink transition-colors">

@@ -96,7 +96,7 @@ export default function Sidebar({
           <div className="mx-5 h-px bg-gradient-to-r from-hairline to-transparent mb-2" />
 
           {/* Navigation cards */}
-          <nav className="flex-1 px-3 space-y-1 overflow-y-auto min-h-0">
+          <nav className="flex-1 px-3 space-y-1 overflow-y-auto min-h-0" style={{ overscrollBehavior: 'contain' }}>
             <LayoutGroup>
               {navItems.map((item) => {
                 const active = isActive(item.id);
@@ -111,6 +111,7 @@ export default function Sidebar({
                       setIsMobileMenuOpen(false);
                       if (setShowProfile) setShowProfile(false);
                     }}
+                    aria-current={active ? 'page' : undefined}
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group",
                       active
@@ -135,7 +136,7 @@ export default function Sidebar({
                           ? "bg-white/15"
                           : "bg-surface-strong group-hover:bg-canvas"
                       )}>
-                        <Icon className={cn("w-4 h-4", active ? "text-white" : "text-muted group-hover:text-ink")} />
+                        <Icon className={cn("w-4 h-4", active ? "text-white" : "text-muted group-hover:text-ink")} aria-hidden="true" />
                       </div>
                       <span className="text-sm font-semibold">{item.label}</span>
                     </div>

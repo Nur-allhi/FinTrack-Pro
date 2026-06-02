@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 
@@ -22,6 +22,18 @@ export default function SettleModal({
   settleAmount, setSettleAmount, settleError, setSettleError,
   onSettle, onCancel, settling, open,
 }: SettleModalProps) {
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, onCancel]);
+
   return (
     <AnimatePresence>
       {open && (
@@ -29,14 +41,14 @@ export default function SettleModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
         >
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
             className="bg-canvas rounded-xl border border-hairline shadow-xl w-full max-w-sm p-6 space-y-4"
           >
             <h4 className="text-base font-normal text-ink">Settle Loan</h4>

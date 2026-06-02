@@ -260,6 +260,51 @@ Completed T-056 through T-064 (liability tracking, budgeting, recurring transact
 
 ---
 
+## Session 14 — 02 Jun 2026 (Phase 10 — Performance & UX Improvements)
+
+Branch: `performance/ai-improvements`
+
+Completed 19 tasks from Phase 10 of `TODO.md`:
+
+### P0 — Mobile Responsiveness Basics
+- **T-082** Added `touch-action: manipulation` and `overscroll-behavior: none` to `body` in `src/index.css`
+- **T-083** Made scroll/touch event listeners passive in `Select.tsx`, `DatePicker.tsx`, `FloatingActionButton.tsx`
+- **T-084** Added body scroll locking + Escape key handlers to all 5 modals (SettleModal, GroupSettleModal, TransferModal, TransactionModal, RenameModal)
+- **T-085** Added font preconnect links for Google Fonts in `index.html`
+
+### P1 — Visual Responsiveness
+- **T-086** Added tactile press feedback (`active:scale-[0.97]`) globally via CSS
+- **T-087** Created `SkeletonLoader.tsx` with shimmer variants (card, table-row, chart, dashboard, avatar, text) + RAF two-phase reveal
+- **T-088** Added `focus-visible` rings globally + `aria-current`, `aria-label`, `aria-hidden` to Sidebar and Header
+- **T-089** Added `content-visibility: auto` + `contain-intrinsic-size` to route wrapper in `App.tsx`
+
+### P2 — Polish
+- **T-090** Added `overscroll-behavior: contain` to Sidebar nav, Select dropdown, DashboardTodos
+- **T-091** Throttled scroll/resize handlers with `requestAnimationFrame` in `Select.tsx` and `DatePicker.tsx`
+- **T-092** Added `safe-area-inset-bottom` padding to FAB
+- **T-093** Added `contain: layout style` utility class to `App.tsx` route wrapper
+
+### Animation Smoothness
+- **T-094** Updated animation durations (0.15→0.3, 0.2→0.35) and custom cubic-bezier easing on all key motion.div transitions
+- **T-095** Added `will-change: transform, opacity` to animated elements in `App.tsx`, `TransferModal`, `TransactionModal`
+- **T-096** Added `prefers-reduced-motion` media query to `src/index.css`
+- **T-097** Added `.app-stagger-grid` CSS pattern for optional staggered list animations
+
+### Data Architecture
+- **T-098**/ **T-099** Cache-first pattern verified (already implemented); cache updated after mutations
+- **T-100** Changed cache TTL to session-length (`Infinity`) + added "Last synced" indicator to `OfflineIndicator`
+
+### Files Changed (18 files)
+- `src/index.css`, `index.html`, `src/App.tsx`
+- `src/components/SkeletonLoader.tsx` (new)
+- `src/components/SettleModal.tsx`, `GroupSettleModal.tsx`, `TransferModal.tsx`, `TransactionModal.tsx`, `RenameModal.tsx`
+- `src/components/Select.tsx`, `DatePicker.tsx`, `FloatingActionButton.tsx`
+- `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`
+- `src/components/DashboardTodos.tsx`, `src/components/OfflineIndicator.tsx`
+- `src/services/cacheService.ts`
+
+---
+
 ## Sessions 1–4 (Historical)
 
 Refer to earlier project records for Sessions 1–4 (initial build, PWA, dark mode, settings reorganization, admin panel, user profile).

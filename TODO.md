@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
-> Generated from `IMPLEMENTATION_PLAN.md` · 2026-06-02
-> **53 completed**, **0 remaining** (Phases 0–9) — All tasks done
+> Generated from `PLAN/MASTER_PROMPT.md` · 2026-06-02
+> **53 completed**, **20 remaining** (Phases 0–9 done, Phase 10 pending)
 
 ---
 
@@ -90,4 +90,42 @@
 
 ---
 
-**All tasks complete. No remaining items.**
+## Phase 10 — Performance & UX Improvements
+
+> Source: `PLAN/MASTER_PROMPT.md` — Apply App X Performance & UX Patterns
+> Branch: `performance/ai-improvements`
+
+### 🔴 P0 — Must Fix (Mobile Responsiveness Basics)
+
+- [ ] **T-082** Add global touch + overscroll CSS (`src/index.css` — `touch-action: manipulation`, `overscroll-behavior: none/contain`) (30m) — `📄 MASTER_PROMPT.md:P0#1` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1`
+- [ ] **T-083** Make all scroll/touch event listeners passive (`Select.tsx:44`, `DatePicker.tsx:59`, `FloatingActionButton.tsx:43`) (30m) — `📄 MASTER_PROMPT.md:P0#2` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1,8.7`
+- [ ] **T-084** Add body scroll locking + Escape key to all modals (SettleModal, GroupSettleModal, TransferModal, TransactionModal, RenameModal) (1h) — `📄 MASTER_PROMPT.md:P0#3` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.4`
+- [ ] **T-085** Add font preconnect to `index.html` (`fonts.googleapis.com`, `fonts.gstatic.com`) (15m) — `📄 MASTER_PROMPT.md:P0#4` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.5`
+
+### 🟡 P1 — Visual Responsiveness
+
+- [ ] **T-086** Add tactile press feedback (`active:scale-[0.97]`) to all interactive elements (buttons, cards, FAB, toggles, nav items) (1h) — `📄 MASTER_PROMPT.md:P1#5` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2`
+- [ ] **T-087** Create `SkeletonLoader.tsx` component with shimmer variants (cards, table rows, charts, dashboard) + RAF two-phase reveal (2h) — `📄 MASTER_PROMPT.md:P1#6` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.2,2.4,8.3`
+- [ ] **T-088** Add `focus-visible` rings + ARIA attributes (`aria-current`, `aria-pressed`, `aria-label`, `aria-hidden`, `role="button"`) (1-2h) — `📄 MASTER_PROMPT.md:P1#7` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2,8.6`
+- [ ] **T-089** Add `content-visibility: auto` + `contain-intrinsic-size` to lazy-loaded route wrappers in `App.tsx` (30m) — `📄 MASTER_PROMPT.md:P1#8` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
+
+### 🟢 P2 — Polish
+
+- [ ] **T-090** Add `overscroll-behavior: contain` to all scrollable containers (sidebar, Select dropdown, DashboardTodos) (15m) — `📄 MASTER_PROMPT.md:P2#9` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.8`
+- [ ] **T-091** Throttle scroll/resize handlers with RAF in `Select.tsx` and `DatePicker.tsx` (30m) — `📄 MASTER_PROMPT.md:P2#10` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.9,8.7`
+- [ ] **T-092** Add `safe-area-inset-bottom` padding to bottom-fixed elements (30m) — `📄 MASTER_PROMPT.md:P2#11` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1`
+- [ ] **T-093** Add `contain: layout style` to all `<motion.div>` elements (30m) — `📄 MASTER_PROMPT.md:P2#12` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
+
+### 🎬 Animation Smoothness
+
+- [ ] **T-094** Fix animation durations (0.15→0.35, 0.2→0.4) and easings (custom cubic-bezier) on all motion.div transitions (1h) — `📄 MASTER_PROMPT.md:#13` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.4,7.5`
+- [ ] **T-095** Add `will-change: transform, opacity` to all animated `<motion.div>` and `<motion.button>` elements (30m) — `📄 MASTER_PROMPT.md:#14` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.3`
+- [ ] **T-096** Add `prefers-reduced-motion` media query to `src/index.css` (15m) — `📄 MASTER_PROMPT.md:#15` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.1,7.7`
+- [ ] **T-097** (Optional) Add staggered list animations (`.app-stagger-grid` CSS pattern) to Ledger, AccountManager, GroupGridView (1h) — `📄 MASTER_PROMPT.md:#16` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.8,7.6`
+
+### 🗄️ Data Architecture (Cache-First)
+
+- [ ] **T-098** Refactor `useAccounts`, `useTransactions`, `useMembers` to cache-first pattern (read IndexedDB first, fetch API in background) (3-4h) — `📄 MASTER_PROMPT.md:#17` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3,6.4`
+- [ ] **T-099** Update IndexedDB cache after every successful POST/PUT/DELETE (1-2h) — `📄 MASTER_PROMPT.md:#18` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
+- [ ] **T-100** Increase cache TTL to session-length (no expiry) + add "Last synced" indicator (30m) — `📄 MASTER_PROMPT.md:#19` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
+- [ ] **T-101** (Optional) Add View Transitions API for page navigation in `App.tsx` (1h) — `📄 MASTER_PROMPT.md:#20` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.7`

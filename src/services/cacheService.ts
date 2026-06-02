@@ -3,7 +3,7 @@ import type { Member, Account, Transaction, OfflineActionBody } from '../types';
 
 const DB_NAME = 'ledger_cache';
 const DB_VERSION = 2;
-const DEFAULT_TTL = 5 * 60 * 1000;
+const DEFAULT_TTL = Infinity;
 
 interface CachedEntry<T> {
   data: T;

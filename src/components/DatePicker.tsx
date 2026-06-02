@@ -32,33 +32,39 @@ export default function DatePicker({ value, onChange, mode = 'date', placeholder
   }, [value]);
 
   const close = useCallback(() => setOpen(false), []);
+  const rafRef = useRef<number>(0);
 
   const updatePos = useCallback(() => {
     if (!containerRef.current) return;
-    const r = containerRef.current.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      if (!containerRef.current) return;
+      const r = containerRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
 
-    const panelW = Math.min(PANEL_W, vw - 48);
-    let left = r.left;
-    if (left + panelW > vw - 24) left = vw - panelW - 24;
-    if (left < 24) left = 24;
+      const panelW = Math.min(PANEL_W, vw - 48);
+      let left = r.left;
+      if (left + panelW > vw - 24) left = vw - panelW - 24;
+      if (left < 24) left = 24;
 
-    const below = vh - r.bottom;
-    const above = r.top;
-    const top = below < PANEL_H && above > PANEL_H
-      ? Math.max(24, r.top - PANEL_H - 4)
-      : r.bottom + 4;
+      const below = vh - r.bottom;
+      const above = r.top;
+      const top = below < PANEL_H && above > PANEL_H
+        ? Math.max(24, r.top - PANEL_H - 4)
+        : r.bottom + 4;
 
-    setPos({ top, left, width: panelW });
+      setPos({ top, left, width: panelW });
+    });
   }, []);
 
   useEffect(() => {
     if (!open) return;
     updatePos();
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
+    window.addEventListener('scroll', updatePos, { capture: true, passive: true });
+    window.addEventListener('resize', updatePos, { passive: true });
     return () => {
+      cancelAnimationFrame(rafRef.current);
       window.removeEventListener('scroll', updatePos, true);
       window.removeEventListener('resize', updatePos);
     };
