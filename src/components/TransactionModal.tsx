@@ -135,16 +135,16 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-surface-dark/40 backdrop-blur-sm" style={{ willChange: 'opacity' }}>
-      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="bg-canvas w-full max-w-lg rounded-xl border border-hairline shadow-2xl overflow-hidden" style={{ willChange: 'transform, opacity' }}>
-        <div className="p-8 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
+    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-12 bg-surface-dark/40 backdrop-blur-sm" style={{ willChange: 'opacity' }}>
+      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="bg-canvas w-full max-w-lg md:max-w-xl lg:max-w-2xl rounded-xl border border-hairline shadow-2xl overflow-hidden" style={{ willChange: 'transform, opacity' }}>
+        <div className="p-6 sm:p-8 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
           <h3 className="text-2xl font-normal text-ink tracking-tight">Post Transaction</h3>
           <button onClick={handleClose} className="p-2 text-muted hover:text-ink transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="p-10">
+        <div className="p-6 sm:p-8 md:p-10 lg:p-12">
           {success ? (
             <div className="py-16 flex flex-col items-center justify-center text-center space-y-6">
               <div className="w-20 h-20 bg-semantic-up/10 rounded-full flex items-center justify-center text-semantic-up shadow-lg shadow-semantic-up/10">
@@ -239,14 +239,14 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                 <button 
                   type="button" 
                   onClick={handleClose}
-                  className="btn-secondary flex-1 h-[56px]"
+                  className="btn-secondary flex-1 h-12 sm:h-14 md:h-16"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={loading}
-                  className="btn-primary flex-[2] h-[56px] text-base"
+                  className="btn-primary flex-[2] h-12 sm:h-14 md:h-16 text-sm md:text-base"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                   Post Entry
