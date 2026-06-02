@@ -74,9 +74,9 @@ A complete family finance tracker that helps you manage money across multiple ac
 | **Excel** | xlsx |
 | **Backend** | Node.js, Express, tsx |
 | **Auth** | Supabase Auth (Google OAuth + Email/Password) |
-| **Database** | Supabase (PostgreSQL) with SQLite fallback |
+| **Database** | Supabase (PostgreSQL) |
 | **Offline Cache** | IndexedDB via idb |
-| **PDF** | jsPDF + jspdf-autotable |
+| **PDF** | jsPDF (lazy-loaded) |
 | **Deployment** | Vercel (static + serverless functions) |
 
 ## Getting Started

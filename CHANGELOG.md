@@ -35,7 +35,44 @@ All the changes made to FinTrack Pro, written in plain English.
 - `AUDIT_REPORT.md` — all 27 issues resolved, no partially-fixed or unfixed items remain.
 - `IMPLEMENTATION_PLAN.md` — all 62 tasks marked done.
 - `PROJECTPLAN.md` — Phase 11 fully checked off.
-- `TODO.md` — 62 completed, 0 remaining.
+- `TODO.md` — 53 completed, 0 remaining (all phases).
+
+---
+
+## June 2, 2026 — Performance Optimization (Phase 9)
+
+**What got done:**
+
+**Bundle Optimization (T-070, T-071, T-074, T-076)**
+- Main bundle: 1,015 kB → 733 kB (-28%).
+- Moved server deps (express, sharp, pino, dotenv, tsx) to devDependencies.
+- Removed dead deps (jspdf-autotable, autoprefixer).
+- Added manualChunks vendor splitting: react, supabase, charts, motion, html2canvas.
+- jspdf and xlsx now dynamically imported on export click (not in page chunks).
+
+**Font & CSS (T-072, T-073)**
+- Removed unused fonts (Roboto Slab, Inter:300).
+- Google Fonts preloaded via `<link rel="preload">` with display=swap.
+- Replaced global `* { transition }` rule with targeted selectors on interactive elements.
+
+**React Memoization (T-073, T-074, T-078)**
+- 8 useMemo wrappers on Dashboard computations (activeAccounts, filteredAccounts, groupedByMember, totalBalance, totalLiabilities, etc.).
+- defaultSettings moved to module scope — no longer recreated per render.
+- React.memo on AccountCard, TransactionCard, TransactionRow.
+
+**API & Service Worker (T-075, T-079, T-080)**
+- Removed cache-busting `?_=${Date.now()}` from API calls.
+- Consolidated duplicate `/api/auth/me` calls — single call returns auth + email.
+- SW precache: 2,677 kB → 1,488 kB (-44%). Excluded lazy vendor chunks.
+
+**Docs Updated**
+- `PERFORMANCE_REPORT.md` — full audit with before/after metrics.
+- `TODO.md` — 53 completed, 0 remaining.
+- `AUDIT_REPORT.md` — added P5 performance section.
+
+---
+
+## May 31, 2026 — Final Push: All TODO Items Completed
 
 **Files touched:** api/db.ts, api/db/queries.ts, api/db/accounts.ts, api/db/groups.ts, api/db/loans.ts, api/db/transactions.ts, api/db/investments.ts, api/db/transfers.ts, api/db/export.ts, api/db/recyclebin.ts, api/routes/budgets.ts, api/routes/recurring.ts, api/routes/search.ts, api/middleware/auth.ts, api/logger.ts, api/tests/helpers.ts, api/tests/auth.test.ts, api/tests/members.test.ts, shared/validation.ts, src/types.ts, src/services/cacheService.ts, src/services/offlineService.ts, src/services/authService.ts, src/hooks/useTransactions.ts, src/hooks/useProfileData.ts, src/components/UserProfile.tsx, src/components/GroupManager.tsx, src/components/GroupGridView.tsx, src/components/Settings.tsx, src/components/AppearanceSettings.tsx, src/components/layout/Sidebar.tsx, src/utils/csvImport.ts
 

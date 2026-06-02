@@ -119,6 +119,44 @@ Full audit remediation based on `AUDIT_REPORT.md` — 14 items fixed, 20 API tes
 
 ---
 
+## Session 16 — 2 June 2026 (Performance Optimization — Phase 9)
+
+### Changes
+
+Completed Phase 9 performance optimization (T-070 through T-081). Main bundle 1,015→733 kB (-28%), SW precache 2,677→1,488 kB (-44%).
+
+**Bundle Optimization**
+- Moved server deps (express, sharp, pino, dotenv, tsx) to devDependencies
+- Removed dead deps (jspdf-autotable, autoprefixer)
+- Added manualChunks vendor splitting: react, supabase, charts, motion, html2canvas
+- jspdf and xlsx now dynamically imported on export click (not in page chunks)
+
+**Font & CSS**
+- Removed unused fonts (Roboto Slab, Inter:300)
+- Google Fonts preloaded via `<link rel="preload">` with display=swap
+- Replaced global `* { transition }` with targeted selectors on interactive elements
+
+**React Memoization**
+- 8 useMemo wrappers on Dashboard computations
+- defaultSettings moved to module scope
+- React.memo on AccountCard
+
+**API & Service Worker**
+- Removed cache-busting `?_=${Date.now()}` from API calls
+- Consolidated duplicate `/api/auth/me` calls
+- SW precache excluded lazy vendor chunks
+
+**Docs Cleanup**
+- Deleted ERROR.md (empty) and DESIGN.md (Coinbase design system — unrelated)
+- Fixed README.md stale references (SQLite fallback, jspdf-autotable)
+- Added performance entry to CHANGELOG.md
+- Updated AUDIT_REPORT.md with P5 performance section
+
+### Files Changed
+vite.config.ts, src/utils/reportPdf.ts, src/utils/ledgerPdf.ts, src/utils/pdf.ts, src/hooks/useAuth.ts, src/components/Dashboard.tsx, src/components/AccountCard.tsx, src/index.css, index.html, package.json, TODO.md, AUDIT_REPORT.md, CHANGELOG.md, README.md, PERFORMANCE_REPORT.md
+
+---
+
 ## Session 15 — 1 June 2026 (All Remaining TODOs Resolved)
 
 ### Changes
