@@ -22,8 +22,7 @@ export function useOfflineSync(isAuthenticated: boolean, onInitialLoad?: () => v
     setDataLoading(true);
     setLastUpdate(Date.now());
     try {
-      const cb = `?_=${Date.now()}`;
-      const [membersRes, accountsRes] = await Promise.all([authService.apiFetch('/api/members' + cb), authService.apiFetch('/api/accounts' + cb)]);
+      const [membersRes, accountsRes] = await Promise.all([authService.apiFetch('/api/members'), authService.apiFetch('/api/accounts')]);
       if (!membersRes.ok || !accountsRes.ok) throw new Error("Server error");
       const membersData = await membersRes.json();
       const accountsData = await accountsRes.json();

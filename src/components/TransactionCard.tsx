@@ -19,7 +19,7 @@ interface TransactionCardProps {
   renderEditForm?: () => React.ReactNode;
 }
 
-export default function TransactionCard({
+export default React.memo(function TransactionCard({
   tx,
   isNewDate,
   isExpanded,
@@ -122,4 +122,4 @@ export default function TransactionCard({
       </AnimatePresence>
     </>
   );
-}
+});

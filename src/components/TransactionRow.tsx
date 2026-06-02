@@ -19,7 +19,7 @@ interface TransactionRowProps {
   renderEditForm?: () => React.ReactNode;
 }
 
-export default function TransactionRow({
+export default React.memo(function TransactionRow({
   tx,
   isNewDate,
   isExpanded,
@@ -140,4 +140,4 @@ export default function TransactionRow({
       </AnimatePresence>
     </>
   );
-}
+});

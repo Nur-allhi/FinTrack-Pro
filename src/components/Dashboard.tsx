@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Account, Member } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
@@ -47,18 +47,19 @@ export default function Dashboard({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<'all' | 'bank' | 'cash' | 'mobile' | 'investment' | 'other'>('all');
   const [showFilters, setShowFilters] = useState(false);
-  const activeAccounts = accounts.filter(a => !a.archived);
 
-  const typeFilters: { key: typeof filterType; label: string; icon: React.ComponentType<{ className?: string }> | null }[] = [
+  const typeFilters: { key: typeof filterType; label: string; icon: React.ComponentType<{ className?: string }> | null }[] = useMemo(() => [
     { key: 'all', label: 'All', icon: null },
     { key: 'bank', label: 'Banks', icon: Building2 },
     { key: 'cash', label: 'Cash', icon: Wallet },
     { key: 'mobile', label: 'Mobile', icon: Smartphone },
     { key: 'investment', label: 'Investments', icon: TrendingUp },
     { key: 'other', label: 'Others', icon: null },
-  ];
-  
-  const filteredAccounts = activeAccounts.filter(acc => {
+  ], []);
+
+  const activeAccounts = useMemo(() => accounts.filter(a => !a.archived), [accounts]);
+
+  const filteredAccounts = useMemo(() => activeAccounts.filter(acc => {
     if (filterType !== 'all') {
       if (filterType === 'other') {
         if (['bank', 'cash', 'mobile', 'investment'].includes(acc.type)) return false;
@@ -67,28 +68,30 @@ export default function Dashboard({
     if (filterMemberId === 'all') return true;
     if (filterMemberId === 'general') return !acc.member_id;
     return acc.member_id === filterMemberId;
-  });
+  }), [activeAccounts, filterType, filterMemberId]);
 
-  const groupFilteredAccounts = activeAccounts.filter(acc => {
+  const groupFilteredAccounts = useMemo(() => activeAccounts.filter(acc => {
     if (filterType !== 'all') {
       if (filterType === 'other') {
         if (['bank', 'cash', 'mobile', 'investment'].includes(acc.type)) return false;
       } else if (acc.type !== filterType) return false;
     }
     return true;
-  });
+  }), [activeAccounts, filterType]);
 
-  const groupedByMember = members.map(member => ({
-    member,
-    accounts: groupFilteredAccounts.filter(a => a.member_id === member.id)
-  })).filter(g => g.accounts.length > 0);
+  const { groupedByMember, unassignedAccounts } = useMemo(() => {
+    const grouped = members.map(member => ({
+      member,
+      accounts: groupFilteredAccounts.filter(a => a.member_id === member.id)
+    })).filter(g => g.accounts.length > 0);
+    const unassigned = groupFilteredAccounts.filter(a => !a.member_id);
+    return { groupedByMember: grouped, unassignedAccounts: unassigned };
+  }, [members, groupFilteredAccounts]);
 
-  const unassignedAccounts = groupFilteredAccounts.filter(a => !a.member_id);
-
-  const totalBalance = activeAccounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0);
-  const totalLiabilities = activeAccounts
+  const totalBalance = useMemo(() => activeAccounts.reduce((sum, acc) => sum + (acc.current_balance || 0), 0), [activeAccounts]);
+  const totalLiabilities = useMemo(() => activeAccounts
     .filter(a => (a.current_balance || 0) < 0)
-    .reduce((sum, a) => sum + Math.abs(a.current_balance || 0), 0);
+    .reduce((sum, a) => sum + Math.abs(a.current_balance || 0), 0), [activeAccounts]);
 
   const showHero = settings.showNetWorth || settings.showCurrentAssets || settings.showLiabilities || settings.showTodos;
 

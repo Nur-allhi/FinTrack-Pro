@@ -49,6 +49,22 @@ const defaultTypeColors: Record<string, string> = {
   investment: '#F59E0B', purpose: '#EC4899', home_exp: '#EF4444',
 };
 
+const defaultSettings = {
+  showNetWorth: true,
+  showCurrentAssets: true,
+  showLiabilities: true,
+  showTodos: true,
+  showSpendingChart: true,
+  showBalanceTrend: true,
+  enableNotifications: true,
+  darkMode: false,
+  darkModeStyle: 'dark' as 'dark' | 'dark-dim' | 'dark-night',
+  fontSize: 'normal',
+  currency: '৳',
+  typeColors: { ...defaultTypeColors },
+  accentColor: '#0052FF'
+};
+
 export default function App() {
   const { toast } = useToast();
   const { isAuthenticated, userEmail, handleLogin, handleLogout } = useAuth();
@@ -60,23 +76,6 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [dataReady, setDataReady] = useState(false);
-
-  const defaultSettings = {
-    showNetWorth: true,
-    showCurrentAssets: true,
-    showLiabilities: true,
-    showTodos: true,
-    showSpendingChart: true,
-    showBalanceTrend: true,
-    enableNotifications: true,
-    darkMode: false,
-    darkModeStyle: 'dark' as 'dark' | 'dark-dim' | 'dark-night',
-    fontSize: 'normal',
-    currency: '৳',
-    typeColors: { ...defaultTypeColors },
-    accentColor: '#0052FF'
-  };
-
   const [settings, setSettings] = useState(defaultSettings);
 
   const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useOfflineSync(!!isAuthenticated, () => setDataReady(true));

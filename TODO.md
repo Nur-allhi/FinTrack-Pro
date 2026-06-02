@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-06-02
-> **62 completed**, **0 remaining** (Phases 0–8)
+> **72 completed**, **9 remaining** (Phases 0–9)
 
 ---
 

@@ -30,7 +30,7 @@ export async function getGroups(userId: string) {
     .not("parent_id", "is", null);
   if (cError) throw cError;
 
-  const { data: allTx, error: txErr } = await client.from("transactions").select("account_id, amount").eq("user_id", userId);
+  const { data: allTx, error: txErr } = await client.from("transactions").select("account_id, amount").eq("user_id", userId).is("deleted_at", null);
   if (txErr) throw txErr;
 
   const balances: Record<number, number> = {};

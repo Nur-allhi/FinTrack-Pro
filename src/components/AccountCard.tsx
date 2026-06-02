@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { motion } from 'motion/react';
 import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, Folder, type LucideIcon } from 'lucide-react';
 import { Account } from '../types';
@@ -19,7 +20,7 @@ interface AccountCardProps {
   filterMemberId?: number | 'all' | 'general';
 }
 
-export default function AccountCard({ account, onClick, currency, typeColors, filterMemberId }: AccountCardProps) {
+export default memo(function AccountCard({ account, onClick, currency, typeColors, filterMemberId }: AccountCardProps) {
   const Icon = typeIcons[account.type] || Wallet;
   const typeColor = typeColors?.[account.type] || '#0052FF';
   const showMember = filterMemberId === 'all' && !!account.member_name;
@@ -53,4 +54,4 @@ export default function AccountCard({ account, onClick, currency, typeColors, fi
       </p>
     </motion.button>
   );
-}
+});

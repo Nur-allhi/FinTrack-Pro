@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&family=Roboto+Slab:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -97,8 +97,13 @@
   --radius-xs: 4px;
 }
 
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.15s ease;
+button, a, input, select, textarea, [role="button"] {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.theme-transitioning,
+.theme-transitioning * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 html {

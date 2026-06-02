@@ -61,6 +61,21 @@ export default defineConfig(({mode}) => {
         ],
       },
     })],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-charts': ['recharts'],
+            'vendor-pdf': ['jspdf'],
+            'vendor-motion': ['motion'],
+            'vendor-xlsx': ['xlsx'],
+            'vendor-html2canvas': ['html2canvas'],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
