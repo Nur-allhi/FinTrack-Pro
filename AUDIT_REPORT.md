@@ -41,14 +41,14 @@
 
 | # | Issue | Details | Status |
 |---|-------|---------|--------|
-| 6 | **Files > 300 LOC** | Ledger (542), AdminPanel (444), LoanManager (403), AccountManager (398), Dashboard (391), GroupManager (341), Settings (319), LoanGroupCard (314), InvestmentTracker (311), ReportGenerator (303) | ⏳ **PARTIAL** — UserProfile (318) and GroupManager (306) still over 300 LOC |
+| 6 | **Files > 300 LOC** | Ledger (542), AdminPanel (444), LoanManager (403), AccountManager (398), Dashboard (391), GroupManager (341), Settings (319), LoanGroupCard (314), InvestmentTracker (311), ReportGenerator (303) | ✅ **FIXED** — all files under 300 LOC (UserProfile 245, GroupManager 240) |
 | 7 | **Dual DB branching** | Every handler had `if (supabase) {...} else { db.prepare(...) }` — ~70% of API code duplicated | ✅ **FIXED** — extracted to `api/db/*.ts` with per-entity modules |
-| 8 | **Excessive `any` types** | Heavy use of `any` throughout | ⏳ **PARTIAL** — `shared/types.ts` created, 10 in frontend components fixed, 2 instances remain in API (logger.ts, auth.ts) — T-035, 12 in frontend services — T-066 |
+| 8 | **Excessive `any` types** | Heavy use of `any` throughout | ✅ **FIXED** — all API and frontend `any` types replaced (T-035, T-036, T-066) |
 | 9 | **No request validation** | Zero Zod/validation schemas | ✅ **FIXED** — Zod schemas + `validate()` helper on all POST/PATCH routes |
 | 10 | **No testing** | No unit, integration, or e2e tests | ✅ **FIXED** — 37 Vitest tests across 4 test files (smoke, CRUD, auth, members) |
 | 11 | **No rate limiting** | All endpoints unprotected against abuse | ✅ **FIXED** — `apiLimiter` (60 req/min) + `authLimiter` (10 req/15min) |
 | 12 | **No pagination** | GET endpoints returned all rows | ✅ **FIXED** — `?limit=&offset=` on accounts, transactions, loans |
-| 13 | **No input sanitization** | Category names, particulars, etc. pass through unsanitized | ⏳ **PARTIAL** — Zod schemas trim strings, validate enums; further sanitization pending |
+| 13 | **No input sanitization** | Category names, particulars, etc. pass through unsanitized | ✅ **FIXED** — sanitizeHtml transform on all user-input Zod fields (T-069) |
 | 14 | **`/api/import` uses DELETE + INSERT** | Not wrapped in a transaction — partial failure corrupts data | ✅ **FIXED** — delegates to `fintrack_import_data` PostgreSQL RPC (atomic) |
 | 15 | **SQLite missing indexes** | No indexes on `user_id`, `account_id`, `loan_id` | ✅ **FIXED** — 9 indexes added in `api/db.ts` |
 | 16 | **Cache has no TTL** | `cacheService` stored data with timestamps but never checked them | ✅ **FIXED** — 5-min default TTL checked on getMembers/getAccounts/getTransactions |
@@ -93,13 +93,28 @@
 
 ### P3 — Technical Debt
 
-- [x] **Split 10 files over 300 LOC** into smaller modules — all done except GroupManager (306 LOC)
-- [ ] **Replace `any` types** with proper interfaces — 36 in API, 10 in frontend remaining (T-035, T-036)
-- [x] **Expand test coverage** — 37 tests across 4 test files
+- [x] **Split 10 files over 300 LOC** into smaller modules — all 10 under 300 LOC
+- [x] **Replace `any` types** with proper interfaces — all API + frontend instances fixed (T-035, T-036, T-066)
+- [x] **Expand test coverage** — 47 tests across 5 test files
 - [x] **Add structured logging** — pino with request-scoped loggers installed
 - [x] **Add database indexes** for SQLite — 9 indexes added in `api/db.ts`
 - [x] **Make cacheService respect TTL** — default 5-minute TTL with per-call override
-- [ ] **Swap supabaseAdmin for regular client** — 69 references remain (T-033)
+- [x] **Swap supabaseAdmin for regular client** — per-request client via AsyncLocalStorage (T-033)
+
+### P5 — Performance Optimization
+
+- [x] **Bundle splitting** — main bundle 1,015→733 kB via manualChunks vendor splitting (T-071)
+- [x] **Server deps cleanup** — moved express, sharp, pino, dotenv, tsx to devDependencies (T-070)
+- [x] **Dead deps removed** — jspdf-autotable, autoprefixer removed (T-074)
+- [x] **Font optimization** — removed unused Roboto Slab + Inter:300, non-blocking load (T-072)
+- [x] **CSS optimization** — replaced global `* { transition }` with targeted selectors (T-073)
+- [x] **Dashboard memoization** — 8 useMemo wrappers on expensive computations (T-073)
+- [x] **defaultSettings to module scope** — no longer recreated per render (T-074)
+- [x] **React.memo on list items** — AccountCard, TransactionCard, TransactionRow (T-078)
+- [x] **Lazy-load PDF/XLSX** — jspdf + xlsx dynamically imported on export click (T-076)
+- [x] **SW precache reduction** — 2,677→1,488 kB (44% smaller) (T-080)
+- [x] **Auth call consolidation** — single /api/auth/me call on startup (T-079)
+- [x] **Cache-busting removed** — no more `?_=${Date.now()}` defeating HTTP cache (T-075)
 
 ### P4 — Enhancements
 
@@ -115,12 +130,13 @@
 
 ## Resolution Summary
 
-### Fixed (27 items — all resolved)
+### Fixed (27 audit issues + 12 performance tasks — all resolved)
 | Area | Items |
 |------|-------|
 | Bugs | #1 (auth on /api/import), #2 (timerRef type), #3 (syncQueue), #4 (requireQuota), #5 (liabilities), #23 (setActiveTab type), #24 (AppSettings type), #25 (Transaction type) |
 | Code Quality | #6 (file splitting — all under 300 LOC), #7 (data layer), #8 (`any` types — all fixed), #9 (Zod validation), #10 (testing — 47 tests), #11 (rate limiting), #12 (pagination), #13 (HTML sanitization), #14 (import transaction), #15 (indexes), #16 (cache TTL), #17 (supabaseAdmin — per-request client via AsyncLocalStorage) |
 | Architecture | #18 (data layer), #19 (error standard), #20 (pino logging), #21 (HttpOnly cookie), #22 (request ID) |
+| Performance | Bundle 1,015→733 kB, SW precache 2,677→1,488 kB, lazy-load PDF/XLSX, Dashboard memoization, CSS transitions, font optimization, auth call consolidation |
 
 ### Post-Audit Work Completed
 | Phase | Items |
@@ -132,6 +148,9 @@
 | Testing | 47 Vitest tests: smoke (10), CRUD (14), auth (6), members (7), offline (10) |
 | Recycle Bin | Full backend (soft-delete, restore, permanent-delete) + frontend (RecycleBin component with filtering, confirmations) |
 | Type Safety | HttpOnly cookie auth, rate limiting, import transaction wrapped in Supabase RPC |
+| SupabaseAdmin Swap | Per-request Supabase client via AsyncLocalStorage (T-033) |
+| Input Sanitization | HTML tag stripping on all user-input Zod fields (T-069) |
+| Performance | Bundle splitting (1,015→733 kB), lazy-load exports, Dashboard memoization, SW precache 44% smaller, font/CSS optimization (T-070–T-081) |
 
 ### TypeScript: 0 errors (was 3 — bugs #23-25 fixed 2026-06-02)
 ### All 47 API tests pass (smoke, CRUD, auth, members, offline)
