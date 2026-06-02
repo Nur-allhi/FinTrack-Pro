@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-06-02
-> **51 completed**, **2 remaining** (Phases 0–9)
+> **52 completed**, **1 remaining** (Phases 0–9) — T-077 (motion→CSS) is the only open item
 > **72 completed**, **9 remaining** (Phases 0–9)
 
 ---
@@ -93,8 +93,8 @@
 - [x] **T-079** Consolidate duplicate /api/auth/me calls (15m) — single call returns auth + email
 - [x] **T-080** Reduce service worker precache scope (30m) — 2,677→1,488 kB (44% reduction)
 
-### Nice-to-Have (P2)
-- [ ] **T-081** Optimize PNG icons to WebP/AVIF (30m)
+### Nice-to-Have (P2) — N/A
+- [x] **T-081** ~~Optimize PNG icons~~ — already 37 kB total; all references require PNG (PWA manifest, apple-touch-icon, notifications)
 
 ---
 
