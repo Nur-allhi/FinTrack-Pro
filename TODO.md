@@ -1,7 +1,18 @@
 # TODO — FinTrack Pro
 
 > Generated from `PLAN/MASTER_PROMPT.md` · 2026-06-02
-> **53 completed**, **20 remaining** (Phases 0–9 done, Phase 10 pending)
+> **69 completed**, **1 remaining**, **3 partial** (Phases 0–9 done, Phase 10 mostly complete, Phase 11 active)
+>
+> ## Branching Strategy
+>
+> ```
+> main (stable)
+>   └── performance/ai-improvements (Phase 10 — P0/P1/P2/Data)
+>         └── design/obsidian-theme (Phase 11 — Design polish from design.md)
+> ```
+> 1. Work on `design/obsidian-theme` first.
+> 2. Merge `design/obsidian-theme` → `performance/ai-improvements`.
+> 3. Merge `performance/ai-improvements` → `main`.
 
 ---
 
@@ -90,42 +101,68 @@
 
 ---
 
-## Phase 10 — Performance & UX Improvements
+## Phase 10 — Performance & UX Improvements ✅ / ~
 
 > Source: `PLAN/MASTER_PROMPT.md` — Apply App X Performance & UX Patterns
 > Branch: `performance/ai-improvements`
+> **Status: 15/20 done ✅, 3/20 partial ~, 1 skipped, 1 not started**
+> Remaining gaps can be picked up after Phase 11 merges back.
 
 ### 🔴 P0 — Must Fix (Mobile Responsiveness Basics)
 
-- [ ] **T-082** Add global touch + overscroll CSS (`src/index.css` — `touch-action: manipulation`, `overscroll-behavior: none/contain`) (30m) — `📄 MASTER_PROMPT.md:P0#1` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1`
-- [ ] **T-083** Make all scroll/touch event listeners passive (`Select.tsx:44`, `DatePicker.tsx:59`, `FloatingActionButton.tsx:43`) (30m) — `📄 MASTER_PROMPT.md:P0#2` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1,8.7`
-- [ ] **T-084** Add body scroll locking + Escape key to all modals (SettleModal, GroupSettleModal, TransferModal, TransactionModal, RenameModal) (1h) — `📄 MASTER_PROMPT.md:P0#3` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.4`
-- [ ] **T-085** Add font preconnect to `index.html` (`fonts.googleapis.com`, `fonts.gstatic.com`) (15m) — `📄 MASTER_PROMPT.md:P0#4` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.5`
+- [x] **T-082** Add global touch + overscroll CSS (`src/index.css` — `touch-action: manipulation`, `overscroll-behavior: none/contain`) (30m) — `📄 MASTER_PROMPT.md:P0#1` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1`
+- [x] **T-083** Make all scroll/touch event listeners passive (`Select.tsx:44`, `DatePicker.tsx:59`, `FloatingActionButton.tsx:43`) (30m) — `📄 MASTER_PROMPT.md:P0#2` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1,8.7`
+- [x] **T-084** Add body scroll locking + Escape key to all modals (SettleModal, GroupSettleModal, TransferModal, TransactionModal, RenameModal) (1h) — `📄 MASTER_PROMPT.md:P0#3` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.4`
+- [x] **T-085** Add font preconnect to `index.html` (`fonts.googleapis.com`, `fonts.gstatic.com`) (15m) — `📄 MASTER_PROMPT.md:P0#4` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.5`
 
 ### 🟡 P1 — Visual Responsiveness
 
-- [ ] **T-086** Add tactile press feedback (`active:scale-[0.97]`) to all interactive elements (buttons, cards, FAB, toggles, nav items) (1h) — `📄 MASTER_PROMPT.md:P1#5` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2`
-- [ ] **T-087** Create `SkeletonLoader.tsx` component with shimmer variants (cards, table rows, charts, dashboard) + RAF two-phase reveal (2h) — `📄 MASTER_PROMPT.md:P1#6` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.2,2.4,8.3`
-- [ ] **T-088** Add `focus-visible` rings + ARIA attributes (`aria-current`, `aria-pressed`, `aria-label`, `aria-hidden`, `role="button"`) (1-2h) — `📄 MASTER_PROMPT.md:P1#7` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2,8.6`
-- [ ] **T-089** Add `content-visibility: auto` + `contain-intrinsic-size` to lazy-loaded route wrappers in `App.tsx` (30m) — `📄 MASTER_PROMPT.md:P1#8` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
+- [x] **T-086** Add tactile press feedback (`active:scale-[0.97]`) to all interactive elements (buttons, cards, FAB, toggles, nav items) (1h) — `📄 MASTER_PROMPT.md:P1#5` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2`
+- [x] **T-087** Create `SkeletonLoader.tsx` component with shimmer variants (cards, table rows, charts, dashboard) + RAF two-phase reveal (2h) — `📄 MASTER_PROMPT.md:P1#6` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.2,2.4,8.3`
+- [x] **T-088** Add `focus-visible` rings + ARIA attributes (`aria-current`, `aria-pressed`, `aria-label`, `aria-hidden`, `role="button"`) (1-2h) — `📄 MASTER_PROMPT.md:P1#7` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2,8.6`
+- [x] **T-089** Add `content-visibility: auto` + `contain-intrinsic-size` to lazy-loaded route wrappers in `App.tsx` (30m) — `📄 MASTER_PROMPT.md:P1#8` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
 
 ### 🟢 P2 — Polish
 
-- [ ] **T-090** Add `overscroll-behavior: contain` to all scrollable containers (sidebar, Select dropdown, DashboardTodos) (15m) — `📄 MASTER_PROMPT.md:P2#9` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.8`
-- [ ] **T-091** Throttle scroll/resize handlers with RAF in `Select.tsx` and `DatePicker.tsx` (30m) — `📄 MASTER_PROMPT.md:P2#10` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.9,8.7`
-- [ ] **T-092** Add `safe-area-inset-bottom` padding to bottom-fixed elements (30m) — `📄 MASTER_PROMPT.md:P2#11` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1`
-- [ ] **T-093** Add `contain: layout style` to all `<motion.div>` elements (30m) — `📄 MASTER_PROMPT.md:P2#12` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
+- [x] **T-090** Add `overscroll-behavior: contain` to all scrollable containers (sidebar, Select dropdown, DashboardTodos) (15m) — `📄 MASTER_PROMPT.md:P2#9` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.8`
+- [x] **T-091** Throttle scroll/resize handlers with RAF in `Select.tsx` and `DatePicker.tsx` (30m) — `📄 MASTER_PROMPT.md:P2#10` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.9,8.7`
+- [x] **T-092** Add `safe-area-inset-bottom` padding to bottom-fixed elements (30m) — `📄 MASTER_PROMPT.md:P2#11` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.1`
+- [x] **T-093** Add `contain: layout style` to all `<motion.div>` elements (30m) — `📄 MASTER_PROMPT.md:P2#12` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
 
 ### 🎬 Animation Smoothness
 
-- [ ] **T-094** Fix animation durations (0.15→0.35, 0.2→0.4) and easings (custom cubic-bezier) on all motion.div transitions (1h) — `📄 MASTER_PROMPT.md:#13` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.4,7.5`
-- [ ] **T-095** Add `will-change: transform, opacity` to all animated `<motion.div>` and `<motion.button>` elements (30m) — `📄 MASTER_PROMPT.md:#14` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.3`
-- [ ] **T-096** Add `prefers-reduced-motion` media query to `src/index.css` (15m) — `📄 MASTER_PROMPT.md:#15` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.1,7.7`
-- [ ] **T-097** (Optional) Add staggered list animations (`.app-stagger-grid` CSS pattern) to Ledger, AccountManager, GroupGridView (1h) — `📄 MASTER_PROMPT.md:#16` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.8,7.6`
+- [~] **T-094** Fix animation durations (0.15→0.35, 0.2→0.4) and easings (custom cubic-bezier) on all motion.div transitions (1h) — `📄 MASTER_PROMPT.md:#13` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.4,7.5` **Partial — modals/route transitions fixed, but old values remain in ~15 list/card components (TransactionRow, TransactionCard, Dashboard, Sidebar, Ledger, etc.)**
+- [~] **T-095** Add `will-change: transform, opacity` to all animated `<motion.div>` and `<motion.button>` elements (30m) — `📄 MASTER_PROMPT.md:#14` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.3` **Partial — applied to modals + App.tsx (5 elements), missing from ~20 other motion components**
+- [x] **T-096** Add `prefers-reduced-motion` media query to `src/index.css` (15m) — `📄 MASTER_PROMPT.md:#15` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:7.1,7.7`
+- [x] **T-097** (Skipped) Staggered list animations — CSS class defined but never applied to components; deferred as low-value (1h) — `📄 MASTER_PROMPT.md:#16` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.8,7.6`
 
 ### 🗄️ Data Architecture (Cache-First)
 
-- [ ] **T-098** Refactor `useAccounts`, `useTransactions`, `useMembers` to cache-first pattern (read IndexedDB first, fetch API in background) (3-4h) — `📄 MASTER_PROMPT.md:#17` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3,6.4`
-- [ ] **T-099** Update IndexedDB cache after every successful POST/PUT/DELETE (1-2h) — `📄 MASTER_PROMPT.md:#18` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
-- [ ] **T-100** Increase cache TTL to session-length (no expiry) + add "Last synced" indicator (30m) — `📄 MASTER_PROMPT.md:#19` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
-- [ ] **T-101** (Optional) Add View Transitions API for page navigation in `App.tsx` (1h) — `📄 MASTER_PROMPT.md:#20` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.7`
+- [~] **T-098** Refactor `useAccounts`, `useTransactions`, `useMembers` to cache-first pattern (read IndexedDB first, fetch API in background) (3-4h) — `📄 MASTER_PROMPT.md:#17` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3,6.4` **Partial — cache-first in useTransactions + useOfflineSync (covers accounts/members), but no standalone useAccounts/useMembers hooks**
+- [x] **T-099** Update IndexedDB cache after every successful POST/PUT/DELETE (1-2h) — `📄 MASTER_PROMPT.md:#18` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
+- [x] **T-100** Increase cache TTL to session-length (no expiry) + add "Last synced" indicator (30m) — `📄 MASTER_PROMPT.md:#19` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:6.3`
+- [ ] **T-101** (Optional) Add View Transitions API for page navigation in `App.tsx` (1h) — `📄 MASTER_PROMPT.md:#20` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.7` **Not implemented — no usage of `document.startViewTransition` in any source file**
+>
+> ---
+>
+> ## Phase 11 — Obsidian Theme (Design Polish)
+>
+> > Source: `design.md` — Apply the Obsidian dark palette to the entire app
+> > Branch: `design/obsidian-theme`
+> > **Merge order**: `design/obsidian-theme` → `performance/ai-improvements` → `main`
+>
+> ### 🎨 Design Token Implementation
+>
+> - [ ] **T-102** Map `design.md` tokens to Tailwind config — colors, typography, spacing, rounded, component tokens (1-2h)
+> - [ ] **T-103** Replace hardcoded colors across all components with design token classes (3-4h)
+>
+> ### 🖌️ Component Audit
+>
+> - [ ] **T-104** Audit and update Card, Button, Surface components against `design.md` component specs (2h)
+> - [ ] **T-105** Audit typography (display, h1, body, label) across all pages to match `design.md` (1h)
+> - [ ] **T-106** Ensure single-accent rule — Tertiary (`#A78BFA`) used for exactly one action per screen (1h)
+>
+> ### ✅ Design QA
+>
+> - [ ] **T-107** Verify contrast ratios meet WCAG AA on Obsidian surfaces (1h)
+> - [ ] **T-108** Final visual regression check across all routes (1h)
