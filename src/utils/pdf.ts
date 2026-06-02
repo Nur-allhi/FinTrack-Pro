@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import type { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
 
 export function drawPageHeader(doc: jsPDF, title: string, subtitle?: string, dateRange?: string) {

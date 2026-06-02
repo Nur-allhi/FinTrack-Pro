@@ -15,6 +15,8 @@ export function useAuth() {
         const res = await authService.apiFetch('/api/auth/me');
         if (res.ok) {
           setIsAuthenticated(true);
+          const d = await res.json();
+          if (d.user?.email) setUserEmail(d.user.email);
         } else {
           setIsAuthenticated(false);
         }
@@ -31,15 +33,6 @@ export function useAuth() {
       toast("Session expired. Please sign in again.", 'error');
     });
   }, []);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
-      if (d.user?.email) setUserEmail(d.user.email);
-    }).catch((err) => {
-      console.warn('Auth check failed:', err);
-    });
-  }, [isAuthenticated]);
 
   const handleLogin = async (token: string) => {
     await authService.setSession(token);

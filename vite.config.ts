@@ -41,6 +41,10 @@ export default defineConfig(({mode}) => {
       strategies: 'injectManifest',
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'],
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,ico,svg,png,woff2}'],
+        globIgnores: ['**/vendor-charts*.js', '**/vendor-html2canvas*.js', '**/vendor-xlsx*.js', '**/jspdf*.js', '**/xlsx*.js', '**/AreaChart*.js', '**/ReportGenerator*.js', '**/html2canvas*.js'],
+      },
       manifest: {
         name: 'FinTrack Pro',
         short_name: 'FinTrack',
@@ -68,9 +72,7 @@ export default defineConfig(({mode}) => {
             'vendor-react': ['react', 'react-dom'],
             'vendor-supabase': ['@supabase/supabase-js'],
             'vendor-charts': ['recharts'],
-            'vendor-pdf': ['jspdf'],
             'vendor-motion': ['motion'],
-            'vendor-xlsx': ['xlsx'],
             'vendor-html2canvas': ['html2canvas'],
           },
         },

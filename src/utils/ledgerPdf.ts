@@ -1,13 +1,16 @@
-import jsPDF from 'jspdf';
 import { Transaction } from '../types';
-import { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency } from './pdf';
 
-export const exportLedgerPDF = (
+export const exportLedgerPDF = async (
   txs: (Transaction & { runningBalance: number })[],
   accountName: string,
   currency: string,
   initialBalance: number = 0
 ) => {
+  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency }] = await Promise.all([
+    import('jspdf'),
+    import('./pdf'),
+  ]);
+
   const doc = new jsPDF();
   const margin = 14;
   const pageW = doc.internal.pageSize.getWidth();

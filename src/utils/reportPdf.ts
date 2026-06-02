@@ -1,14 +1,16 @@
 import { Transaction } from '../types';
-import jsPDF from 'jspdf';
-import { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency } from './pdf';
-import * as XLSX from 'xlsx';
 
-export function exportReportPDF(
+export async function exportReportPDF(
   reportData: Transaction[],
   filters: { startDate: string; endDate: string; accountId: string },
   accounts: { id: number; name: string }[],
   currency: string
 ) {
+  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency }] = await Promise.all([
+    import('jspdf'),
+    import('./pdf'),
+  ]);
+
   const doc = new jsPDF();
   const margin = 14;
   const pageW = doc.internal.pageSize.getWidth();
@@ -104,11 +106,13 @@ export function exportReportCSV(
   URL.revokeObjectURL(url);
 }
 
-export function exportReportExcel(
+export async function exportReportExcel(
   reportData: Transaction[],
   filters: { startDate: string; endDate: string },
   currency: string
 ) {
+  const XLSX = await import('xlsx');
+
   const rows = reportData.map(t => ({
     Date: t.date,
     Particulars: t.particulars,
