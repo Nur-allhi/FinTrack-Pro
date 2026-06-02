@@ -66,7 +66,7 @@ export default function Login({ onLogin }: LoginProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative z-10 space-y-8 md:space-y-14"
+        className="w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl relative z-10 space-y-6 md:space-y-14"
       >
         <div className="text-center space-y-4 md:space-y-6">
           <div className="flex items-center justify-center gap-3 md:gap-4">
@@ -89,7 +89,7 @@ export default function Login({ onLogin }: LoginProps) {
           </div>
         </div>
 
-        <div className="bg-surface-soft rounded-xl border border-hairline p-6 sm:p-8 md:p-12 lg:p-14">
+        <div className="bg-surface-soft rounded-xl border border-hairline p-5 sm:p-8 md:p-12 lg:p-14">
           {mode === 'choose' && (
             <div className="space-y-3 sm:space-y-4 md:space-y-6">
               <button

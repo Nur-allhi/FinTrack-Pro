@@ -19,7 +19,7 @@ router.get("/categories", async (req, res) => {
 
 router.get("/:accountId", async (req, res) => {
   try {
-    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : 500;
     const offset = req.query.offset ? Number(req.query.offset) : undefined;
     const transactions = await getTransactions(req.params.accountId, req.user!.id, limit, offset);
     res.json(transactions);

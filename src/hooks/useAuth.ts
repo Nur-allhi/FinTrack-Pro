@@ -10,6 +10,11 @@ export function useAuth() {
 
   useEffect(() => {
     const init = async () => {
+      if (sessionStorage.getItem('pending_logout') === 'true') {
+        sessionStorage.clear();
+        setIsAuthenticated(false);
+        return;
+      }
       initPendingCount();
       try {
         const res = await authService.apiFetch('/api/auth/me');
@@ -41,10 +46,10 @@ export function useAuth() {
   };
 
   const handleLogout = async () => {
+    sessionStorage.setItem('pending_logout', 'true');
+    await authService.signOut();
     setIsAuthenticated(false);
     setUserEmail('');
-    await authService.signOut();
-    // Clear Supabase local storage sessions
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
         localStorage.removeItem(key);

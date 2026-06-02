@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Account } from '../types';
 import { cacheService } from '../services/cacheService';
 import { authService } from '../services/authService';
@@ -16,6 +16,7 @@ export function useOfflineSync(isAuthenticated: boolean, onInitialLoad?: () => v
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const fetchAppliedRef = useRef(false);
 
   const fetchData = async (showToast = false) => {
     if (!offlineService.isOnline()) { if (showToast) toast("Cannot refresh while offline.", 'error'); return; }
@@ -23,16 +24,27 @@ export function useOfflineSync(isAuthenticated: boolean, onInitialLoad?: () => v
     setLastUpdate(Date.now());
     try {
       const [membersRes, accountsRes] = await Promise.all([authService.apiFetch('/api/members'), authService.apiFetch('/api/accounts')]);
-      if (!membersRes.ok || !accountsRes.ok) throw new Error("Server error");
-      const membersData = await membersRes.json();
-      const accountsData = await accountsRes.json();
-      setMembers(membersData);
-      setAccounts(accountsData);
-      cacheService.setMembers(membersData);
-      cacheService.setAccounts(accountsData);
-      setLastSync(Date.now());
-      offlineService.setLastSync();
-      if (showToast) toast("Data refreshed.", 'success');
+
+      let hasFreshData = false;
+      if (membersRes.ok) {
+        const membersData = await membersRes.json();
+        setMembers(membersData);
+        cacheService.setMembers(membersData);
+        hasFreshData = true;
+      }
+      if (accountsRes.ok) {
+        const accountsData = await accountsRes.json();
+        setAccounts(accountsData);
+        cacheService.setAccounts(accountsData);
+        hasFreshData = true;
+      }
+
+      if (hasFreshData) {
+        fetchAppliedRef.current = true;
+        setLastSync(Date.now());
+        offlineService.setLastSync();
+        if (showToast) toast("Data refreshed.", 'success');
+      }
     } catch (error) {
       console.error("Fetch failed:", error);
       if (showToast) toast("Failed to refresh data.", 'error');
@@ -45,12 +57,13 @@ export function useOfflineSync(isAuthenticated: boolean, onInitialLoad?: () => v
     const [cachedMembers, cachedAccounts] = await Promise.all([
       cacheService.getMembers(), cacheService.getAccounts()
     ]);
-    if (cachedMembers) setMembers(cachedMembers);
-    if (cachedAccounts) setAccounts(cachedAccounts);
+    if (cachedMembers && !fetchAppliedRef.current) setMembers(cachedMembers);
+    if (cachedAccounts && !fetchAppliedRef.current) setAccounts(cachedAccounts);
   };
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    fetchAppliedRef.current = false;
     loadFromCache();
     if (offlineService.isOnline()) {
       fetchData().finally(() => onInitialLoad?.());

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Account, Transaction } from '../types';
 import { cacheService } from '../services/cacheService';
 import { authService } from '../services/authService';
@@ -11,19 +11,31 @@ export function useTransactions(account: Account, lastUpdate?: number) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const expectedIdRef = useRef(account?.id);
+  expectedIdRef.current = account?.id;
 
-  const fetchTransactions = async (showLoading = true) => {
-    if (!account?.id) return setLoading(false);
+  const fetchTransactions = async (showLoading = true, retries = 3) => {
+    const snapshotId = account?.id;
+    if (!snapshotId) return setLoading(false);
     if (showLoading) setLoading(true);
     else setIsSyncing(true);
 
     try {
       const cacheBuster = navigator.onLine ? `?_=${Date.now()}` : '';
-      const res = await authService.apiFetch(`/api/transactions/${account.id}${cacheBuster}`);
+      const res = await authService.apiFetch(`/api/transactions/${snapshotId}${cacheBuster}`);
+      if (res.status === 429 && retries > 0) {
+        const delay = Math.min(1000 * (4 - retries), 3000);
+        await new Promise(r => setTimeout(r, delay));
+        return fetchTransactions(showLoading, retries - 1);
+      }
       if (!res.ok) throw new Error("Server error");
       let data: Transaction[] = await res.json();
 
+      if (expectedIdRef.current !== snapshotId) return;
+
       const queue = await offlineService.getQueue();
+      if (expectedIdRef.current !== snapshotId) return;
+
       const pendingDeletes = queue.filter(a =>
         a.type === 'delete' && a.endpoint.startsWith('/api/transactions/')
       );
@@ -38,7 +50,7 @@ export function useTransactions(account: Account, lastUpdate?: number) {
         const b = create.body!;
         data.unshift({
           id: Date.now() + Math.random(),
-          account_id: account.id,
+          account_id: snapshotId,
           date: b.date || '',
           particulars: b.particulars || '',
           category: b.category || 'Uncategorized',
@@ -49,7 +61,7 @@ export function useTransactions(account: Account, lastUpdate?: number) {
         } as Transaction);
       }
       const pendingUpdates = queue.filter(a =>
-        a.type === 'update' && a.body?.account_id === account.id && a.body
+        a.type === 'update' && a.body?.account_id === snapshotId && a.body
       );
       for (const update of pendingUpdates) {
         const id = parseInt(update.endpoint.split('/').pop()!, 10);
@@ -61,10 +73,11 @@ export function useTransactions(account: Account, lastUpdate?: number) {
       }
 
       setTransactions(data);
-      cacheService.setTransactions(account.id.toString(), data);
+      setLoading(false);
+      setIsSyncing(false);
+      cacheService.setTransactions(snapshotId.toString(), data).catch(() => {});
     } catch (error) {
       console.error("Fetch failed:", error);
-    } finally {
       setLoading(false);
       setIsSyncing(false);
     }
@@ -72,11 +85,21 @@ export function useTransactions(account: Account, lastUpdate?: number) {
 
   useEffect(() => {
     const load = async () => {
-      if (!account?.id) return;
-      if (transactions.length > 0) return fetchTransactions(false);
-      const cached = await cacheService.getTransactions(account.id.toString());
-      if (cached) { setTransactions(cached); setLoading(false); fetchTransactions(false); }
-      else fetchTransactions(true);
+      const currentId = account?.id;
+      if (!currentId) return;
+
+      const cached = await cacheService.getTransactions(currentId.toString());
+      if (expectedIdRef.current !== currentId) return;
+
+      if (cached) {
+        setTransactions(cached);
+        setLoading(false);
+        fetchTransactions(false);
+      } else {
+        setTransactions([]);
+        setLoading(true);
+        fetchTransactions(true);
+      }
     };
     load();
   }, [account.id, lastUpdate]);
