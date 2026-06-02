@@ -64,29 +64,29 @@ export default function Sidebar({
           {/* Brand header */}
           <div className="flex items-center justify-between px-5 py-5">
             <button onClick={() => window.location.reload()} className="flex items-end gap-2.5 min-w-0 cursor-pointer">
-              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0 drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
-                <rect width="512" height="512" rx="110" fill="#FFFFFF" />
-                <g opacity="0.08">
-                  <circle cx="128" cy="128" r="2" fill="#0D1C45"/>
-                  <circle cx="256" cy="128" r="2" fill="#0D1C45"/>
-                  <circle cx="384" cy="128" r="2" fill="#0D1C45"/>
-                  <circle cx="128" cy="256" r="2" fill="#0D1C45"/>
-                  <circle cx="256" cy="256" r="2" fill="#0D1C45"/>
-                  <circle cx="384" cy="256" r="2" fill="#0D1C45"/>
-                  <circle cx="128" cy="384" r="2" fill="#0D1C45"/>
-                  <circle cx="256" cy="384" r="2" fill="#0D1C45"/>
-                  <circle cx="384" cy="384" r="2" fill="#0D1C45"/>
+              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="110" fill="#1C1829" />
+                <g opacity="0.12">
+                  <circle cx="128" cy="128" r="2" fill="#A78BFA" />
+                  <circle cx="256" cy="128" r="2" fill="#A78BFA" />
+                  <circle cx="384" cy="128" r="2" fill="#A78BFA" />
+                  <circle cx="128" cy="256" r="2" fill="#A78BFA" />
+                  <circle cx="256" cy="256" r="2" fill="#A78BFA" />
+                  <circle cx="384" cy="256" r="2" fill="#A78BFA" />
+                  <circle cx="128" cy="384" r="2" fill="#A78BFA" />
+                  <circle cx="256" cy="384" r="2" fill="#A78BFA" />
+                  <circle cx="384" cy="384" r="2" fill="#A78BFA" />
                 </g>
-                <rect x="108" y="300" width="72" height="130" rx="14" fill="#0D1C45"/>
-                <rect x="220" y="235" width="72" height="195" rx="14" fill="#0D1C45"/>
-                <rect x="332" y="152" width="72" height="278" rx="14" fill="#0D1C45"/>
-                <polyline points="144,296 256,231 368,148" fill="none" stroke="#1ED47A" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="144" cy="296" r="9" fill="#1ED47A"/>
-                <circle cx="256" cy="231" r="9" fill="#1ED47A"/>
-                <circle cx="368" cy="148" r="18" fill="#1ED47A"/>
-                <circle cx="368" cy="148" r="9" fill="#FFFFFF"/>
+                <rect x="108" y="300" width="72" height="130" rx="14" fill="#A78BFA" />
+                <rect x="220" y="235" width="72" height="195" rx="14" fill="#A78BFA" />
+                <rect x="332" y="152" width="72" height="278" rx="14" fill="#A78BFA" />
+                <polyline points="144,296 256,231 368,148" fill="none" stroke="#1ED47A" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="144" cy="296" r="9" fill="#1ED47A" />
+                <circle cx="256" cy="231" r="9" fill="#1ED47A" />
+                <circle cx="368" cy="148" r="18" fill="#1ED47A" />
+                <circle cx="368" cy="148" r="9" fill="#1C1829" />
               </svg>
-              <span className="text-xl md:text-2xl font-bold text-ink leading-none cursor-pointer" style={{fontFamily: "'Roboto Slab', serif", textShadow: '0 1px 2px rgba(0,0,0,0.1)'}}>FinTrack <span className="text-[#34d399] font-normal">Pro</span></span>
+              <span className="text-xl md:text-2xl font-bold text-ink leading-none cursor-pointer" style={{fontFamily: "'Roboto Slab', serif", textShadow: '0 1px 2px rgba(0,0,0,0.1)'}}>FinTrack <span className="text-semantic-up font-normal">Pro</span></span>
             </button>
             <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1.5 text-muted hover:text-ink rounded-lg hover:bg-surface-soft shrink-0">
               <X className="w-4 h-4" />

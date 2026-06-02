@@ -6,9 +6,9 @@
 }
 
 :root {
-  --color-primary: #0052ff;
-  --color-primary-active: #0041cc;
-  --color-primary-disabled: #a8b8cc;
+  --color-primary: #A78BFA;
+  --color-primary-active: #8B6FDF;
+  --color-primary-disabled: #D4C4FD;
   --color-canvas: #ffffff;
   --color-surface-soft: #f7f7f7;
   --color-surface-strong: #eef0f3;
@@ -23,57 +23,64 @@
 }
 
 :root.dark {
-  --color-primary-active: #3b82f6;
-  --color-primary-disabled: #1e3a5f;
-  --color-canvas: #0a0b0d;
-  --color-surface-soft: #16181c;
-  --color-surface-strong: #1e2028;
-  --color-surface-dark: #000000;
-  --color-surface-dark-elevated: #16181c;
-  --color-hairline: #2a2c36;
-  --color-hairline-soft: #1e2028;
-  --color-ink: #f1f5f9;
-  --color-body: #94a3b8;
-  --color-muted: #64748b;
-  --color-on-primary: #ffffff;
+  --color-primary: #A78BFA;
+  --color-primary-active: #C4B5FD;
+  --color-primary-disabled: #4C4870;
+  --color-canvas: #13111C;
+  --color-surface-soft: #1C1829;
+  --color-surface-strong: #252133;
+  --color-surface-dark: #0E0C16;
+  --color-surface-dark-elevated: #1C1829;
+  --color-hairline: #2A2636;
+  --color-hairline-soft: #252133;
+  --color-ink: #E9E6F2;
+  --color-body: #8B8699;
+  --color-muted: #857BA0;
+  --color-on-primary: #13111C;
 }
 
 :root.dark-dim {
-  --color-primary-active: #3b82f6;
-  --color-primary-disabled: #2a3a4f;
-  --color-canvas: #1a1c23;
-  --color-surface-soft: #22242c;
-  --color-surface-strong: #2a2d36;
-  --color-surface-dark: #111218;
-  --color-surface-dark-elevated: #22242c;
-  --color-hairline: #333640;
-  --color-hairline-soft: #2a2d36;
-  --color-ink: #e2e8f0;
-  --color-body: #94a3b8;
-  --color-muted: #64748b;
-  --color-on-primary: #ffffff;
+  --color-primary: #A78BFA;
+  --color-primary-active: #C4B5FD;
+  --color-primary-disabled: #4C4870;
+  --color-canvas: #1A1728;
+  --color-surface-soft: #242133;
+  --color-surface-strong: #2D2A3E;
+  --color-surface-dark: #131121;
+  --color-surface-dark-elevated: #242133;
+  --color-hairline: #343147;
+  --color-hairline-soft: #2D2A3E;
+  --color-ink: #E9E6F2;
+  --color-body: #8B8699;
+  --color-muted: #857BA0;
+  --color-on-primary: #13111C;
 }
 
 :root.dark-night {
-  --color-primary-active: #3b82f6;
-  --color-primary-disabled: #1a2a3a;
+  --color-primary: #A78BFA;
+  --color-primary-active: #C4B5FD;
+  --color-primary-disabled: #4C4870;
   --color-canvas: #000000;
-  --color-surface-soft: #0f0f0f;
-  --color-surface-strong: #1a1a1a;
+  --color-surface-soft: #0E0C16;
+  --color-surface-strong: #1C1829;
   --color-surface-dark: #000000;
-  --color-surface-dark-elevated: #0f0f0f;
-  --color-hairline: #1a1a1a;
-  --color-hairline-soft: #0f0f0f;
-  --color-ink: #ffffff;
-  --color-body: #94a3b8;
-  --color-muted: #64748b;
-  --color-on-primary: #ffffff;
+  --color-surface-dark-elevated: #0E0C16;
+  --color-hairline: #1C1829;
+  --color-hairline-soft: #0E0C16;
+  --color-ink: #E9E6F2;
+  --color-body: #8B8699;
+  --color-muted: #857BA0;
+  --color-on-primary: #13111C;
 }
 
 @theme {
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-weight-display: 700;
+  --font-weight-h1: 700;
+  --tracking-display: -0.03em;
+  --tracking-h1: -0.02em;
   --color-primary: var(--color-primary);
   --color-primary-active: var(--color-primary-active);
   --color-primary-disabled: var(--color-primary-disabled);
@@ -88,16 +95,19 @@
   --color-body: var(--color-body);
   --color-muted: var(--color-muted);
   --color-on-primary: var(--color-on-primary);
-  --color-on-dark: #ffffff;
-  --color-on-dark-soft: #94a3b8;
+  --color-on-dark: #E9E6F2;
+  --color-on-dark-soft: #8B8699;
   --color-semantic-up: #05b169;
   --color-semantic-down: #cf202f;
-  --spacing-section: 96px;
+  --spacing-section: 32px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 32px;
   --radius-pill: 100px;
   --radius-xl: 24px;
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
   --radius-xs: 4px;
 }
 
@@ -154,6 +164,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.55;
   background-color: var(--color-canvas);
   color: var(--color-body);
   -webkit-font-smoothing: antialiased;
@@ -181,8 +193,21 @@ body {
 h1, h2, h3, h4, h5, .font-display {
   font-family: var(--font-display);
   color: var(--color-ink);
-  font-weight: 400;
+}
+
+h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h2, h3, h4, h5 {
+  font-weight: 600;
   letter-spacing: -0.015em;
+}
+
+.font-display {
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 @layer components {
@@ -194,22 +219,34 @@ h1, h2, h3, h4, h5, .font-display {
   }
 
   .btn-pill {
-    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2;
+    @apply transition-all disabled:opacity-50 flex items-center justify-center gap-2;
+    border-radius: var(--radius-pill);
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
   }
 
   .btn-primary {
-    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2;
+    @apply transition-all disabled:opacity-50 flex items-center justify-center gap-2;
     background-color: var(--color-primary);
     color: var(--color-on-primary);
+    border-radius: var(--radius-md);
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 0.875rem;
   }
   .btn-primary:hover {
     background-color: var(--color-primary-active);
   }
 
   .btn-secondary {
-    @apply px-5 py-3 rounded-pill font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2;
+    @apply transition-all disabled:opacity-50 flex items-center justify-center gap-2;
     background-color: var(--color-surface-strong);
     color: var(--color-ink);
+    border-radius: var(--radius-md);
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
   }
   .btn-secondary:hover {
     background-color: var(--color-hairline);
@@ -218,10 +255,19 @@ h1, h2, h3, h4, h5, .font-display {
 
 
   .card-xl {
-    background-color: var(--color-canvas);
-    border-radius: var(--radius-xl);
+    background-color: var(--color-surface-soft);
+    border-radius: var(--radius-lg);
     border: 1px solid var(--color-hairline);
-    padding: 1.25rem;
+    padding: 1.5rem;
+    color: var(--color-ink);
+  }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    text-transform: uppercase;
   }
 
   .section-padding {

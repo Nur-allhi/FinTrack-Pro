@@ -45,7 +45,7 @@ const RecycleBin = lazy(() => import('./components/RecycleBin'));
 const Login = lazy(() => import('./components/Login'));
 
 const defaultTypeColors: Record<string, string> = {
-  cash: '#10B981', bank: '#0052FF', mobile: '#8B5CF6',
+  cash: '#10B981', bank: '#A78BFA', mobile: '#8B5CF6',
   investment: '#F59E0B', purpose: '#EC4899', home_exp: '#EF4444',
 };
 
@@ -62,7 +62,7 @@ const defaultSettings = {
   fontSize: 'normal',
   currency: '৳',
   typeColors: { ...defaultTypeColors },
-  accentColor: '#0052FF'
+  accentColor: '#A78BFA'
 };
 
 export default function App() {
@@ -122,7 +122,7 @@ export default function App() {
         setSettings({
           ...defaultSettings,
           ...cachedSettings,
-          accentColor: cachedSettings.accentColor || '#0052FF',
+          accentColor: cachedSettings.accentColor || '#A78BFA',
           darkModeStyle: darkStyle,
           typeColors: { ...defaultTypeColors, ...(cachedSettings.typeColors || {}) }
         });

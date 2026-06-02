@@ -7,7 +7,7 @@ import { authService } from '../services/authService';
 import GroupForm from './GroupForm';
 import GroupGridView, { type Group } from './GroupGridView';
 
-const colors = ['#0052ff', '#05b169', '#cf202f', '#f59e0b', '#7c828a', '#0a0b0d', '#14B8A6', '#EC4899', '#64748B', '#F97316'];
+const colors = ['#A78BFA', '#05b169', '#cf202f', '#f59e0b', '#7c828a', '#13111C', '#14B8A6', '#EC4899', '#64748B', '#F97316'];
 
 export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpdate: () => void; lastUpdate?: number; currency?: string }) {
   const { toast } = useToast();

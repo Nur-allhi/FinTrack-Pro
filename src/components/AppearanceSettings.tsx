@@ -80,7 +80,7 @@ export default function AppearanceSettings({ settings, onUpdateSettings, toggleS
               className="w-10 h-10 rounded-lg border border-hairline cursor-pointer bg-transparent p-0.5" />
           </div>
           <div className="flex flex-wrap gap-2">
-            {['#0052FF', '#05b169', '#cf202f', '#f59e0b', '#8B5CF6', '#14B8A6', '#EC4899', '#F97316', '#0A0B0D', '#64748B'].map(color => (
+            {['#A78BFA', '#05b169', '#cf202f', '#f59e0b', '#8B5CF6', '#14B8A6', '#EC4899', '#F97316', '#13111C', '#64748B'].map(color => (
               <button key={color} type="button" onClick={() => onUpdateSettings({ ...settings, accentColor: color })}
                 className={`w-8 h-8 rounded-full transition-all border-2 ${settings.accentColor === color ? 'border-ink scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
                 style={{ backgroundColor: color }} />

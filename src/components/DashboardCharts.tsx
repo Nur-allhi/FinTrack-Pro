@@ -12,7 +12,7 @@ interface DashboardChartsProps {
 }
 
 const CATEGORY_COLORS = [
-  '#0052FF', '#00C853', '#FF6D00', '#AA00FF', '#FF1744',
+  '#A78BFA', '#00C853', '#FF6D00', '#AA00FF', '#FF1744',
   '#00BFA5', '#FFD600', '#6200EA', '#00B0FF', '#F50057',
 ];
 
@@ -119,17 +119,17 @@ export default function DashboardCharts({ accounts, currency, showSpendingChart 
               <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0052FF" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#0052FF" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-hairline)" />
                 <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false}
                   tickFormatter={v => v.slice(5)} />
                 <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false}
                   tickFormatter={v => `${currency}${(v / 1000).toFixed(0)}k`} width={50} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="balance" stroke="#0052FF" strokeWidth={2} fill="url(#balanceGradient)" />
+                <Area type="monotone" dataKey="balance" stroke="var(--color-primary)" strokeWidth={2} fill="url(#balanceGradient)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

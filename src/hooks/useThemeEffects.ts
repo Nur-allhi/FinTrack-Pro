@@ -8,14 +8,9 @@ interface ThemeSettings {
   accentColor: string;
 }
 
-const defaultTypeColors: Record<string, string> = {
-  cash: '#10B981', bank: '#0052FF', mobile: '#8B5CF6',
-  investment: '#F59E0B', purpose: '#EC4899', home_exp: '#EF4444',
-};
-
 const darkBgMap: Record<string, string> = {
-  dark: '#0a0b0d',
-  'dark-dim': '#1a1c23',
+  dark: '#13111C',
+  'dark-dim': '#1A1728',
   'dark-night': '#000000',
 };
 
@@ -32,12 +27,12 @@ export function useThemeEffects(settings: ThemeSettings) {
     localStorage.setItem('fintrack_dark_style', settings.darkMode ? settings.darkModeStyle : '');
 
     const bg = settings.darkMode
-      ? darkBgMap[settings.darkModeStyle] || '#0a0b0d'
+      ? darkBgMap[settings.darkModeStyle] || '#13111C'
       : '#ffffff';
     document.documentElement.style.backgroundColor = bg;
 
     if (lightMeta) lightMeta.setAttribute('content', settings.darkMode ? bg : '#ffffff');
-    if (darkMeta) darkMeta.setAttribute('content', settings.darkMode ? bg : '#0a0b0d');
+    if (darkMeta) darkMeta.setAttribute('content', settings.darkMode ? bg : '#13111C');
   }, [settings.darkMode, settings.darkModeStyle]);
 
   useEffect(() => {

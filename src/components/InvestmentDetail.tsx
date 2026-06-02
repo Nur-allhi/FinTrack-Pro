@@ -122,17 +122,17 @@ export default function InvestmentDetail({ investment, returns, currency, onAddR
           <AreaChart data={chartData} margin={{ top: 40, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0052ff" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#0052ff" stopOpacity={0}/>
+                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.1}/>
+                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dee1e6" />
-            <YAxis axisLine={false} tickLine={false} tick={{fill: '#7c828a', fontSize: 10, fontWeight: 'bold'}} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-hairline)" />
+            <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--color-muted)', fontSize: 10, fontWeight: 'bold'}} />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #dee1e6', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-              itemStyle={{ color: '#0052ff', fontWeight: 'bold', fontSize: '12px' }}
+              contentStyle={{ backgroundColor: 'var(--color-canvas)', borderRadius: '12px', border: '1px solid var(--color-hairline)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+              itemStyle={{ color: 'var(--color-primary)', fontWeight: 'bold', fontSize: '12px' }}
             />
-            <Area type="monotone" dataKey="amount" stroke="#0052ff" strokeWidth={3} fillOpacity={1} fill="url(#colorAmount)" />
+            <Area type="monotone" dataKey="amount" stroke="var(--color-primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorAmount)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

@@ -22,7 +22,7 @@ interface AccountCardProps {
 
 export default memo(function AccountCard({ account, onClick, currency, typeColors, filterMemberId }: AccountCardProps) {
   const Icon = typeIcons[account.type] || Wallet;
-  const typeColor = typeColors?.[account.type] || '#0052FF';
+  const typeColor = typeColors?.[account.type] || '#A78BFA';
   const showMember = filterMemberId === 'all' && !!account.member_name;
   const hasParent = !!account.parent_name;
 

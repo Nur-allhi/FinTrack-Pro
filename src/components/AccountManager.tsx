@@ -18,8 +18,8 @@ interface AccountManagerProps {
 }
 
 const colors = [
-  '#0052ff', '#05b169', '#cf202f', '#f59e0b', '#7c828a', 
-  '#0a0b0d', '#14B8A6', '#EC4899', '#64748B', '#F97316'
+  '#A78BFA', '#05b169', '#cf202f', '#f59e0b', '#7c828a', 
+  '#13111C', '#14B8A6', '#EC4899', '#64748B', '#F97316'
 ];
 
 export default function AccountManager({ accounts, members, onUpdate, currency, typeColors }: AccountManagerProps) {

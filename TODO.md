@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `PLAN/MASTER_PROMPT.md` · 2026-06-02
-> **73 completed**, **7 remaining** (Phases 0–10 done, Phase 11 active)
+> **80 completed**, **0 remaining** (All phases complete!)
 >
 > ## Branching Strategy
 >
@@ -144,7 +144,7 @@
 >
 > ---
 >
-> ## Phase 11 — Obsidian Theme (Design Polish)
+> ## Phase 11 — Obsidian Theme (Design Polish) ✅
 >
 > > Source: `design.md` — Apply the Obsidian dark palette to the entire app
 > > Branch: `design/obsidian-theme`
@@ -152,16 +152,16 @@
 >
 > ### 🎨 Design Token Implementation
 >
-> - [ ] **T-102** Map `design.md` tokens to Tailwind config — colors, typography, spacing, rounded, component tokens (1-2h)
-> - [ ] **T-103** Replace hardcoded colors across all components with design token classes (3-4h)
+> - [x] **T-102** Map `design.md` tokens to Tailwind config — colors, typography, spacing, rounded, component tokens (1-2h)
+> - [x] **T-103** Replace hardcoded colors across all components with design token classes (3-4h)
 >
 > ### 🖌️ Component Audit
 >
-> - [ ] **T-104** Audit and update Card, Button, Surface components against `design.md` component specs (2h)
-> - [ ] **T-105** Audit typography (display, h1, body, label) across all pages to match `design.md` (1h)
-> - [ ] **T-106** Ensure single-accent rule — Tertiary (`#A78BFA`) used for exactly one action per screen (1h)
+> - [x] **T-104** Audit and update Card, Button, Surface components against `design.md` component specs (2h)
+> - [x] **T-105** Audit typography (display, h1, body, label) across all pages to match `design.md` (1h)
+> - [x] **T-106** Ensure single-accent rule — Tertiary (`#A78BFA`) used for exactly one action per screen (1h)
 >
 > ### ✅ Design QA
 >
-> - [ ] **T-107** Verify contrast ratios meet WCAG AA on Obsidian surfaces (1h)
-> - [ ] **T-108** Final visual regression check across all routes (1h)
+> - [x] **T-107** Verify contrast ratios meet WCAG AA on Obsidian surfaces (1h)
+> - [x] **T-108** Final visual regression check across all routes (1h)

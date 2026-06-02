@@ -175,7 +175,7 @@ export default function Dashboard({
                             ? "text-white shadow-sm"
                             : "bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink"
                         )}
-                        style={filterType === f.key ? { backgroundColor: typeColor || '#0052FF' } : {}}
+                        style={filterType === f.key ? { backgroundColor: typeColor || 'var(--color-primary)' } : {}}
                       >
                         {Icon && <Icon className="w-3.5 h-3.5" />}
                         {f.label}
