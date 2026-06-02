@@ -1,17 +1,20 @@
 # FinTrack Pro — Performance Audit Report
 
 **Date**: 2026-06-02
-**Status**: Phase 9 quick wins done, P1/P2 remaining
+**Status**: Phase 9 P0+P1 mostly done, T-077 (motion→CSS) remaining
 
 ---
 
-## Results So Far
+## Results
 
 | Metric | Before | After | Change |
 |--------|--------|-------|--------|
 | Main bundle | 1,015 kB | 733 kB | **-28%** |
 | Main bundle (gzip) | 276 kB | 195 kB | **-29%** |
-| Vendor chunks | 0 | 7 separate | Code-split |
+| SW precache | 2,677 kB | 1,488 kB | **-44%** |
+| API calls on startup | 2x `/api/auth/me` | 1x | **-50%** |
+| Vendor chunks | 0 | 5 separate | Code-split |
+| Lazy-loaded libs | 0 | jspdf + xlsx | On-demand |
 
 ---
 
@@ -40,12 +43,20 @@ TransactionCard and TransactionRow already had React.memo.
 
 ---
 
-## Remaining (P1/P2)
+### T-076: Lazy-load PDF/XLSX
+`jspdf` and `xlsx` now dynamically imported on export click. Not in page chunks.
+
+### T-079: Consolidate auth calls
+Single `/api/auth/me` call returns both auth status and email.
+
+### T-080: SW precache reduced
+Excluded lazy vendor chunks from precache. 2,677→1,488 kB.
+
+---
+
+## Remaining
 
 | Task | Impact | Effort |
 |------|--------|--------|
-| Lazy-load xlsx/jspdf on-demand | Medium | 1h |
 | Replace motion with CSS transitions | Medium | 2-3h |
-| Defer Supabase client until auth | Low | 1h |
-| Reduce SW precache scope | Low | 30m |
 | Optimize PNG to WebP/AVIF | Low | 30m |

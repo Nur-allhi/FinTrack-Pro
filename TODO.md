@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-06-02
-> **48 completed**, **5 remaining** (Phases 0–9)
+> **51 completed**, **2 remaining** (Phases 0–9)
 > **72 completed**, **9 remaining** (Phases 0–9)
 
 ---
@@ -86,12 +86,12 @@
 - [x] **T-074** Memoize defaultSettings to module scope (15m)
 - [x] **T-075** Remove cache-busting query param from API calls (15m)
 
-### Medium Effort (P1) — Partial
-- [ ] **T-076** Lazy-load xlsx and jspdf/pdf libs on-demand (1h)
+### Medium Effort (P1) — Mostly Done
+- [x] **T-076** Lazy-load xlsx and jspdf/pdf libs on-demand (1h) — dynamic import() on export click
 - [ ] **T-077** Replace motion animations with CSS transitions (2-3h) — 31 files
 - [x] **T-078** Add React.memo to list item components (1h) — AccountCard done, TransactionCard/Row already had it
-- [ ] **T-079** Defer Supabase client until authenticated (1h)
-- [ ] **T-080** Reduce service worker precache scope (30m)
+- [x] **T-079** Consolidate duplicate /api/auth/me calls (15m) — single call returns auth + email
+- [x] **T-080** Reduce service worker precache scope (30m) — 2,677→1,488 kB (44% reduction)
 
 ### Nice-to-Have (P2)
 - [ ] **T-081** Optimize PNG icons to WebP/AVIF (30m)
