@@ -202,7 +202,7 @@ Completed all 6 remaining TODO items (T-033, T-035, T-065, T-066, T-067, T-068, 
 - `AUDIT_REPORT.md`: all 27 issues resolved, no partially-fixed items
 - `IMPLEMENTATION_PLAN.md`: all 62 tasks marked done
 - `PROJECTPLAN.md`: Phase 11 fully completed
-- `TODO.md`: 62 completed, 0 remaining
+- `TODO.md`: 53 completed, 0 remaining
 - `CHANGELOG.md`: added June 1 entry
 
 ### Files Changed
