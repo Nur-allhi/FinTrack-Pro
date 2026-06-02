@@ -1,6 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `IMPLEMENTATION_PLAN.md` · 2026-06-02
+> **48 completed**, **5 remaining** (Phases 0–9)
 > **72 completed**, **9 remaining** (Phases 0–9)
 
 ---
@@ -75,6 +76,26 @@
 
 - [x] **T-069** Input sanitization — sanitizeHtml transform on all user-input Zod fields (2-3h) — from audit #13
 
+## Phase 9 — Performance Optimization ⏳
+
+### Quick Wins (P0) — Done
+- [x] **T-070** Move server deps to devDependencies (30m) — sharp, dotenv, tsx, pino, express
+- [x] **T-071** Add manualChunks vendor splitting in vite.config.ts (30m) — main bundle 1,015→733 kB
+- [x] **T-072** Defer Google Fonts with preload + display=swap (15m)
+- [x] **T-073** Memoize Dashboard computations with useMemo (30m) — 8 wrappers
+- [x] **T-074** Memoize defaultSettings to module scope (15m)
+- [x] **T-075** Remove cache-busting query param from API calls (15m)
+
+### Medium Effort (P1) — Partial
+- [ ] **T-076** Lazy-load xlsx and jspdf/pdf libs on-demand (1h)
+- [ ] **T-077** Replace motion animations with CSS transitions (2-3h) — 31 files
+- [x] **T-078** Add React.memo to list item components (1h) — AccountCard done, TransactionCard/Row already had it
+- [ ] **T-079** Defer Supabase client until authenticated (1h)
+- [ ] **T-080** Reduce service worker precache scope (30m)
+
+### Nice-to-Have (P2)
+- [ ] **T-081** Optimize PNG icons to WebP/AVIF (30m)
+
 ---
 
-**Estimated remaining**: 0h — all tasks complete
+**Estimated remaining**: 4-6h (Phase 9 P1/P2)
