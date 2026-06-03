@@ -12,7 +12,6 @@ ALTER TABLE loans ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
 ALTER TABLE loan_settlements ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
 ALTER TABLE investments ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
 ALTER TABLE investment_returns ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE groups ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
 ALTER TABLE budgets ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
 ALTER TABLE recurring_transactions ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
 
@@ -24,7 +23,6 @@ ALTER TABLE loans ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE loan_settlements ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE investments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE investment_returns ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE groups ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE budgets ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE recurring_transactions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 
@@ -36,7 +34,6 @@ CREATE INDEX IF NOT EXISTS idx_loans_client_id ON loans(client_id);
 CREATE INDEX IF NOT EXISTS idx_loan_settlements_client_id ON loan_settlements(client_id);
 CREATE INDEX IF NOT EXISTS idx_investments_client_id ON investments(client_id);
 CREATE INDEX IF NOT EXISTS idx_investment_returns_client_id ON investment_returns(client_id);
-CREATE INDEX IF NOT EXISTS idx_groups_client_id ON groups(client_id);
 CREATE INDEX IF NOT EXISTS idx_budgets_client_id ON budgets(client_id);
 CREATE INDEX IF NOT EXISTS idx_recurring_transactions_client_id ON recurring_transactions(client_id);
 
@@ -48,7 +45,6 @@ CREATE INDEX IF NOT EXISTS idx_loans_updated_at ON loans(updated_at);
 CREATE INDEX IF NOT EXISTS idx_loan_settlements_updated_at ON loan_settlements(updated_at);
 CREATE INDEX IF NOT EXISTS idx_investments_updated_at ON investments(updated_at);
 CREATE INDEX IF NOT EXISTS idx_investment_returns_updated_at ON investment_returns(updated_at);
-CREATE INDEX IF NOT EXISTS idx_groups_updated_at ON groups(updated_at);
 CREATE INDEX IF NOT EXISTS idx_budgets_updated_at ON budgets(updated_at);
 CREATE INDEX IF NOT EXISTS idx_recurring_transactions_updated_at ON recurring_transactions(updated_at);
 
@@ -87,10 +83,6 @@ CREATE OR REPLACE TRIGGER set_investments_updated_at
 
 CREATE OR REPLACE TRIGGER set_investment_returns_updated_at
   BEFORE UPDATE ON investment_returns
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
-CREATE OR REPLACE TRIGGER set_groups_updated_at
-  BEFORE UPDATE ON groups
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE OR REPLACE TRIGGER set_budgets_updated_at
