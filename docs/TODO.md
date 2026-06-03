@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **110 completed**, **25 remaining** — Phase 6 next
+> **115 completed**, **3 remaining** — Phase 6 (Google Drive setup) next
 >
 > ## Branching Strategy
 >
@@ -212,7 +212,7 @@
 
 > Source: `plans/LOCAL_FIRST_ARCHITECTURE.md`
 > Branch: `feat/local-first`
-> **Status: 21/45 complete**
+> **Status: 26/28 complete**
 
 ### 🔐 Phase 1 — Auth System (Signup + Password Reset)
 
@@ -261,17 +261,22 @@
 
 ### 💾 Phase 6 — Data Backup (Google Drive + JSON)
 
-- [ ] **T-153** Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
-- [ ] **T-154** Create `supabase/migrations/016_add_google_tokens.sql` — Google OAuth tokens table (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
-- [ ] **T-155** Create `src/services/googleDriveService.ts` — Google Drive backup/restore (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
 - [x] **T-156** Update `src/components/UserProfile.tsx` — add Google Drive + Export/Import buttons (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.3`
 - [x] **T-157** Create `src/services/exportService.ts` — JSON export for local backup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
 - [x] **T-158** Create `src/components/ImportModal.tsx` — JSON import (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
 
-### 🎬 Phase 7 — Animations & Polish
+### 🎬 Phase 7 — Animations & Polish ✅
 
-- [ ] **T-159** Add slide-in animations for new transactions (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
-- [ ] **T-160** Add slide-out animations for deleted transactions (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
-- [ ] **T-161** Add balance update animations (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
-- [ ] **T-162** Update `OfflineIndicator.tsx` with sync status (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
-- [ ] **T-163** Create `public/offline.html` — offline fallback page (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§12`
+- [x] **T-159** Add slide-in animations for new transactions (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11` — already implemented via AnimatePresence on TransactionRow/TransactionCard
+- [x] **T-160** Add slide-out animations for deleted transactions (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11` — already implemented via AnimatePresence exit on TransactionRow/TransactionCard
+- [x] **T-161** Add balance update animations (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11` — AnimatedBalance component with color-flash on value change
+- [x] **T-162** Update `OfflineIndicator.tsx` with sync status (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11` — status dot + cloud icons for sync visualization
+- [x] **T-163** Create `public/offline.html` — offline fallback page (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§12` — already existed
+
+---
+
+## Remaining — Google Drive Backup (requires manual setup)
+
+- [ ] **T-153** Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
+- [ ] **T-154** Create `supabase/migrations/016_add_google_tokens.sql` — Google OAuth tokens table (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
+- [ ] **T-155** Create `src/services/googleDriveService.ts` — Google Drive backup/restore (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`

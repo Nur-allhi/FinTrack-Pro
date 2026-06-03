@@ -4,6 +4,9 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-04: Add AnimatedBalance component at src/components/AnimatedBalance.tsx — Color-flash animation (green/red) when balance value changes in Ledger header and transaction rows (completed).
+2026-06-04: Enhance OfflineIndicator at src/components/OfflineIndicator.tsx — Add status dot and cloud icons for clearer sync state visualization (completed).
+
 2026-06-03: Add Supabase sync engine at src/services/syncEngine.ts — Push unsynced locals, pull server changes, LWW conflict resolution, background sync scheduler (completed).
 2026-06-03: Add sync API endpoints at api/routes/sync.ts — POST /push (bulk upsert), GET /pull (changes since timestamp), POST /initial (full download) (completed).
 2026-06-03: Add migration service at src/services/migrationService.ts — One-time UUID migration for existing server records, guest-to-registered data transfer (completed).

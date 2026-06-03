@@ -7,11 +7,11 @@
 
 ## Quick Reference — Last Session
 
-> **Session 21** — 3 June 2026 (Local-First Architecture — Phase 6)
+> **Session 22** — 4 June 2026 (Local-First — Phase 7 Animations & Polish)
 > **Branch**: `feat/local-first`
-> **Tasks**: T-156, T-157, T-158
+> **Tasks**: T-159, T-160, T-161, T-162, T-163
 > **Status**: completed
-> **Summary**: Implemented local JSON export/import for data backup. Created exportService.ts and ImportModal.tsx, updated UserProfile to use local export and preview import modal.
+> **Summary**: Completed Phase 7 animations & polish. Created AnimatedBalance component with color-flash on value change, enhanced OfflineIndicator with status dots and cloud icons. T-159/160/163 were already implemented.
 
 ---
 
@@ -45,6 +45,31 @@ Brief description of what was accomplished.
 ---
 
 ## Session History
+
+## Session 22 — 4 June 2026 (Local-First — Phase 7 Animations & Polish)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: T-159, T-160, T-161, T-162, T-163
+> **Status**: completed
+
+### Summary
+
+Completed Phase 7 animations & polish. Created AnimatedBalance component with color-flash on value change, enhanced OfflineIndicator with status dots and cloud icons. T-159/160/163 were already implemented in prior sessions.
+
+### Changes
+
+- Created `src/components/AnimatedBalance.tsx` — detects value changes and applies 800ms color-flash (green for increase, red for decrease) with smooth transition
+- Updated `src/components/Ledger.tsx` — header balance now uses AnimatedBalance
+- Updated `src/components/TransactionRow.tsx` — per-row running balance now uses AnimatedBalance
+- Updated `src/components/TransactionCard.tsx` — mobile running balance now uses AnimatedBalance
+- Updated `src/components/OfflineIndicator.tsx` — added StatusDot component (green/amber/gray), replaced Wifi icon with Cloud/CloudOff for clearer sync state visualization
+
+### Verification
+
+- `npx tsc --noEmit` passes with zero errors
+- `npm run lint` passes
+
+---
 
 ## Session 21 — 3 June 2026 (Local-First Architecture — Phase 6)
 

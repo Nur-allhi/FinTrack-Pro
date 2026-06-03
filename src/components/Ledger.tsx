@@ -8,6 +8,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import AnimatedBalance from './AnimatedBalance';
 import { format } from 'date-fns';
 import { exportLedgerPDF } from '../utils/ledgerPdf';
 import { useToast } from './Toast';
@@ -144,8 +145,8 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
                 {isSyncing && <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 animate-spin text-primary" />}
                 <p className="hidden md:block text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
               </div>
-              <p className="text-xl md:text-3xl font-normal text-ink financial-number tracking-tighter">
-                {currency}{currentBalance.toLocaleString()}
+              <p className="text-xl md:text-3xl font-normal tracking-tighter">
+                <AnimatedBalance value={currentBalance} currency={currency} />
               </p>
             </div>
           </div>

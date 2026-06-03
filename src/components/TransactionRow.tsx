@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Transaction } from '../types';
 import { cn } from '../utils/cn';
+import AnimatedBalance from './AnimatedBalance';
 
 interface TransactionRowProps {
   tx: Transaction & { runningBalance: number };
@@ -82,7 +83,7 @@ export default React.memo(function TransactionRow({
           </span>
         </td>
         <td className="px-5 py-2.5 text-right">
-          <span className="text-sm font-bold text-ink financial-number">{currency}{tx.runningBalance.toLocaleString()}</span>
+          <AnimatedBalance value={tx.runningBalance} currency={currency} className="text-sm font-bold" />
         </td>
         <td className="px-3 py-2.5 text-right w-20">
           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

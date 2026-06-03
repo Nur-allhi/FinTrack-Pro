@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Transaction } from '../types';
 import { cn } from '../utils/cn';
+import AnimatedBalance from './AnimatedBalance';
 
 interface TransactionCardProps {
   tx: Transaction & { runningBalance: number };
@@ -85,7 +86,7 @@ export default React.memo(function TransactionCard({
               >
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-hairline">
                   <span className="text-xs font-bold text-muted uppercase tracking-wider">
-                    Balance: <span className="text-ink font-mono font-bold">{currency}{tx.runningBalance.toLocaleString()}</span>
+                    Balance: <AnimatedBalance value={tx.runningBalance} currency={currency} className="font-mono font-bold text-xs" />
                   </span>
                   <div className="flex items-center gap-1">
                     {deletingId === tx.id ? (

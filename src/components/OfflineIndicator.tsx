@@ -1,4 +1,5 @@
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, Cloud, CloudOff } from 'lucide-react';
+import { cn } from '../utils/cn';
 
 interface OfflineIndicatorProps {
   isOnline: boolean;
@@ -19,10 +20,25 @@ function formatLastSync(ts: number | null): string {
   return `${Math.floor(diff / 86400000)}d ago`;
 }
 
+function StatusDot({ color }: { color: 'green' | 'amber' | 'gray' }) {
+  return (
+    <span
+      className={cn(
+        'inline-block w-1.5 h-1.5 rounded-full shrink-0',
+        color === 'green' && 'bg-semantic-up',
+        color === 'amber' && 'bg-yellow-500',
+        color === 'gray' && 'bg-muted/40'
+      )}
+    />
+  );
+}
+
 export default function OfflineIndicator({ isOnline, isSyncing = false, pendingCount = 0, lastSyncAt }: OfflineIndicatorProps) {
   if (isOnline && pendingCount === 0 && !isSyncing) {
     return lastSyncAt ? (
       <div className="flex items-center justify-center gap-2 px-4 py-1 text-[10px] font-medium text-muted/60">
+        <StatusDot color="green" />
+        <Cloud className="w-3 h-3 shrink-0" />
         <span>Last synced {formatLastSync(lastSyncAt)}</span>
       </div>
     ) : null;
@@ -45,6 +61,8 @@ export default function OfflineIndicator({ isOnline, isSyncing = false, pendingC
   if (isOnline && pendingCount > 0) {
     return (
       <div className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-semantic-up/10 text-semantic-up">
+        <StatusDot color="amber" />
+        <Wifi className="w-3 h-3 shrink-0" />
         <span>{pendingCount} pending change{pendingCount !== 1 ? 's' : ''} to sync</span>
       </div>
     );
@@ -52,7 +70,8 @@ export default function OfflineIndicator({ isOnline, isSyncing = false, pendingC
 
   return (
     <div className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-semantic-down/10 text-semantic-down">
-      <WifiOff className="w-3 h-3 shrink-0" />
+      <StatusDot color="gray" />
+      <CloudOff className="w-3 h-3 shrink-0" />
       <span>Offline — showing cached data</span>
       {pendingCount > 0 && (
         <span className="ml-1">({pendingCount} pending)</span>
