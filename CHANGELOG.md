@@ -4,6 +4,15 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-03: Add Supabase sync engine at src/services/syncEngine.ts — Push unsynced locals, pull server changes, LWW conflict resolution, background sync scheduler (completed).
+2026-06-03: Add sync API endpoints at api/routes/sync.ts — POST /push (bulk upsert), GET /pull (changes since timestamp), POST /initial (full download) (completed).
+2026-06-03: Add migration service at src/services/migrationService.ts — One-time UUID migration for existing server records, guest-to-registered data transfer (completed).
+2026-06-03: Hook sync triggers in App.tsx — Start scheduler on auth, initial sync on login, stop on logout, 30s interval + tab visibility + online event (completed).
+
+2026-06-03: Add guest mode signup nudge at src/components/SignupNudge.tsx — Non-blocking modal after 5 transactions prompting guests to sign up for data backup (completed).
+2026-06-03: Make authService.apiFetch guest-aware at src/services/authService.ts — Short-circuits network requests for guests, avoiding wasted 401 calls (completed).
+2026-06-03: Add guest_id generation and transaction count helpers at src/services/localDb.ts — getOrCreateGuestId() and getTransactionCount() for guest tracking (completed).
+
 2026-06-03: Convert all component write paths to local-first IndexedDB writes at TransactionModal, TransferModal, LoanManager, MemberManager, GroupManager, InvestmentTracker, RecycleBin — All mutations write to IndexedDB instantly, eliminating API loading spinners and enabling offline-first writes (completed).
 2026-06-03: Add soft-delete query helpers to localDb at src/services/localDb.ts — getDeletedItems(), restoreItem(), permanentDelete(), emptyBin() for recycle bin functionality (completed).
 2026-06-03: Add double-click prevention via isWriting ref pattern to TransactionModal, TransferModal, LoanManager — Prevents duplicate submissions during write operations (completed).

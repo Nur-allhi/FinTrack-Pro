@@ -15,11 +15,12 @@ interface TransactionModalProps {
   accounts: Account[];
   onClose: () => void;
   onUpdate: () => void;
+  onTransactionSaved?: () => void;
   initialAccountId?: number;
   currency: string;
 }
 
-export default function TransactionModal({ accounts, onClose, onUpdate, initialAccountId, currency }: TransactionModalProps) {
+export default function TransactionModal({ accounts, onClose, onUpdate, onTransactionSaved, initialAccountId, currency }: TransactionModalProps) {
   const { toast } = useToast();
   const [success, setSuccess] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
@@ -92,6 +93,7 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
       setSuccess(true);
       toast("Transaction saved.", 'success');
       onUpdate();
+      onTransactionSaved?.();
       setTimeout(handleClose, 1200);
     } catch (error) {
       console.error("Save failed:", error);

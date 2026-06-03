@@ -20,6 +20,7 @@ import recyclebinRoutes from "./routes/recyclebin.js";
 import searchRoutes from "./routes/search.js";
 import budgetRoutes from "./routes/budgets.js";
 import recurringRoutes from "./routes/recurring.js";
+import syncRoutes from "./routes/sync.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -118,6 +119,7 @@ app.use("/api/import", requireAuth, exportRoutes);
 app.use("/api/search", requireAuth, searchRoutes);
 app.use("/api/budgets", requireAuth, budgetRoutes);
 app.use("/api/recurring", requireAuth, recurringRoutes);
+app.use("/api/sync", requireAuth, syncRoutes);
 
 app.use(errorHandler);
 

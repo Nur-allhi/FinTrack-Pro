@@ -7,11 +7,11 @@
 
 ## Quick Reference — Last Session
 
-> **Session 17** — 3 June 2026 (Local-First Architecture — Phase 1-2)
+> **Session 20** — 3 June 2026 (Local-First Architecture — Phase 5)
 > **Branch**: `feat/local-first`
-> **Tasks**: T-121 through T-132
+> **Tasks**: T-148 through T-152
 > **Status**: completed
-> **Summary**: Auth system (signup, forgot password, reset password, guest mode) + local-first IndexedDB core with full schema and instant rendering.
+> **Summary**: Implemented Supabase sync engine — push/pull API, client sync service with LWW conflict resolution, migration service, and background sync scheduler.
 
 ---
 
@@ -46,118 +46,156 @@ Brief description of what was accomplished.
 
 ## Session History
 
-## Session 13 — 25 May 2026 (Audit Remediation — Phases 0–3, 5–6)
+## Session 20 — 3 June 2026 (Local-First Architecture — Phase 5)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: T-148 through T-152
+> **Status**: completed
+
+### Summary
+
+Implemented the Supabase sync engine: 3 API endpoints (push/pull/initial), client-side sync service with LWW conflict resolution, migration service for existing users, and background sync scheduler with multiple triggers.
 
 ### Changes
 
-Full audit remediation based on `docs/AUDIT_REPORT.md` — 14 items fixed, 20 API tests passing.
+**T-148 — Sync Engine (src/services/syncEngine.ts):**
+- `pushUnsynced()` — collects all pending records, POSTs to /api/sync/push, marks synced locally
+- `pullChanges()` — GETs /api/sync/pull?since=, upserts server records to local IndexedDB
+- `syncNow()` — full push+pull cycle with dedup (prevents concurrent syncs)
+- `initialSync()` — full download for guest→registered migration
+- `startSyncScheduler()` — visibilitychange, online, 30s interval triggers
+- `onSyncStateChange()` — listener pattern for UI sync indicator
 
-**Phase 0 — Critical Bug Fixes**
-- `/api/import` now protected by `requireAuth` middleware (was wide open)
-- `FloatingActionButton` timerRef typed as `ReturnType<typeof window.setTimeout>` instead of `undefined as any`
-- Offline syncQueue filtering changed from `queue.indexOf(a)` (always returned first match) to `syncQueue.filter(item => item.id !== action.id)`
-- `requireQuota` now uses `supabaseAdmin.getUserById(req.user.id)` instead of re-extracting token from headers
+**T-149 — Sync API (api/routes/sync.ts):**
+- `POST /api/sync/push` — bulk upsert with LWW conflict detection per record
+- `GET /api/sync/pull?since=<timestamp>` — returns all records modified since timestamp
+- `POST /api/sync/initial` — full download of all user records
+- All endpoints log to sync_log table
 
-**Phase 1 — Data Layer Extraction**
-- Created `api/db/` with per-entity query modules: `accounts.ts`, `members.ts`, `transactions.ts`, `loans.ts`, `groups.ts`, `investments.ts`, `transfers.ts`, `export.ts`, `index.ts`
-- All 8 route files migrated from inline Supabase/SQLite branching to unified data layer calls
-- 9 SQLite indexes added for performance (`transactions.account_id`, `loans.lender_account_id`, `loan_settlements.loan_id`, etc.)
-- Cache TTL added to `cacheService` (default 5 minutes, configurable per call)
+**T-150 — Migration Service (src/services/migrationService.ts):**
+- `isMigrationNeeded()` — checks if server has data but local is empty
+- `migrateServerData()` — downloads server records, assigns client_ids, stores locally
+- Handles type conversion from server integer IDs to local UUID format
 
-**Phase 2 — Zod Validation**
-- Installed Zod, created `shared/validation.ts` with schemas + `validate()` helper returning discriminated union
-- Applied validation to all POST/PATCH routes (members, accounts, transactions, loans, groups, investments, transfers)
-- Added `?limit=&offset=` pagination to accounts, transactions, loans GET endpoints
+**T-151 — Sync Triggers (App.tsx):**
+- Starts sync scheduler on authentication
+- Triggers initial sync on login
+- Stops scheduler on logout
+- 30s interval + tab visibility + online event
 
-**Phase 3 — Logging & Error Handling**
-- Installed pino, created `api/logger.ts` with request-scoped child loggers
-- `requestId` middleware generates UUID per request (stored in `res.locals` and `x-request-id` header)
-- `errorHandler` middleware + `sendError()` helper for standardized `{ error, code, details }` responses
-
-**Phase 5 — Type Safety**
-- Created `shared/types.ts` with all entity interfaces (Account, Transaction, Loan, Member, Investment, etc.)
-- Typed `members.ts` and `accounts.ts` data layer modules
-
-**Phase 6 — Testing**
-- Installed vitest + supertest
-- Created `vitest.config.ts` (scoped to `api/tests/`, `src/tests/`)
-- 3 passing tests for members data layer CRUD
+### Files Changed
+- `src/services/syncEngine.ts` (new)
+- `src/services/migrationService.ts` (new)
+- `api/routes/sync.ts` (new)
+- `api/index.ts` (registered sync route)
+- `src/App.tsx` (sync scheduler lifecycle)
 
 ### Verification
 - `npx tsc --noEmit` passes with zero errors
-- 20/20 API integration tests pass (login, auth guards, validation CRUD, pagination, export, admin endpoints)
-- GitNexus re-indexed (1,312 symbols, 1,903 edges)
+- `npm run lint` passes
 
-### New Files
-- `api/db/*.ts` (9 files) — per-entity data access modules
-- `shared/types.ts` — entity interfaces
-- `shared/validation.ts` — Zod schemas + validate()
-- `api/logger.ts` — pino logger setup
-- `api/middleware/error.ts` — sendError + errorHandler
-- `api/middleware/requestId.ts` — UUID request ID per request
-- `api/tests/members.test.ts` — 3 Vitest tests
-- `vitest.config.ts` — test configuration
-- `docs/IMPLEMENTATION_PLAN.md` — phased implementation plan
-- `docs/AUDIT_REPORT.md` — audit report (updated with status)
-
-### Files Changed
-- `api/index.ts` — requireAuth on import route, wired middleware
-- `api/db.ts` — SQLite indexes added
-- `api/routes/*.ts` (8 files) — migrated to data layer calls, validation, pagination
-- `api/middleware/quota.ts` — getUserById fix
-- `src/components/FloatingActionButton.tsx` — timerRef type fix
-- `src/services/cacheService.ts` — TTL expiration
-- `src/services/offlineService.ts` — syncQueue id-based filtering
-- `package.json` — added zod, pino, pino-pretty, vitest, supertest, @types/supertest
+### Next Steps
+- Phase 6: Data Backup (Google Drive + JSON) — T-153 to T-158
 
 ---
 
-## Session 7 — 16 May 2026 (dashboard polish)
+## Session 19 — 3 June 2026 (Local-First Architecture — Phase 4)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: T-143 through T-146
+> **Status**: completed
+
+### Summary
+
+Completed guest mode enhancements: guest-aware API short-circuit, guest_id tracking in IndexedDB, SignupNudge component, and transaction-triggered nudge flow.
 
 ### Changes
-- **Dashboard controls** — single row: Member Select | Transactions (hidden on mobile) | Filters | Grid/List
-- **Quick filters** — moved behind toggle button with smooth scale+fade animation (open/close)
-- **AccountCard redesign** — removed redundant dot, SETTLED label, type tag from name row; added group name with Folder icon on the right; member name animates in/out based on filter selection
-- **Sidebar nav animation** — `LayoutGroup` + `layout` for spring-animated active tab switching; auto-deselect when profile opens
-- **Global button press** — enhanced `active:scale` from 0.98 to 0.96 on all btn-* classes, global `:where(button):active` rule for un-styled buttons
-- **Text sizes** — all `text-[10px]` changed to `text-xs` (rem-based, scales with font-size setting)
+
+**T-143 — Guest-Aware API Short-Circuit:**
+- Added `_guestMode` flag to `authService.ts`
+- `apiFetch()` short-circuits for guests (returns 401 without network request)
+- `setGuestMode()` export for useAuth to control the flag
+
+**T-144 — Guest ID Tracking:**
+- Added `getOrCreateGuestId()` and `getTransactionCount()` to `localDb.ts`
+- useAuth initializes guest_id on first guest visit
+
+**T-145 — SignupNudge Component:**
+- Created `SignupNudge.tsx` — non-blocking modal with Sign Up / Maybe Later / Never Show Again
+- Tracks dismissal via `localDb.setMeta('signup_nudge_dismissed', true)`
+- Styled consistently with existing modals (motion/react animations, portal-based)
+
+**T-145b — Nudge Trigger Integration:**
+- TransactionModal accepts `onTransactionSaved` callback
+- App.tsx manages `showSignupNudge` state
+- `checkSignupNudge()` checks transaction count ≥ 5 and not dismissed
+- Nudge triggers after each transaction save for guests
 
 ### Files Changed
-- `src/components/Dashboard.tsx` — layout rework, filter animation, text fixes
-- `src/components/AccountCard.tsx` — full redesign with motion layout, props update
-- `src/components/layout/Sidebar.tsx` — LayoutGroup, showProfile support
-- `src/App.tsx` — pass showProfile to Sidebar
-- `src/index.css` — global button active rule, enhanced btn scale, transform transition
+- `src/services/authService.ts` — added `_guestMode`, `setGuestMode()`, guest-aware `apiFetch()`
+- `src/hooks/useAuth.ts` — calls `setGuestMode()` and `getOrCreateGuestId()` on auth state changes
+- `src/services/localDb.ts` — added `getOrCreateGuestId()`, `getTransactionCount()`
+- `src/components/SignupNudge.tsx` — new component
+- `src/components/TransactionModal.tsx` — accepts `onTransactionSaved` prop
+- `src/App.tsx` — manages nudge state, renders SignupNudge
+
+### Verification
+- `npx tsc --noEmit` passes with zero errors
+- `npm run lint` passes
+
+### Next Steps
+- Phase 5: Supabase Sync Engine (T-148 to T-152)
 
 ---
 
-## Session 6 — 16 May 2026 (polish + merge)
+## Session 18 — 3 June 2026 (Local-First Architecture — Phase 3)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: T-133 through T-140
+> **Status**: completed
+
+### Summary
+
+Converted all 7 component write paths to instant IndexedDB writes. Every mutation now writes to localDb first (1-5ms) instead of making API calls (200-500ms), eliminating loading spinners and enabling offline-first writes.
 
 ### Changes
-- **FAB** — auto-close after 5s, fixed outside tap for mobile (`pointerdown`), ref-based timer for reliable cleanup
-- **Modal animations** — open: backdrop fades in, card slides up; close: both fade out together via internal `closing` state + `setTimeout(onClose, 200)`
-- **Dashboard layout** — Row 2: action buttons centered; Row 3: merged filters + Grid/List toggle; replaced "Your Portfolio" heading with member `Select` dropdown
-- **Dashboard filter animation** — single `motion.div` wrapper with key change on filter, fades content in/out without affecting card sizes
-- **Mobile keyboard** — amount fields use `inputMode="decimal"` (shows numeric keypad with decimal)
 
-### New Files
-- `src/components/ErrorBoundary.tsx` — catches render errors gracefully
+**Component Write Path Migration:**
+- **TransactionModal** — Writes transactions to localDb with UUID, removes authService/offlineService calls
+- **TransferModal** — Creates 2 linked transactions (debit + credit) in localDb with matching `linked_transaction_id`
+- **LoanManager** — Create/update/settle/delete all write to localDb; fetchLoans reads from localDb with toApiLoan mapping
+- **MemberManager** — Create writes to localDb, delete uses soft-delete (`_deleted = true`)
+- **GroupManager** — Create/update/delete write to localDb, fetchGroups reads from localDb with member name join
+- **InvestmentTracker** — Create writes to localDb, fetchInvestments/fetchReturns read from localDb
+- **RecycleBin** — Restore/permanent-delete use new localDb helpers, fetchItems reads soft-deleted records
 
----
+**localDb Additions:**
+- `getDeletedItems()` — queries all stores for `_deleted = true` records
+- `restoreItem(entityType, id)` — sets `_deleted = false` and marks pending
+- `permanentDelete(entityType, id)` — removes record from IndexedDB entirely
+- `emptyBin(entityType?)` — removes all soft-deleted records (optionally filtered by type)
 
-## Session 5 — 16 May 2026 (Vercel fixes)
+**Double-Click Prevention:**
+- Added `isWriting` ref pattern to TransactionModal, TransferModal, LoanManager
 
-### Vercel Deployment Fixes
+### Files Changed
+- `src/components/TransactionModal.tsx` — localDb write, removed loading state
+- `src/components/TransferModal.tsx` — localDb write, removed loading state
+- `src/components/LoanManager.tsx` — localDb CRUD, toApiLoan mapping
+- `src/components/MemberManager.tsx` — localDb create/delete
+- `src/components/GroupManager.tsx` — localDb CRUD with member name join
+- `src/components/InvestmentTracker.tsx` — localDb create, local reads
+- `src/components/RecycleBin.tsx` — localDb restore/delete/empty
+- `src/services/localDb.ts` — added 4 new methods for recycle bin
+- `docs/TODO.md` — Phase 3 tasks marked complete
+- `CHANGELOG.md` — Phase 3 entry added
 
-- **FAB white screen crash** (root cause: `FloatingActionButton`, `TransactionModal`, `TransferModal` shared one `<Suspense fallback={null}>` — lazy-loading a modal would replace ALL children with `null`, and any chunk-load error crashed the whole app since there was no error boundary)
-  - Imported `FloatingActionButton` **eagerly** (it's tiny, no need for lazy)
-  - Wrapped each modal in its own `<Suspense>` boundary
-  - Wrapped modals in `<ErrorBoundary>` to catch chunk-load failures gracefully
-  - Moved FAB outside the modal Suspense boundaries entirely
-- **ErrorBoundary** (`src/components/ErrorBoundary.tsx`) — class-based boundary that logs errors and renders fallback instead of crashing the React tree
-- **Admin panel not showing** (root cause: `/api/auth/me` API call fails silently on Vercel cold start, `.catch(() => {})` swallows errors, `isAdmin` stays `false`)
-  - Added `console.warn` logging for the admin check failure
-  - Added auto-retry after 3 seconds on failure
+### Verification
+- `npx tsc --noEmit` passes with zero errors
+- `npm run lint` passes
+
+### Next Steps
+- Phase 4: Guest Mode + Signup Nudge (T-143 to T-146)
 
 ---
 

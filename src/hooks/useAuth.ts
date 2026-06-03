@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { authService, setOnSessionExpired } from '../services/authService';
+import { authService, setOnSessionExpired, setGuestMode } from '../services/authService';
 import { offlineService, initPendingCount } from '../services/offlineService';
+import { localDb } from '../services/localDb';
 import { useToast } from '../components/Toast';
 
 export type AuthStatus = 'loading' | 'guest' | 'authenticated';
@@ -24,6 +25,8 @@ export function useAuth() {
 
       if (sessionStorage.getItem('guest_mode') === 'true') {
         initPendingCount();
+        setGuestMode(true);
+        localDb.getOrCreateGuestId().catch(() => {});
         setAuthStatus('guest');
         return;
       }
@@ -32,13 +35,18 @@ export function useAuth() {
       try {
         const res = await authService.apiFetch('/api/auth/me');
         if (res.ok) {
+          setGuestMode(false);
           setAuthStatus('authenticated');
           const d = await res.json();
           if (d.user?.email) setUserEmail(d.user.email);
         } else {
+          setGuestMode(true);
+          localDb.getOrCreateGuestId().catch(() => {});
           setAuthStatus('guest');
         }
       } catch {
+        setGuestMode(true);
+        localDb.getOrCreateGuestId().catch(() => {});
         setAuthStatus('guest');
       }
     };
@@ -54,6 +62,7 @@ export function useAuth() {
 
   const handleLogin = useCallback(async (token: string) => {
     sessionStorage.removeItem('guest_mode');
+    setGuestMode(false);
     await authService.setSession(token);
     setAuthStatus('authenticated');
     const res = await authService.apiFetch('/api/auth/me');
@@ -66,12 +75,14 @@ export function useAuth() {
 
   const handleContinueAsGuest = useCallback(() => {
     sessionStorage.setItem('guest_mode', 'true');
+    setGuestMode(true);
     setAuthStatus('guest');
   }, []);
 
   const handleLogout = useCallback(async () => {
     sessionStorage.setItem('pending_logout', 'true');
     await authService.signOut();
+    setGuestMode(true);
     setAuthStatus('guest');
     setUserEmail('');
     Object.keys(localStorage).forEach(key => {

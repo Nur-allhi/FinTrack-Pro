@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **100 completed**, **35 remaining** — Phase 4 next
+> **110 completed**, **25 remaining** — Phase 6 next
 >
 > ## Branching Strategy
 >
@@ -245,19 +245,19 @@
 
 ### 👤 Phase 4 — Guest Mode + Signup Nudge
 
-- [ ] **T-143** Update `src/services/authService.ts` — make auth optional for guests (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7`
-- [ ] **T-144** Update `src/hooks/useAuth.ts` — guest mode state management (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7`
-- [ ] **T-145** Create `src/components/SignupNudge.tsx` — signup prompt popup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7.2`
-- [ ] **T-146** Test guest → registered migration flow (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7.3`
+- [x] **T-143** Update `src/services/authService.ts` — make auth optional for guests (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7`
+- [x] **T-144** Update `src/hooks/useAuth.ts` — guest mode state management (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7`
+- [x] **T-145** Create `src/components/SignupNudge.tsx` — signup prompt popup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7.2`
+- [x] **T-146** Test guest → registered migration flow (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7.3`
 
 ### ☁️ Phase 5 — Supabase Sync Engine
 
 - [x] **T-147** Create `supabase/migrations/015_add_uuid_sync_fields.sql` — UUID + updated_at columns (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§10`
-- [ ] **T-148** Create `src/services/syncEngine.ts` — background sync to Supabase (4h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
-- [ ] **T-149** Create `api/routes/sync.ts` — bulk sync API endpoint (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§10`
-- [ ] **T-150** Create `src/services/migrationService.ts` — one-time UUID migration for existing users (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§3`
-- [ ] **T-151** Implement push/pull/merge logic (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
-- [ ] **T-152** Test multi-device sync (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
+- [x] **T-148** Create `src/services/syncEngine.ts` — background sync to Supabase (4h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
+- [x] **T-149** Create `api/routes/sync.ts` — bulk sync API endpoint (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§10`
+- [x] **T-150** Create `src/services/migrationService.ts` — one-time UUID migration for existing users (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§3`
+- [x] **T-151** Implement push/pull/merge logic (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
+- [x] **T-152** Test multi-device sync (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
 
 ### 💾 Phase 6 — Data Backup (Google Drive + JSON)
 

@@ -1,0 +1,194 @@
+import express from "express";
+import { db } from "../db.js";
+import { sendError } from "../middleware/error.js";
+import { logger } from "../logger.js";
+
+const router = express.Router();
+
+const SYNC_TABLES = [
+  'members', 'accounts', 'transactions', 'loans',
+  'loan_settlements', 'investments', 'investment_returns',
+  'budgets', 'recurring_transactions',
+] as const;
+
+type SyncTable = typeof SYNC_TABLES[number];
+
+interface SyncRecord {
+  client_id: string;
+  updated_at: string;
+  _deleted?: boolean;
+  [key: string]: unknown;
+}
+
+interface PushBody {
+  records: Record<SyncTable, SyncRecord[]>;
+}
+
+// POST /api/sync/push — Bulk upsert local changes to server
+router.post("/push", async (req, res) => {
+  try {
+    const userId = req.user!.id;
+    const { records } = req.body as PushBody;
+    if (!records || typeof records !== 'object') {
+      return sendError(res, 400, "records object required", "VALIDATION_ERROR");
+    }
+
+    const results: Record<string, { pushed: number; conflicts: number }> = {};
+    const client = db();
+
+    for (const table of SYNC_TABLES) {
+      const tableRecords = records[table];
+      if (!Array.isArray(tableRecords) || tableRecords.length === 0) continue;
+
+      let pushed = 0;
+      let conflicts = 0;
+
+      for (const record of tableRecords) {
+        if (!record.client_id) continue;
+
+        // Check if server has this record by client_id
+        const { data: existing } = await client
+          .from(table)
+          .select('id, updated_at')
+          .eq('client_id', record.client_id)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (existing) {
+          // Server record exists — check for conflict (LWW)
+          if (new Date(record.updated_at) < new Date(existing.updated_at)) {
+            // Server wins — skip push
+            conflicts++;
+            continue;
+          }
+          // Local wins — update server
+          const { id, client_id: _cid, updated_at: _ua, ...fields } = record;
+          const { error } = await client
+            .from(table)
+            .update({ ...fields, client_id: record.client_id, updated_at: record.updated_at })
+            .eq('id', existing.id)
+            .eq('user_id', userId);
+          if (error) {
+            logger.error({ requestId: req.requestId, error: error.message, table, client_id: record.client_id }, "sync push update");
+            continue;
+          }
+          pushed++;
+        } else {
+          // New record — insert
+          const { id: _localId, ...fields } = record;
+          const { error } = await client
+            .from(table)
+            .insert({ ...fields, user_id: userId, client_id: record.client_id, updated_at: record.updated_at });
+          if (error) {
+            logger.error({ requestId: req.requestId, error: error.message, table, client_id: record.client_id }, "sync push insert");
+            continue;
+          }
+          pushed++;
+        }
+      }
+
+      results[table] = { pushed, conflicts };
+    }
+
+    // Log sync operation
+    const totalPushed = Object.values(results).reduce((s, r) => s + r.pushed, 0);
+    if (totalPushed > 0) {
+      await client.from('sync_log').insert({
+        user_id: userId,
+        direction: 'push',
+        entity_type: 'bulk',
+        record_count: totalPushed,
+      });
+    }
+
+    res.json({ success: true, results });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "POST /api/sync/push");
+    sendError(res, 500, message, "INTERNAL_ERROR");
+  }
+});
+
+// GET /api/sync/pull?since=<timestamp> — Get server changes since timestamp
+router.get("/pull", async (req, res) => {
+  try {
+    const userId = req.user!.id;
+    const since = req.query.since as string | undefined;
+    const sinceTimestamp = since || '1970-01-01T00:00:00Z';
+
+    const client = db();
+    const changes: Record<SyncTable, unknown[]> = {} as Record<SyncTable, unknown[]>;
+
+    for (const table of SYNC_TABLES) {
+      const { data, error } = await client
+        .from(table)
+        .select('*')
+        .eq('user_id', userId)
+        .gt('updated_at', sinceTimestamp)
+        .order('updated_at', { ascending: true });
+
+      if (error) {
+        logger.error({ requestId: req.requestId, error: error.message, table }, "sync pull");
+        continue;
+      }
+      changes[table] = data || [];
+    }
+
+    // Log sync operation
+    const totalPulled = Object.values(changes).reduce((s, arr) => s + arr.length, 0);
+    if (totalPulled > 0) {
+      await client.from('sync_log').insert({
+        user_id: userId,
+        direction: 'pull',
+        entity_type: 'bulk',
+        record_count: totalPulled,
+      });
+    }
+
+    res.json({ success: true, changes, pulledAt: new Date().toISOString() });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "GET /api/sync/pull");
+    sendError(res, 500, message, "INTERNAL_ERROR");
+  }
+});
+
+// POST /api/sync/initial — Full download for first sync (guest → registered)
+router.post("/initial", async (req, res) => {
+  try {
+    const userId = req.user!.id;
+    const client = db();
+    const data: Record<SyncTable, unknown[]> = {} as Record<SyncTable, unknown[]>;
+
+    for (const table of SYNC_TABLES) {
+      const { data: rows, error } = await client
+        .from(table)
+        .select('*')
+        .eq('user_id', userId)
+        .order('id', { ascending: true });
+
+      if (error) {
+        logger.error({ requestId: req.requestId, error: error.message, table }, "sync initial");
+        continue;
+      }
+      data[table] = rows || [];
+    }
+
+    // Log sync operation
+    const totalRecords = Object.values(data).reduce((s, arr) => s + arr.length, 0);
+    await client.from('sync_log').insert({
+      user_id: userId,
+      direction: 'pull',
+      entity_type: 'initial',
+      record_count: totalRecords,
+    });
+
+    res.json({ success: true, data, syncedAt: new Date().toISOString() });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error({ requestId: req.requestId, error: message }, "POST /api/sync/initial");
+    sendError(res, 500, message, "INTERNAL_ERROR");
+  }
+});
+
+export default router;

@@ -392,4 +392,18 @@ export const localDb = {
     const db = await getDB();
     await db.put('metadata', settings, 'app_settings');
   },
+
+  async getOrCreateGuestId(): Promise<string> {
+    const db = await getDB();
+    const existing = await db.get('metadata', 'guest_id') as { value: string } | undefined;
+    if (existing?.value) return existing.value;
+    const id = crypto.randomUUID();
+    await db.put('metadata', { value: id }, 'guest_id');
+    return id;
+  },
+
+  async getTransactionCount(): Promise<number> {
+    const db = await getDB();
+    return db.count('transactions');
+  },
 };

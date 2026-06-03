@@ -4,9 +4,14 @@ let _supabase: SupabaseClient | null = null;
 let _initPromise: Promise<SupabaseClient | null> | null = null;
 let _onSessionExpired: (() => void) | null = null;
 let _signedOut = false;
+let _guestMode = false;
 
 export function setOnSessionExpired(callback: () => void) {
   _onSessionExpired = callback;
+}
+
+export function setGuestMode(enabled: boolean) {
+  _guestMode = enabled;
 }
 
 async function getSupabase(): Promise<SupabaseClient | null> {
@@ -145,6 +150,9 @@ export const authService = {
   },
 
   async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    if (_guestMode && !url.includes('/api/auth/')) {
+      return new Response(JSON.stringify({ error: 'Guest mode' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
     if (_signedOut && !url.includes('/api/auth/logout')) {
       return new Response(JSON.stringify({ error: 'Signed out' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }

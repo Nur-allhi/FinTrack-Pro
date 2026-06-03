@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useRef, useCallback } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -22,6 +22,7 @@ import { cacheService } from './services/cacheService';
 import { localDb } from './services/localDb';
 import { authService } from './services/authService';
 import { offlineService } from './services/offlineService';
+import { syncNow, startSyncScheduler, stopSyncScheduler } from './services/syncEngine';
 import { useToast } from './components/Toast';
 import { Agentation } from 'agentation';
 
@@ -44,6 +45,7 @@ const LoanManager = lazy(() => import('./components/LoanManager'));
 const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const RecycleBin = lazy(() => import('./components/RecycleBin'));
+const SignupNudge = lazy(() => import('./components/SignupNudge'));
 const Login = lazy(() => import('./components/Login'));
 const Signup = lazy(() => import('./components/Signup'));
 const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
@@ -79,6 +81,7 @@ export default function App() {
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [showSignupNudge, setShowSignupNudge] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
   const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
@@ -154,6 +157,23 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     authService.apiFetch('/api/recurring/process', { method: 'POST' }).catch(() => {});
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      stopSyncScheduler();
+      return;
+    }
+    startSyncScheduler();
+    syncNow();
+  }, [isAuthenticated]);
+
+  const checkSignupNudge = useCallback(async () => {
+    if (isAuthenticated) return;
+    const dismissed = await localDb.getMeta('signup_nudge_dismissed');
+    if (dismissed) return;
+    const count = await localDb.getTransactionCount();
+    if (count >= 5) setShowSignupNudge(true);
   }, [isAuthenticated]);
 
   const handleExportData = async () => {
@@ -278,10 +298,20 @@ export default function App() {
         )}
         {isTransactionModalOpen && (
           <Suspense fallback={null}>
-            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
+            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} onTransactionSaved={checkSignupNudge} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
           </Suspense>
         )}
       </ErrorBoundary>
+      {showSignupNudge && (
+        <Suspense fallback={null}>
+          <SignupNudge
+            open={showSignupNudge}
+            onSignUp={() => { setShowSignupNudge(false); setAuthPage('signup'); }}
+            onDismiss={() => setShowSignupNudge(false)}
+            onNeverShow={() => setShowSignupNudge(false)}
+          />
+        </Suspense>
+      )}
       <div className="md:hidden">
         <BottomNav
           activeTab={activeTab}
