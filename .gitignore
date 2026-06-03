@@ -18,5 +18,5 @@ screenshot/
 scripts/
 
 # AI agent framework files (not consumed by project code)
-.agent/
-.codex/
+
+
