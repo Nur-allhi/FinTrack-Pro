@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Trash2, RotateCcw, AlertTriangle, Wallet, Handshake, Receipt, Clock, type LucideIcon } from 'lucide-react';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface DeletedItem {
-  entity_type: 'transactions' | 'accounts' | 'loans';
+  entity_type: string;
   entity_label: string;
-  id: number;
+  id: string;
   deleted_at: string;
   summary: string;
+  server_id?: number | null;
 }
 
 const typeConfig: Record<string, { icon: LucideIcon; color: string }> = {
@@ -40,12 +41,8 @@ export default function RecycleBin() {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const qs = filter !== 'all' ? `?type=${filter}` : '';
-      const res = await authService.apiFetch(`/api/recyclebin${qs}?_=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data);
-      }
+      const allDeleted = await localDb.getDeletedItems();
+      setItems(filter === 'all' ? allDeleted : allDeleted.filter(i => i.entity_type === filter));
     } catch {
       toast('Failed to load recycle bin.', 'error');
     } finally {
@@ -59,13 +56,9 @@ export default function RecycleBin() {
     const key = `${item.entity_type}-${item.id}`;
     setActing(key);
     try {
-      const res = await authService.apiFetch(`/api/recyclebin/${item.entity_type}/${item.id}/restore`, { method: 'POST' });
-      if (res.ok) {
-        toast(`${item.entity_label} restored.`, 'success');
-        fetchItems();
-      } else {
-        toast('Restore failed.', 'error');
-      }
+      await localDb.restoreItem(item.entity_type, item.id);
+      toast(`${item.entity_label} restored.`, 'success');
+      fetchItems();
     } catch {
       toast('Restore failed.', 'error');
     } finally {
@@ -78,13 +71,9 @@ export default function RecycleBin() {
     const key = `${item.entity_type}-${item.id}`;
     setActing(key);
     try {
-      const res = await authService.apiFetch(`/api/recyclebin/${item.entity_type}/${item.id}`, { method: 'DELETE' });
-      if (res.ok) {
-        toast(`${item.entity_label} permanently deleted.`, 'success');
-        fetchItems();
-      } else {
-        toast('Delete failed.', 'error');
-      }
+      await localDb.permanentDelete(item.entity_type, item.id);
+      toast(`${item.entity_label} permanently deleted.`, 'success');
+      fetchItems();
     } catch {
       toast('Delete failed.', 'error');
     } finally {
@@ -96,14 +85,9 @@ export default function RecycleBin() {
     if (!confirm('Permanently delete ALL items in the recycle bin? This cannot be undone.')) return;
     setActing('empty-all');
     try {
-      const qs = filter !== 'all' ? `?type=${filter}` : '';
-      const res = await authService.apiFetch(`/api/recyclebin${qs}`, { method: 'DELETE' });
-      if (res.ok) {
-        toast('Recycle bin emptied.', 'success');
-        fetchItems();
-      } else {
-        toast('Failed to empty recycle bin.', 'error');
-      }
+      await localDb.emptyBin(filter !== 'all' ? filter : undefined);
+      toast('Recycle bin emptied.', 'success');
+      fetchItems();
     } catch {
       toast('Failed to empty recycle bin.', 'error');
     } finally {

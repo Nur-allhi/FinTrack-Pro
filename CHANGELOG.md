@@ -4,6 +4,9 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-03: Convert all component write paths to local-first IndexedDB writes at TransactionModal, TransferModal, LoanManager, MemberManager, GroupManager, InvestmentTracker, RecycleBin — All mutations write to IndexedDB instantly, eliminating API loading spinners and enabling offline-first writes (completed).
+2026-06-03: Add soft-delete query helpers to localDb at src/services/localDb.ts — getDeletedItems(), restoreItem(), permanentDelete(), emptyBin() for recycle bin functionality (completed).
+2026-06-03: Add double-click prevention via isWriting ref pattern to TransactionModal, TransferModal, LoanManager — Prevents duplicate submissions during write operations (completed).
 2026-06-03: Add signup, password reset, and guest mode auth system at src/components/{Signup,ForgotPassword,ResetPassword}.tsx, src/services/authService.ts, src/hooks/useAuth.ts, src/App.tsx — Enables email/password signup, forgot/reset password flows, and guest mode (completed).
 2026-06-03: Add local-first IndexedDB core at src/services/localDb.ts, src/utils/ids.ts, src/hooks/useLocalData.ts, shared/types.ts, src/App.tsx — Renders from local data instantly, replaces cache-based data loading (completed).
 2026-06-03: Add Supabase migration for UUID sync fields at supabase/migrations/015_add_uuid_sync_fields.sql — Adds client_id, updated_at columns, indexes, triggers, and sync_log table (completed).

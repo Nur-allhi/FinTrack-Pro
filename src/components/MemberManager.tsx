@@ -3,7 +3,8 @@ import { Member, Account } from '../types';
 import { Plus, X, User, Trash2, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ArrowLeft, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
 
 interface MemberManagerProps {
   members: Member[];
@@ -22,30 +23,37 @@ const typeIcons: Record<string, LucideIcon> = {
 export default function MemberManager({ members, accounts, onUpdate, onSelectAccount, currency, typeColors }: MemberManagerProps) {
   const { toast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [newMember, setNewMember] = useState({ name: '', relationship: '' });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     try {
-      await authService.apiFetch('/api/members', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMember)
-      });
+      const record = {
+        id: generateId(),
+        name: newMember.name,
+        relationship: newMember.relationship,
+        updated_at: new Date().toISOString(),
+        sync_status: 'pending' as const,
+        _deleted: false,
+      };
+      await localDb.putMember(record);
       setIsAdding(false);
       setNewMember({ name: '', relationship: '' });
       onUpdate();
     } catch (error) {
       toast("Failed to create member.", 'error');
-    } finally { setSaving(false); }
+    }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure? Their accounts will become unassigned.")) return;
     try {
-      await authService.apiFetch(`/api/members/${id}`, { method: 'DELETE' });
+      const members = await localDb.getMembers();
+      const member = members.find(m => m.server_id === id);
+      if (member) {
+        await localDb.putMember({ ...member, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+      }
       if (selectedMember?.id === id) setSelectedMember(null);
       onUpdate();
     } catch (error) {
@@ -142,7 +150,7 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
                 </div>
                 <div className="md:col-span-2 flex justify-end gap-3 md:gap-4 pt-4 md:pt-6">
                   <button type="button" onClick={() => setIsAdding(false)} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3">Cancel</button>
-                  <button type="submit" disabled={saving} className="btn-primary text-xs md:text-sm px-6 md:px-10 py-2 md:py-3">{saving ? 'Saving...' : 'Add'}</button>
+                  <button type="submit" className="btn-primary text-xs md:text-sm px-6 md:px-10 py-2 md:py-3">Add</button>
                 </div>
               </form>
             </div>

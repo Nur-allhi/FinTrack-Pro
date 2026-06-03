@@ -300,6 +300,65 @@ export const localDb = {
     return [...members, ...accounts, ...transactions, ...loans];
   },
 
+  async getDeletedItems(): Promise<{ entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[]> {
+    const db = await getDB();
+    const results: { entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[] = [];
+    const stores = [
+      { name: 'transactions' as EntityName, label: 'Transaction' },
+      { name: 'accounts' as EntityName, label: 'Account' },
+      { name: 'loans' as EntityName, label: 'Loan' },
+    ];
+    for (const { name, label } of stores) {
+      const all = await db.getAll(name);
+      for (const r of all) {
+        if (r._deleted) {
+          const summary = 'name' in r ? (r as { name: string }).name : 'particulars' in r ? (r as { particulars: string }).particulars : label;
+          results.push({
+            entity_type: name,
+            entity_label: label,
+            id: r.id,
+            deleted_at: r.updated_at,
+            summary,
+            server_id: 'server_id' in r ? (r as { server_id?: number | null }).server_id : null,
+          });
+        }
+      }
+    }
+    return results.sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
+  },
+
+  async restoreItem(entityType: string, id: string): Promise<void> {
+    const db = await getDB();
+    const storeName = entityType as EntityName;
+    const record = await db.get(storeName, id);
+    if (record) {
+      record._deleted = false;
+      record.sync_status = 'pending';
+      record.updated_at = now();
+      await db.put(storeName, record);
+    }
+  },
+
+  async permanentDelete(entityType: string, id: string): Promise<void> {
+    const db = await getDB();
+    await db.delete(entityType as EntityName, id);
+  },
+
+  async emptyBin(entityType?: string): Promise<void> {
+    const db = await getDB();
+    const stores: EntityName[] = entityType
+      ? [entityType as EntityName]
+      : ['transactions', 'accounts', 'loans'];
+    for (const s of stores) {
+      const all = await db.getAll(s);
+      for (const r of all) {
+        if (r._deleted) {
+          await db.delete(s, r.id);
+        }
+      }
+    }
+  },
+
   async markAllSynced(): Promise<void> {
     const unsynced = await this.getAllUnsynced();
     const ids = unsynced.map(r => r.id);

@@ -4,7 +4,8 @@ import { Plus, TrendingUp, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { cn } from '../utils/cn';
-import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
 import Select from './Select';
 import DatePicker from './DatePicker';
 import InvestmentDetail from './InvestmentDetail';
@@ -28,13 +29,25 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
   });
 
   const fetchInvestments = async () => {
-    const res = await authService.apiFetch('/api/investments');
-    setInvestments(await res.json());
+    const local = await localDb.getInvestments();
+    setInvestments(local.map(i => ({
+      id: i.server_id ?? 0,
+      account_id: Number(i.account_id),
+      account_name: '',
+      principal: i.principal,
+      date: i.date,
+    })));
   };
 
-  const fetchReturns = async (id: number) => {
-    const res = await authService.apiFetch(`/api/investments/${id}/returns`);
-    setReturns(await res.json());
+  const fetchReturns = async (_id: number) => {
+    const local = await localDb.getInvestmentReturns();
+    setReturns(local.map(r => ({
+      id: r.server_id ?? 0,
+      investment_id: Number(r.investment_id),
+      date: r.date,
+      amount: r.amount,
+      percentage: r.percentage ?? 0,
+    })));
   };
 
   useEffect(() => { fetchInvestments(); }, []);
@@ -43,15 +56,16 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
   const handleCreateInv = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await authService.apiFetch('/api/investments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newInv,
-          account_id: Number(newInv.account_id),
-          principal: parseFloat(newInv.principal)
-        })
-      });
+      const record = {
+        id: generateId(),
+        account_id: newInv.account_id,
+        principal: parseFloat(newInv.principal),
+        date: newInv.date,
+        updated_at: new Date().toISOString(),
+        sync_status: 'pending' as const,
+        _deleted: false,
+      };
+      await localDb.putInvestment(record);
       setIsAdding(false);
       fetchInvestments();
       onUpdate();

@@ -3,7 +3,8 @@ import { Plus, Edit2, Trash2, Layers, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
 import GroupForm from './GroupForm';
 import GroupGridView, { type Group } from './GroupGridView';
 
@@ -16,7 +17,6 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isAdding, setIsAdding] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
-  const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [members, setMembers] = useState<{ id: number; name: string }[]>([]);
@@ -24,9 +24,23 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
 
   const fetchGroups = async () => {
     try {
-      const [gRes, mRes] = await Promise.all([authService.apiFetch('/api/groups'), authService.apiFetch('/api/members')]);
-      if (gRes.ok) setGroups(await gRes.json());
-      if (mRes.ok) setMembers(await mRes.json());
+      const [localGroups, localMembers] = await Promise.all([
+        localDb.getGroups(),
+        localDb.getMembers(),
+      ]);
+      setGroups(localGroups.map(g => ({
+        id: g.server_id ?? 0,
+        name: g.name,
+        member_id: g.member_id ? Number(g.member_id) : null,
+        member_name: localMembers.find(m => m.id === g.member_id)?.name || undefined,
+        color: g.color,
+        archived: 0,
+        child_count: 0,
+        accumulated_balance: 0,
+        children: [],
+        type: g.type || 'group',
+      })));
+      setMembers(localMembers.map(m => ({ id: m.server_id ?? 0, name: m.name })));
     } catch (err) {
       console.error(err);
     } finally {
@@ -38,30 +52,40 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
 
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     try {
-      const method = editingGroup ? 'PATCH' : 'POST';
-      const url = editingGroup ? `/api/groups/${editingGroup.id}` : '/api/groups';
-      const res = await authService.apiFetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (editingGroup) {
+        const localGroups = await localDb.getGroups();
+        const local = localGroups.find(g => g.server_id === editingGroup.id);
+        if (local) {
+          await localDb.putGroup({
+            ...local,
+            name: newGroup.name,
+            member_id: newGroup.member_id === '' ? null : newGroup.member_id,
+            color: newGroup.color,
+            updated_at: new Date().toISOString(),
+            sync_status: 'pending',
+          });
+        }
+      } else {
+        const record = {
+          id: generateId(),
           name: newGroup.name,
-          member_id: newGroup.member_id === '' ? null : Number(newGroup.member_id),
-          color: newGroup.color
-        })
-      });
-      if (res.ok) {
-        setIsAdding(false);
-        setEditingGroup(null);
-        setNewGroup({ name: '', member_id: '', color: colors[0] });
-        fetchGroups();
-        onUpdate();
+          type: 'group',
+          member_id: newGroup.member_id === '' ? null : newGroup.member_id,
+          color: newGroup.color,
+          updated_at: new Date().toISOString(),
+          sync_status: 'pending' as const,
+          _deleted: false,
+        };
+        await localDb.putGroup(record);
       }
+      setIsAdding(false);
+      setEditingGroup(null);
+      setNewGroup({ name: '', member_id: '', color: colors[0] });
+      fetchGroups();
+      onUpdate();
     } catch (err) {
       toast("Failed to save group.", 'error');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -75,7 +99,11 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
     if (!confirm(`Delete group "${name}"? Child accounts will be unlinked but not deleted.`)) return;
     setDeletingId(id);
     try {
-      await authService.apiFetch(`/api/groups/${id}`, { method: 'DELETE' });
+      const localGroups = await localDb.getGroups();
+      const local = localGroups.find(g => g.server_id === id);
+      if (local) {
+        await localDb.putGroup({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+      }
       toast("Group deleted.", 'success');
       fetchGroups();
       onUpdate();
@@ -124,7 +152,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
               newGroup={newGroup}
               setNewGroup={setNewGroup}
               members={members}
-              saving={saving}
+              saving={false}
               onSubmit={handleCreateOrUpdate}
               onCancel={() => { setIsAdding(false); setEditingGroup(null); }}
             />

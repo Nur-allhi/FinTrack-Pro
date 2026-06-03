@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Account } from '../types';
-import { X, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
 import DebitCreditToggle from './DebitCreditToggle';
-import { authService } from '../services/authService';
-import { offlineService } from '../services/offlineService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
 import Select from './Select';
 
 interface TransactionModalProps {
@@ -21,11 +21,11 @@ interface TransactionModalProps {
 
 export default function TransactionModal({ accounts, onClose, onUpdate, initialAccountId, currency }: TransactionModalProps) {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [closing, setClosing] = useState(false);
+  const isWriting = useRef(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -52,9 +52,11 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
   });
 
   useEffect(() => {
-    authService.apiFetch('/api/transactions/categories')
-      .then(res => res.ok ? res.json() : [])
-      .then(data => { if (Array.isArray(data)) setCategories(data); })
+    localDb.getTransactions()
+      .then(txns => {
+        const cats = [...new Set(txns.map(t => t.category).filter(Boolean))];
+        setCategories(cats);
+      })
       .catch(() => {});
   }, []);
 
@@ -64,74 +66,38 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
       toast("Please select an account.", 'error');
       return;
     }
+    if (isWriting.current) return;
+    isWriting.current = true;
 
-    if (!navigator.onLine) {
-      try {
-        await offlineService.queueAction({
-          type: 'create',
-          endpoint: '/api/transactions',
-          body: {
-            account_id: Number(tx.account_id),
-            date: tx.date,
-            particulars: tx.particulars,
-            category: tx.category || 'Uncategorized',
-            amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
-          }
-        });
-      } catch (e) {
-        console.error('Failed to queue transaction:', e);
-      }
-      toast("Transaction queued for sync when online.", 'success');
-      handleClose();
-      return;
-    }
-
-    setLoading(true);
     try {
       const amount = parseFloat(tx.amount) * (tx.isCredit ? 1 : -1);
-      const res = await authService.apiFetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: Number(tx.account_id),
-          date: tx.date,
-          particulars: tx.particulars,
-          category: tx.category || 'Uncategorized',
-          amount
-        })
-      });
-      
-      if (!res.ok) throw new Error("Failed to save transaction");
-      
+      const accountId = tx.account_id;
+
+      const record = {
+        id: generateId(),
+        account_id: accountId,
+        date: tx.date,
+        particulars: tx.particulars,
+        category: tx.category || 'Uncategorized',
+        amount,
+        type: 'normal' as const,
+        linked_transaction_id: null,
+        summary: null,
+        updated_at: new Date().toISOString(),
+        sync_status: 'pending' as const,
+        _deleted: false,
+      };
+
+      await localDb.putTransaction(record);
       setSuccess(true);
-      toast("Transaction saved successfully.", 'success');
+      toast("Transaction saved.", 'success');
       onUpdate();
-      setTimeout(handleClose, 1500);
+      setTimeout(handleClose, 1200);
     } catch (error) {
       console.error("Save failed:", error);
-      if (error instanceof TypeError) {
-        try {
-          await offlineService.queueAction({
-            type: 'create',
-            endpoint: '/api/transactions',
-            body: {
-              account_id: Number(tx.account_id),
-              date: tx.date,
-              particulars: tx.particulars,
-              category: tx.category || 'Uncategorized',
-              amount: parseFloat(tx.amount) * (tx.isCredit ? 1 : -1)
-            }
-          });
-        } catch (e) {
-          console.error('Failed to queue transaction:', e);
-        }
-        toast("Transaction queued for sync when online.", 'success');
-        handleClose();
-      } else {
-        toast("Failed to save transaction.", 'error');
-      }
+      toast("Failed to save transaction.", 'error');
     } finally {
-      setLoading(false);
+      isWriting.current = false;
     }
   };
 
@@ -246,10 +212,8 @@ export default function TransactionModal({ accounts, onClose, onUpdate, initialA
                 </button>
                 <button 
                   type="submit"
-                  disabled={loading}
                   className="btn-primary flex-[2] h-11 text-sm"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                   Post Entry
                 </button>
               </div>

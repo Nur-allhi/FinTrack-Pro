@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Account } from '../types';
-import { X, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import DatePicker from './DatePicker';
 import { format } from 'date-fns';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
-import { offlineService } from '../services/offlineService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
 import Select from './Select';
 
 interface TransferModalProps {
@@ -20,9 +20,9 @@ interface TransferModalProps {
 
 export default function TransferModal({ accounts, onClose, onUpdate, currency }: TransferModalProps) {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [closing, setClosing] = useState(false);
+  const isWriting = useRef(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -53,71 +53,58 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
       toast("Source and destination accounts must be different.", 'error');
       return;
     }
+    if (isWriting.current) return;
+    isWriting.current = true;
 
-    if (!navigator.onLine) {
-      try {
-        await offlineService.queueAction({
-          type: 'create',
-          endpoint: '/api/transfers',
-          body: {
-            from_account_id: Number(transfer.from_account_id),
-            to_account_id: Number(transfer.to_account_id),
-            amount: parseFloat(transfer.amount),
-            particulars: transfer.particulars,
-            date: transfer.date
-          }
-        });
-      } catch (e) {
-        console.error('Failed to queue transfer:', e);
-      }
-      toast("Transfer queued for sync when online.", 'success');
-      handleClose();
-      return;
-    }
-
-    setLoading(true);
     try {
-      const res = await authService.apiFetch('/api/transfers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...transfer,
-          from_account_id: Number(transfer.from_account_id),
-          to_account_id: Number(transfer.to_account_id),
-          amount: parseFloat(transfer.amount)
-        })
-      });
-      
-      if (!res.ok) throw new Error("Transfer failed");
-      
+      const amount = parseFloat(transfer.amount);
+      const now = new Date().toISOString();
+      const creditId = generateId();
+      const debitId = generateId();
+
+      const creditTx = {
+        id: creditId,
+        account_id: transfer.to_account_id,
+        date: transfer.date,
+        particulars: transfer.particulars || 'Transfer',
+        category: 'Transfer',
+        amount,
+        type: 'transfer' as const,
+        linked_transaction_id: debitId,
+        summary: null,
+        updated_at: now,
+        sync_status: 'pending' as const,
+        _deleted: false,
+      };
+
+      const debitTx = {
+        id: debitId,
+        account_id: transfer.from_account_id,
+        date: transfer.date,
+        particulars: transfer.particulars || 'Transfer',
+        category: 'Transfer',
+        amount: -amount,
+        type: 'transfer' as const,
+        linked_transaction_id: creditId,
+        summary: null,
+        updated_at: now,
+        sync_status: 'pending' as const,
+        _deleted: false,
+      };
+
+      await Promise.all([
+        localDb.putTransaction(creditTx),
+        localDb.putTransaction(debitTx),
+      ]);
+
       setSuccess(true);
-      toast("Transfer completed successfully.", 'success');
+      toast("Transfer completed.", 'success');
       onUpdate();
     } catch (error) {
       console.error("Transfer failed:", error);
-      if (error instanceof TypeError) {
-        try {
-          await offlineService.queueAction({
-            type: 'create',
-            endpoint: '/api/transfers',
-            body: {
-              from_account_id: Number(transfer.from_account_id),
-              to_account_id: Number(transfer.to_account_id),
-              amount: parseFloat(transfer.amount),
-              particulars: transfer.particulars,
-              date: transfer.date
-            }
-          });
-        } catch (e) {
-          console.error('Failed to queue transfer:', e);
-        }
-        toast("Transfer queued for sync when online.", 'success');
-        handleClose();
-      } else {
-        toast("Transfer failed. Please check your balance.", 'error');
-      }
+      toast("Transfer failed.", 'error');
     } finally {
-      setLoading(false);
+      isWriting.current = false;
     }
   };
 
@@ -217,10 +204,8 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                 </button>
                 <button 
                   type="submit"
-                  disabled={loading}
                   className="btn-primary flex-[2] h-11 text-sm"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                   Authorize Transfer
                 </button>
               </div>

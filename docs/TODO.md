@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **92 completed**, **43 remaining** — Phase 13 in-progress
+> **100 completed**, **35 remaining** — Phase 4 next
 >
 > ## Branching Strategy
 >
@@ -212,7 +212,7 @@
 
 > Source: `plans/LOCAL_FIRST_ARCHITECTURE.md`
 > Branch: `feat/local-first`
-> **Status: 13/45 complete**
+> **Status: 21/45 complete**
 
 ### 🔐 Phase 1 — Auth System (Signup + Password Reset)
 
@@ -234,16 +234,14 @@
 
 ### ✍️ Phase 3 — Component Write Path Migration
 
-- [ ] **T-133** Update `TransactionForm.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-134** Update `TransactionModal.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-135** Update `AccountForm.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-136** Update `LoanManager.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-137** Update `TransferModal.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-138** Update `MemberManager.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-139** Update `GroupManager.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-140** Update `InvestmentTracker.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-141** Update `RecycleBin.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
-- [ ] **T-142** Fix double-click issues in all components (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-133** Update `TransactionModal.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-134** Update `TransferModal.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-135** Update `LoanManager.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-136** Update `MemberManager.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-137** Update `GroupManager.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-138** Update `InvestmentTracker.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-139** Update `RecycleBin.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-140** Fix double-click issues in all components (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
 
 ### 👤 Phase 4 — Guest Mode + Signup Nudge
 

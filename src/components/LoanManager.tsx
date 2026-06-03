@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Loan, Account } from '../types';
 import { Plus, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
+import { localDb, LocalLoan } from '../services/localDb';
+import { generateId } from '../utils/ids';
 import LoanForm, { LoanFormState } from './LoanForm';
 import LoanGroupCard, { LoanGroup } from './LoanGroupCard';
 import SettleModal from './SettleModal';
@@ -34,10 +35,31 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
     lender_account_id: '', borrower_account_id: '', borrower_name: '', amount: '',
     date_given: format(new Date(), 'yyyy-MM-dd'), due_date: '', interest_rate: '', particulars: ''
   });
+  const isWriting = useRef(false);
+
+  const toApiLoan = (r: LocalLoan): Loan => ({
+    id: r.server_id ?? 0,
+    lender_account_id: Number(r.lender_account_id),
+    borrower_account_id: r.borrower_account_id ? Number(r.borrower_account_id) : null,
+    borrower_name: r.borrower_name,
+    amount: r.amount,
+    remaining: r.remaining,
+    date_given: r.date_given,
+    due_date: r.due_date,
+    interest_rate: r.interest_rate,
+    particulars: r.particulars,
+    status: r.status as 'active' | 'settled' | 'defaulted',
+    settled_date: r.settled_date,
+    lender_name: undefined,
+    borrower_account_name: undefined,
+  });
 
   const fetchLoans = async (showLoading = false) => {
     if (showLoading) setLoading(true);
-    try { const res = await authService.apiFetch('/api/loans'); if (res.ok) setLoans(await res.json()); }
+    try {
+      const local = await localDb.getLoans();
+      setLoans(local.filter(l => l.status !== 'removed').map(toApiLoan));
+    }
     finally { if (showLoading) setLoading(false); }
   };
 
@@ -51,15 +73,33 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
     e.preventDefault();
     if (loanType === 'inter_account' && form.lender_account_id === form.borrower_account_id) { toast("Lender and borrower accounts must be different.", 'error'); return; }
     if (loanType === 'person' && !form.lender_account_id) { toast("Select an account.", 'error'); return; }
-    setLoading(true);
+    if (isWriting.current) return;
+    isWriting.current = true;
     try {
-      const body: Record<string, unknown> = { lender_account_id: Number(form.lender_account_id), amount: parseFloat(form.amount), date_given: form.date_given, due_date: form.due_date || null, interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null, particulars: form.particulars };
-      if (loanType === 'person') { body.borrower_name = form.borrower_name || form.particulars; if (!body.borrower_name) { toast("Enter a borrower name.", 'error'); setLoading(false); return; } }
-      else { body.borrower_account_id = Number(form.borrower_account_id); }
-      const res = await authService.apiFetch('/api/loans', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error("Failed to create loan");
-      toast("Loan created successfully.", 'success'); setShowForm(false); resetForm(); fetchLoans(); onUpdate();
-    } catch { toast("Failed to create loan.", 'error'); } finally { setLoading(false); }
+      const borrowerName = loanType === 'person' ? (form.borrower_name || form.particulars) : null;
+      if (loanType === 'person' && !borrowerName) { toast("Enter a borrower name.", 'error'); isWriting.current = false; return; }
+      const amount = parseFloat(form.amount);
+      const record: LocalLoan = {
+        id: generateId(),
+        lender_account_id: form.lender_account_id,
+        borrower_account_id: loanType === 'inter_account' ? form.borrower_account_id : null,
+        borrower_name: borrowerName,
+        amount,
+        remaining: amount,
+        date_given: form.date_given,
+        due_date: form.due_date || null,
+        interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null,
+        particulars: form.particulars,
+        status: 'active',
+        settled_date: null,
+        updated_at: new Date().toISOString(),
+        sync_status: 'pending',
+        _deleted: false,
+      };
+      await localDb.putLoan(record);
+      toast("Loan created.", 'success');
+      setShowForm(false); resetForm(); fetchLoans(); onUpdate();
+    } catch { toast("Failed to create loan.", 'error'); } finally { isWriting.current = false; }
   };
 
   const handleSettleOpen = (loan: Loan) => {
@@ -75,10 +115,22 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
     if (amount > settleModal.remaining) { setSettleError(`Cannot exceed remaining amount (${settleModal.remaining}).`); return; }
     setSettlingId(settleModal.id);
     try {
-      const res = await authService.apiFetch(`/api/loans/${settleModal.id}/settle`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }) });
-      if (!res.ok) throw new Error("Failed to settle loan");
-      const data = await res.json();
-      if (data.settled) toast("Loan fully settled.", 'success'); else toast(`Settlement recorded. Remaining: ${data.remaining}`, 'success');
+      const localLoans = await localDb.getLoans();
+      const local = localLoans.find(l => l.server_id === settleModal.id);
+      if (local) {
+        const newRemaining = local.remaining - amount;
+        const isSettled = newRemaining <= 0;
+        await localDb.putLoan({
+          ...local,
+          remaining: Math.max(0, newRemaining),
+          status: isSettled ? 'settled' : 'active',
+          settled_date: isSettled ? new Date().toISOString().split('T')[0] : null,
+          updated_at: new Date().toISOString(),
+          sync_status: 'pending',
+        });
+        if (isSettled) toast("Loan fully settled.", 'success');
+        else toast(`Settlement recorded. Remaining: ${newRemaining}`, 'success');
+      }
       setSettleModal(null); setSettleAmount(''); fetchLoans(); onUpdate();
     } catch { toast("Failed to settle loan.", 'error'); } finally { setSettlingId(null); }
   };
@@ -86,7 +138,14 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this loan record?")) return;
     setDeletingId(id);
-    try { await authService.apiFetch(`/api/loans/${id}`, { method: 'DELETE' }); toast("Loan deleted.", 'success'); fetchLoans(); onUpdate(); }
+    try {
+      const localLoans = await localDb.getLoans();
+      const local = localLoans.find(l => l.server_id === id);
+      if (local) {
+        await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+      }
+      toast("Loan deleted.", 'success'); fetchLoans(); onUpdate();
+    }
     catch { toast("Failed to delete loan.", 'error'); } finally { setDeletingId(null); }
   };
 
@@ -97,15 +156,23 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!editingId) return; setLoading(true);
+    e.preventDefault(); if (!editingId) return;
     try {
-      const body: Record<string, unknown> = { due_date: form.due_date || null, interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null, particulars: form.particulars };
-      if (loanType === 'person') body.borrower_name = form.borrower_name || null;
-      const res = await authService.apiFetch(`/api/loans/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error("Failed to update loan");
-      setLoans(prev => prev.map(l => l.id === editingId ? { ...l, borrower_name: body.borrower_name as string ?? l.borrower_name, borrower_account_name: l.borrower_account_name, lender_name: l.lender_name } : l));
-      toast("Loan updated successfully.", 'success'); setShowForm(false); setEditingId(null); resetForm(); fetchLoans(); onUpdate();
-    } catch { toast("Failed to update loan.", 'error'); } finally { setLoading(false); }
+      const localLoans = await localDb.getLoans();
+      const local = localLoans.find(l => l.server_id === editingId);
+      if (local) {
+        await localDb.putLoan({
+          ...local,
+          borrower_name: loanType === 'person' ? (form.borrower_name || null) : local.borrower_name,
+          due_date: form.due_date || null,
+          interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null,
+          particulars: form.particulars,
+          updated_at: new Date().toISOString(),
+          sync_status: 'pending',
+        });
+      }
+      toast("Loan updated.", 'success'); setShowForm(false); setEditingId(null); resetForm(); fetchLoans(); onUpdate();
+    } catch { toast("Failed to update loan.", 'error'); }
   };
 
   const filteredLoans = statusFilter === 'all' ? loans : loans.filter(l => l.status === statusFilter);
