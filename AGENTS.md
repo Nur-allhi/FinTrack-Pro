@@ -208,6 +208,8 @@ This project uses gitnexus for codebase intelligence, code maps, and structural 
 
 Rules:
 - Run `gitnexus analyze` to update the codebase index after making changes.
+- Run `gitnexus detect_changes` before committing to verify affected scope.
+- **MUST run `gitnexus analyze` before every `git push`** to ensure the index is up-to-date.
 - Use gitnexus tools/MCP for impact analysis and codebase queries.
 
 <!-- gitnexus:start -->

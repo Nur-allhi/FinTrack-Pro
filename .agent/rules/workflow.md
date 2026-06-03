@@ -183,6 +183,7 @@ Fixes #456
 
 - **MUST run impact analysis** before editing any symbol
 - **MUST run detect_changes()** before committing
+- **MUST run `gitnexus analyze` before every `git push`** to ensure the index is up-to-date
 - **MUST warn user** if impact analysis returns HIGH or CRITICAL risk
 - **Use gitnexus_query** to find execution flows instead of grepping
 - **Use gitnexus_context** for full context on specific symbols

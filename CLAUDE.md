@@ -123,6 +123,7 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
 
 - **MUST run impact analysis** before editing any symbol
 - **MUST run detect_changes()** before committing
+- **MUST run `gitnexus analyze` before every `git push`**
 - **MUST warn user** if impact analysis returns HIGH or CRITICAL risk
 
 ---
