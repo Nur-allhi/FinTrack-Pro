@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `PLAN/MASTER_PROMPT.md` · 2026-06-02
-> **80 completed**, **0 remaining** (All phases complete!)
+> **80 completed**, **7 remaining** (Phase 12 in progress)
 >
 > ## Branching Strategy
 >
@@ -165,3 +165,24 @@
 >
 > - [x] **T-107** Verify contrast ratios meet WCAG AA on Obsidian surfaces (1h)
 > - [x] **T-108** Final visual regression check across all routes (1h)
+
+---
+
+## Phase 12 — Mobile Navigation Redesign
+
+> Source: `PLAN/MOBILE_NAVIGATION_REDESIGN.md`
+> Branch: `mobile-navigation-redesign`
+> **Status: 0/7 complete**
+
+### 📱 Core Components
+
+- [ ] **T-109** Create `useScrollDirection` hook — scroll detection for nav auto-hide (1h)
+- [ ] **T-110** Add `.glass-nav` CSS utility to `src/index.css` — glassmorphic styling (15m)
+- [ ] **T-111** Create `MoreMenu` bottom sheet component — remaining 6 nav items in grid (2h)
+- [ ] **T-112** Create `BottomNav` component — glassmorphic tab bar with 5 items + FAB morph (3h)
+
+### 🔗 Integration & Cleanup
+
+- [ ] **T-113** Integrate `BottomNav` in `App.tsx` — scroll ref, Ledger FAB, remove old FAB (2h)
+- [ ] **T-114** Delete `FloatingActionButton.tsx` — replaced by + button in `BottomNav` (15m)
+- [ ] **T-115** Run `npm run lint` and verify type correctness (15m)
