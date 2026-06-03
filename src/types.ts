@@ -8,9 +8,9 @@ export interface Account {
   id: number;
   name: string;
   type: 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group';
-  member_id: number | null;
+  member_id: number | string | null;
   member_name?: string;
-  parent_id: number | null;
+  parent_id: number | string | null;
   parent_name?: string;
   color: string;
   archived: number;

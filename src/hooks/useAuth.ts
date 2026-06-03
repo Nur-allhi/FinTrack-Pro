@@ -1,32 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { authService, setOnSessionExpired } from '../services/authService';
 import { offlineService, initPendingCount } from '../services/offlineService';
 import { useToast } from '../components/Toast';
 
+export type AuthStatus = 'loading' | 'guest' | 'authenticated';
+
+export interface AuthUser {
+  email: string;
+}
+
 export function useAuth() {
   const { toast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
   const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     const init = async () => {
       if (sessionStorage.getItem('pending_logout') === 'true') {
         sessionStorage.clear();
-        setIsAuthenticated(false);
+        setAuthStatus('guest');
         return;
       }
+
+      if (sessionStorage.getItem('guest_mode') === 'true') {
+        initPendingCount();
+        setAuthStatus('guest');
+        return;
+      }
+
       initPendingCount();
       try {
         const res = await authService.apiFetch('/api/auth/me');
         if (res.ok) {
-          setIsAuthenticated(true);
+          setAuthStatus('authenticated');
           const d = await res.json();
           if (d.user?.email) setUserEmail(d.user.email);
         } else {
-          setIsAuthenticated(false);
+          setAuthStatus('guest');
         }
       } catch {
-        setIsAuthenticated(false);
+        setAuthStatus('guest');
       }
     };
     init();
@@ -34,21 +47,32 @@ export function useAuth() {
 
   useEffect(() => {
     setOnSessionExpired(() => {
-      setIsAuthenticated(false);
+      setAuthStatus('guest');
       toast("Session expired. Please sign in again.", 'error');
     });
   }, []);
 
-  const handleLogin = async (token: string) => {
+  const handleLogin = useCallback(async (token: string) => {
+    sessionStorage.removeItem('guest_mode');
     await authService.setSession(token);
-    setIsAuthenticated(true);
+    setAuthStatus('authenticated');
+    const res = await authService.apiFetch('/api/auth/me');
+    if (res.ok) {
+      const d = await res.json();
+      if (d.user?.email) setUserEmail(d.user.email);
+    }
     toast("Login successful.", 'success');
-  };
+  }, []);
 
-  const handleLogout = async () => {
+  const handleContinueAsGuest = useCallback(() => {
+    sessionStorage.setItem('guest_mode', 'true');
+    setAuthStatus('guest');
+  }, []);
+
+  const handleLogout = useCallback(async () => {
     sessionStorage.setItem('pending_logout', 'true');
     await authService.signOut();
-    setIsAuthenticated(false);
+    setAuthStatus('guest');
     setUserEmail('');
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
@@ -56,7 +80,14 @@ export function useAuth() {
       }
     });
     sessionStorage.clear();
-  };
+  }, []);
 
-  return { isAuthenticated, userEmail, handleLogin, handleLogout };
+  return {
+    isAuthenticated: authStatus === 'authenticated',
+    authStatus,
+    userEmail,
+    handleLogin,
+    handleContinueAsGuest,
+    handleLogout,
+  };
 }

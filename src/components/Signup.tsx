@@ -1,50 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2, Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { motion } from 'motion/react';
 import { authService } from '../services/authService';
 
-interface LoginProps {
-  onLogin: (token: string) => void;
-  onGoToSignup: () => void;
-  onGoToForgotPassword: () => void;
-  onContinueAsGuest: () => void;
+interface SignupProps {
+  onSignup: (token: string) => void;
+  onBackToLogin: () => void;
 }
 
-export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onContinueAsGuest }: LoginProps) {
+export default function Signup({ onSignup, onBackToLogin }: SignupProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [appVersion, setAppVersion] = useState('');
 
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="app-version"]');
-    setAppVersion(meta?.getAttribute('content') || '');
-  }, []);
-
-  useEffect(() => {
-    authService.refreshToken().then(token => {
-      if (token) {
-        onLogin(token);
-      }
-    }).catch(() => {});
-  }, [onLogin]);
-
-  const handleEmailSignIn = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setError('Password must contain at least 1 letter and 1 number');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const data = await authService.signInWithPassword(email, password);
+      const data = await authService.signUp(email, password);
       if (data.session?.access_token) {
-        onLogin(data.session.access_token);
+        onSignup(data.session.access_token);
       } else {
-        setError('No session returned');
+        setError('Check your email for a confirmation link, then sign in.');
         setIsLoading(false);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid email or password');
+      const msg = err instanceof Error ? err.message : 'Signup failed';
+      if (msg.includes('already')) {
+        setError('An account with this email already exists');
+      } else {
+        setError(msg);
+      }
       setIsLoading(false);
     }
   };
@@ -78,13 +82,13 @@ export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onC
             <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink leading-none tracking-tight">FinTrack <span className="text-semantic-up font-normal">Pro</span></span>
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ink tracking-tight">Welcome back</h1>
-            <p className="text-sm md:text-base text-muted font-medium mt-1 md:mt-2">Sign in to your account</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ink tracking-tight">Create account</h1>
+            <p className="text-sm md:text-base text-muted font-medium mt-1 md:mt-2">Sign up to start tracking your finances</p>
           </div>
         </div>
 
         <div className="bg-surface-soft rounded-xl border border-hairline p-5 sm:p-8 md:p-12 lg:p-14">
-          <form onSubmit={handleEmailSignIn} className="space-y-4 md:space-y-7">
+          <form onSubmit={handleSignup} className="space-y-4 md:space-y-7">
             <div className="space-y-1.5 md:space-y-2">
               <label className="text-xs md:text-sm font-semibold text-muted uppercase tracking-[0.2em] ml-1">Email</label>
               <div className="relative">
@@ -101,16 +105,7 @@ export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onC
             </div>
 
             <div className="space-y-1.5 md:space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <label className="text-xs md:text-sm font-semibold text-muted uppercase tracking-[0.2em]">Password</label>
-                <button
-                  type="button"
-                  onClick={onGoToForgotPassword}
-                  className="text-xs font-bold text-primary hover:underline"
-                >
-                  Forgot Password?
-                </button>
-              </div>
+              <label className="text-xs md:text-sm font-semibold text-muted uppercase tracking-[0.2em] ml-1">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted" />
                 <input
@@ -119,7 +114,7 @@ export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onC
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   className="w-full pl-11 md:pl-12 pr-11 py-3.5 md:py-4 bg-canvas border border-hairline rounded-lg text-sm md:text-base text-ink placeholder:text-muted/50 focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none"
-                  placeholder="Enter password"
+                  placeholder="Min 8 characters"
                 />
                 <button
                   type="button"
@@ -128,6 +123,21 @@ export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onC
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 md:space-y-2">
+              <label className="text-xs md:text-sm font-semibold text-muted uppercase tracking-[0.2em] ml-1">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="w-full pl-11 md:pl-12 pr-4 py-3.5 md:py-4 bg-canvas border border-hairline rounded-lg text-sm md:text-base text-ink placeholder:text-muted/50 focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none"
+                  placeholder="Re-enter password"
+                />
               </div>
             </div>
 
@@ -150,41 +160,26 @@ export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onC
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
+                  Creating account...
                 </span>
-              ) : 'Sign In'}
-            </button>
-          </form>
-
-          <div className="mt-6 sm:mt-8 space-y-4 text-center">
-            <button
-              type="button"
-              onClick={onContinueAsGuest}
-              className="w-full h-12 text-sm font-bold text-muted hover:text-ink border border-hairline rounded-xl hover:bg-surface-strong transition-all"
-            >
-              Continue as Guest
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <UserPlus className="w-5 h-5" />
+                  Sign Up
+                </span>
+              )}
             </button>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-hairline" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-surface-soft px-4 text-xs text-muted font-semibold uppercase tracking-wider">or</span>
-              </div>
-            </div>
-
-            <p className="text-sm text-muted">
-              Don't have an account?{' '}
-              <button type="button" onClick={onGoToSignup} className="font-bold text-primary hover:underline">
-                Sign Up
+            <div className="text-center pt-4 sm:pt-6 border-t border-hairline">
+              <button
+                type="button"
+                onClick={onBackToLogin}
+                className="text-sm text-muted hover:text-primary transition-colors"
+              >
+                Already have an account? <span className="font-bold text-primary">Sign In</span>
               </button>
-            </p>
-          </div>
-
-          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-hairline flex items-center justify-center">
-            <span className="text-[10px] font-medium text-muted">{appVersion ? `v${appVersion}` : ''}</span>
-          </div>
+            </div>
+          </form>
         </div>
       </motion.div>
     </div>

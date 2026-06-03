@@ -102,6 +102,30 @@ export const authService = {
     return refreshTokenInternal();
   },
 
+  async signUp(email: string, password: string) {
+    const sb = await getSupabase();
+    if (!sb) throw new Error('Supabase not configured');
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) throw error;
+    return data;
+  },
+
+  async resetPassword(email: string) {
+    const sb = await getSupabase();
+    if (!sb) throw new Error('Supabase not configured');
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+    if (error) throw error;
+  },
+
+  async updatePassword(password: string) {
+    const sb = await getSupabase();
+    if (!sb) throw new Error('Supabase not configured');
+    const { error } = await sb.auth.updateUser({ password });
+    if (error) throw error;
+  },
+
   async signOut() {
     _signedOut = true;
     const sb = await getSupabase();

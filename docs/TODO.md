@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **92 completed**, **0 remaining** — All phases complete
+> **92 completed**, **43 remaining** — Phase 13 in-progress
 >
 > ## Branching Strategy
 >
@@ -205,3 +205,75 @@
 - [x] **T-118** Hide sidebar on mobile — add `hidden md:block` to `<aside>` in Sidebar.tsx (15m) — `📄 plans/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix C`
 - [x] **T-119** Add profile avatar to Header on mobile — replace hamburger with circular initial button, add `userEmail` + `onOpenProfile` props (30m) — `📄 plans/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix C`
 - [x] **T-120** Remove `isMobileMenuOpen` state from App.tsx — clean up unused state and Sidebar/Header props (15m) — `📄 plans/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix C`
+
+---
+
+## Phase 13 — Local-First Architecture
+
+> Source: `plans/LOCAL_FIRST_ARCHITECTURE.md`
+> Branch: `feat/local-first`
+> **Status: 13/45 complete**
+
+### 🔐 Phase 1 — Auth System (Signup + Password Reset)
+
+- [x] **T-121** Create `src/components/Signup.tsx` — signup form with email/password (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.1`
+- [x] **T-122** Create `src/components/ForgotPassword.tsx` — password reset request form (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.3`
+- [x] **T-123** Create `src/components/ResetPassword.tsx` — new password form after email link (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.3`
+- [x] **T-124** Update `src/services/authService.ts` — add `signUp()`, `resetPassword()`, `updatePassword()` methods (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.1`
+- [x] **T-125** Update `src/components/Login.tsx` — remove Google button, add "Sign Up" and "Forgot Password" links (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.2`
+- [x] **T-126** Update `src/hooks/useAuth.ts` — new auth state model with guest mode (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.4`
+- [x] **T-127** Update `src/App.tsx` — add routes for auth pages (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§5.5`
+
+### 🗄️ Phase 2 — Local-First IndexedDB Core
+
+- [x] **T-128** Create `src/services/localDb.ts` — primary IndexedDB database with full schema (4h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§3`
+- [x] **T-129** Create `src/utils/ids.ts` — UUID generation utility (15m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§4`
+- [x] **T-130** Update `shared/types.ts` — add `sync_status`, `updated_at`, `client_id` fields (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§4`
+- [x] **T-131** Create `src/hooks/useLocalData.ts` — replace `useOfflineSync.ts` (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [x] **T-132** Rewrite `src/App.tsx` — remove `dataReady` gate, render from local data (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+
+### ✍️ Phase 3 — Component Write Path Migration
+
+- [ ] **T-133** Update `TransactionForm.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-134** Update `TransactionModal.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-135** Update `AccountForm.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-136** Update `LoanManager.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-137** Update `TransferModal.tsx` — instant local write (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-138** Update `MemberManager.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-139** Update `GroupManager.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-140** Update `InvestmentTracker.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-141** Update `RecycleBin.tsx` — instant local write (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+- [ ] **T-142** Fix double-click issues in all components (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§6`
+
+### 👤 Phase 4 — Guest Mode + Signup Nudge
+
+- [ ] **T-143** Update `src/services/authService.ts` — make auth optional for guests (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7`
+- [ ] **T-144** Update `src/hooks/useAuth.ts` — guest mode state management (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7`
+- [ ] **T-145** Create `src/components/SignupNudge.tsx` — signup prompt popup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7.2`
+- [ ] **T-146** Test guest → registered migration flow (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§7.3`
+
+### ☁️ Phase 5 — Supabase Sync Engine
+
+- [x] **T-147** Create `supabase/migrations/015_add_uuid_sync_fields.sql` — UUID + updated_at columns (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§10`
+- [ ] **T-148** Create `src/services/syncEngine.ts` — background sync to Supabase (4h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
+- [ ] **T-149** Create `api/routes/sync.ts` — bulk sync API endpoint (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§10`
+- [ ] **T-150** Create `src/services/migrationService.ts` — one-time UUID migration for existing users (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§3`
+- [ ] **T-151** Implement push/pull/merge logic (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
+- [ ] **T-152** Test multi-device sync (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§9`
+
+### 💾 Phase 6 — Data Backup (Google Drive + JSON)
+
+- [ ] **T-153** Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
+- [ ] **T-154** Create `supabase/migrations/016_add_google_tokens.sql` — Google OAuth tokens table (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
+- [ ] **T-155** Create `src/services/googleDriveService.ts` — Google Drive backup/restore (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
+- [ ] **T-156** Update `src/components/UserProfile.tsx` — add Google Drive + Export/Import buttons (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.3`
+- [ ] **T-157** Create `src/services/exportService.ts` — JSON export for local backup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
+- [ ] **T-158** Create `src/components/ImportModal.tsx` — JSON import (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
+
+### 🎬 Phase 7 — Animations & Polish
+
+- [ ] **T-159** Add slide-in animations for new transactions (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
+- [ ] **T-160** Add slide-out animations for deleted transactions (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
+- [ ] **T-161** Add balance update animations (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
+- [ ] **T-162** Update `OfflineIndicator.tsx` with sync status (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§11`
+- [ ] **T-163** Create `public/offline.html` — offline fallback page (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§12`

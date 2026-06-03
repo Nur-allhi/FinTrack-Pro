@@ -7,11 +7,11 @@
 
 ## Quick Reference — Last Session
 
-> **Session 16** — 2 June 2026 (Performance Optimization — Phase 9)
-> **Branch**: `main`
-> **Tasks**: T-070 through T-081
+> **Session 17** — 3 June 2026 (Local-First Architecture — Phase 1-2)
+> **Branch**: `feat/local-first`
+> **Tasks**: T-121 through T-132
 > **Status**: completed
-> **Summary**: Main bundle 1,015→733 kB (-28%), SW precache 2,677→1,488 kB (-44%). Memoization, lazy-loading, font optimization.
+> **Summary**: Auth system (signup, forgot password, reset password, guest mode) + local-first IndexedDB core with full schema and instant rendering.
 
 ---
 
@@ -158,6 +158,50 @@ Full audit remediation based on `docs/AUDIT_REPORT.md` — 14 items fixed, 20 AP
 - **Admin panel not showing** (root cause: `/api/auth/me` API call fails silently on Vercel cold start, `.catch(() => {})` swallows errors, `isAdmin` stays `false`)
   - Added `console.warn` logging for the admin check failure
   - Added auto-retry after 3 seconds on failure
+
+---
+
+## Session 17 — 3 June 2026 (Local-First Architecture — Phase 1-2)
+
+Branch: `feat/local-first`
+
+Completed T-121 through T-132 (Auth System + Local-First IndexedDB Core).
+
+### Phase 1 — Auth System
+
+- **T-121** Created `Signup.tsx` — email/password signup form with validation
+- **T-122** Created `ForgotPassword.tsx` — password reset request form
+- **T-123** Created `ResetPassword.tsx` — new password form (after email link)
+- **T-124** Updated `authService.ts` — added `signUp()`, `resetPassword()`, `updatePassword()` methods
+- **T-125** Updated `Login.tsx` — removed Google button, added Sign Up and Forgot Password links, added Continue as Guest button
+- **T-126** Updated `useAuth.ts` — new auth state model (`loading | guest | authenticated`), guest mode support
+- **T-127** Updated `App.tsx` — auth page routing, guest mode renders app without API calls
+
+### Phase 2 — Local-First IndexedDB Core
+
+- **T-128** Created `localDb.ts` — full IndexedDB schema with 11 object stores, CRUD operations, sync tracking
+- **T-129** Created `ids.ts` — UUID generation utility via `crypto.randomUUID()`
+- **T-130** Updated `shared/types.ts` — added `client_id`, `updated_at` fields to all entity types
+- **T-131** Created `useLocalData.ts` — cache-first pattern, reads from IndexedDB instantly, background API fetch
+- **T-132** Updated `App.tsx` — removed `dataReady` gate, renders from local data, settings via localDb
+
+### Files Changed
+- `src/components/Signup.tsx` (new)
+- `src/components/ForgotPassword.tsx` (new)
+- `src/components/ResetPassword.tsx` (new)
+- `src/services/localDb.ts` (new)
+- `src/utils/ids.ts` (new)
+- `src/hooks/useLocalData.ts` (new)
+- `src/services/authService.ts` (added signUp, resetPassword, updatePassword)
+- `src/hooks/useAuth.ts` (new auth state model)
+- `src/components/Login.tsx` (removed Google, added links)
+- `src/App.tsx` (auth routing, local data rendering)
+- `shared/types.ts` (client_id, updated_at fields)
+- `src/types.ts` (Account.member_id accepts string | null)
+
+### Verification
+- `npx tsc --noEmit` passes with zero errors
+- `npm run lint` passes
 
 ---
 

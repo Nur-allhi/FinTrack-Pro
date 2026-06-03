@@ -19,6 +19,7 @@ import BottomNav from './components/layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 
 import { cacheService } from './services/cacheService';
+import { localDb } from './services/localDb';
 import { authService } from './services/authService';
 import { offlineService } from './services/offlineService';
 import { useToast } from './components/Toast';
@@ -28,7 +29,7 @@ import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import { useAuth } from './hooks/useAuth';
 import { useThemeEffects } from './hooks/useThemeEffects';
-import { useOfflineSync } from './hooks/useOfflineSync';
+import { useLocalData } from './hooks/useLocalData';
 import { useScrollDirection } from './hooks/useScrollDirection';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
@@ -44,6 +45,9 @@ const TransferModal = lazy(() => import('./components/TransferModal'));
 const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const RecycleBin = lazy(() => import('./components/RecycleBin'));
 const Login = lazy(() => import('./components/Login'));
+const Signup = lazy(() => import('./components/Signup'));
+const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
+const ResetPassword = lazy(() => import('./components/ResetPassword'));
 
 const defaultTypeColors: Record<string, string> = {
   cash: '#10B981', bank: '#A78BFA', mobile: '#8B5CF6',
@@ -68,18 +72,18 @@ const defaultSettings = {
 
 export default function App() {
   const { toast } = useToast();
-  const { isAuthenticated, userEmail, handleLogin, handleLogout } = useAuth();
+  const { isAuthenticated, authStatus, userEmail, handleLogin, handleContinueAsGuest, handleLogout } = useAuth();
+  const [authPage, setAuthPage] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'recyclebin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [dataReady, setDataReady] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
   const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
 
-  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useOfflineSync(!!isAuthenticated, () => setDataReady(true));
+  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useLocalData(isAuthenticated);
   const { visible: navVisible, scrollRef } = useScrollDirection();
   useThemeEffects(settings);
 
@@ -132,15 +136,15 @@ export default function App() {
 
   useEffect(() => {
     const loadSettings = async () => {
-      const cachedSettings = await cacheService.getSettings();
+      const cachedSettings = await localDb.getSettings() as Record<string, unknown> | undefined;
       if (cachedSettings) {
-        const darkStyle = (['dark', 'dark-dim', 'dark-night'].includes(cachedSettings.darkModeStyle) ? cachedSettings.darkModeStyle : 'dark') as 'dark' | 'dark-dim' | 'dark-night';
+        const darkStyle = (['dark', 'dark-dim', 'dark-night'].includes(cachedSettings.darkModeStyle as string) ? cachedSettings.darkModeStyle : 'dark') as 'dark' | 'dark-dim' | 'dark-night';
         setSettings({
           ...defaultSettings,
-          ...cachedSettings,
-          accentColor: cachedSettings.accentColor || '#A78BFA',
+          ...(cachedSettings as Partial<typeof defaultSettings>),
+          accentColor: (cachedSettings.accentColor as string) || '#A78BFA',
           darkModeStyle: darkStyle,
-          typeColors: { ...defaultTypeColors, ...(cachedSettings.typeColors || {}) }
+          typeColors: { ...defaultTypeColors, ...((cachedSettings.typeColors as Record<string, string>) || {}) }
         });
       }
     };
@@ -160,7 +164,7 @@ export default function App() {
   };
 
   const handleClearCache = async () => {
-    if (confirm("Clear cache?")) { await cacheService.clearCache(); window.location.reload(); }
+    if (confirm("Clear cache?")) { await localDb.clearAll(); window.location.reload(); }
   };
 
   const navItems = [
@@ -194,15 +198,33 @@ export default function App() {
       case 'loans': return <LoanManager accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
       case 'recyclebin': return <RecycleBin />;
-      case 'settings': return <Settings settings={settings} onUpdateSettings={(s: typeof settings) => { setSettings(s); cacheService.setSettings(s); }} />;
+      case 'settings': return <Settings settings={settings} onUpdateSettings={(s: typeof settings) => { setSettings(s); localDb.setSettings(s as Record<string, unknown>); }} />;
       default: return null;
     }
   };
 
-  if (isAuthenticated === null) return <LoadingScreen fullScreen />;
-  if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
-  if (!dataReady) return <LoadingScreen fullScreen />;
-  if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
+  if (authStatus === 'loading') return <LoadingScreen fullScreen />;
+  if (!isAuthenticated && authPage !== 'login') {
+    return (
+      <Suspense fallback={<LoadingScreen fullScreen />}>
+        {authPage === 'signup' && <Signup onSignup={handleLogin} onBackToLogin={() => setAuthPage('login')} />}
+        {authPage === 'forgot' && <ForgotPassword onBackToLogin={() => setAuthPage('login')} />}
+        {authPage === 'reset' && <ResetPassword onResetComplete={() => setAuthPage('login')} />}
+      </Suspense>
+    );
+  }
+  if (!isAuthenticated && authPage === 'login') {
+    return (
+      <Suspense fallback={<LoadingScreen fullScreen />}>
+        <Login
+          onLogin={handleLogin}
+          onGoToSignup={() => setAuthPage('signup')}
+          onGoToForgotPassword={() => setAuthPage('forgot')}
+          onContinueAsGuest={handleContinueAsGuest}
+        />
+      </Suspense>
+    );
+  }
 
   return (
     <><div className="h-[100dvh] overflow-hidden md:h-auto md:min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
@@ -224,8 +246,9 @@ export default function App() {
           darkMode={settings.darkMode}
           onToggleDarkMode={() => {
             const next = !settings.darkMode;
-            setSettings({ ...settings, darkMode: next });
-            cacheService.setSettings({ ...settings, darkMode: next });
+            const updated = { ...settings, darkMode: next };
+            setSettings(updated);
+            localDb.setSettings(updated as Record<string, unknown>);
           }}
           onSearchSelect={(type, id, accountId) => {
             if (type === 'account') { setSelectedAccountId(id); }

@@ -555,61 +555,34 @@ async function pullServerData(): Promise<number> {
 
 ## 10. Supabase Migration
 
-### New Migration: `015_add_uuid_sync_fields.sql`
+### Migration: `supabase/migrations/015_add_uuid_sync_fields.sql`
 
-```sql
--- Add client_id UUID for local-first sync mapping
-ALTER TABLE members ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE transactions ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE loans ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE loan_settlements ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE investments ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE investment_returns ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE groups ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE budgets ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
-ALTER TABLE recurring_transactions ADD COLUMN IF NOT EXISTS client_id UUID UNIQUE;
+The migration file is stored at `supabase/migrations/015_add_uuid_sync_fields.sql`. It adds:
 
--- Add updated_at for conflict resolution
-ALTER TABLE members ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE transactions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE loans ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE loan_settlements ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE investments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE investment_returns ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE groups ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE budgets ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-ALTER TABLE recurring_transactions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+**Columns added to all 10 data tables:**
+- `client_id UUID UNIQUE` — correlation key between local (UUID) and server (integer) records
+- `updated_at TIMESTAMPTZ DEFAULT now()` — last-modified timestamp for conflict resolution
 
--- Indexes for sync queries
-CREATE INDEX IF NOT EXISTS idx_members_client_id ON members(client_id);
-CREATE INDEX IF NOT EXISTS idx_accounts_client_id ON accounts(client_id);
-CREATE INDEX IF NOT EXISTS idx_transactions_client_id ON transactions(client_id);
-CREATE INDEX IF NOT EXISTS idx_loans_client_id ON loans(client_id);
-CREATE INDEX IF NOT EXISTS idx_loan_settlements_client_id ON loan_settlements(client_id);
-CREATE INDEX IF NOT EXISTS idx_investments_client_id ON investments(client_id);
-CREATE INDEX IF NOT EXISTS idx_investment_returns_client_id ON investment_returns(client_id);
-CREATE INDEX IF NOT EXISTS idx_groups_client_id ON groups(client_id);
-CREATE INDEX IF NOT EXISTS idx_budgets_client_id ON budgets(client_id);
-CREATE INDEX IF NOT EXISTS idx_recurring_transactions_client_id ON recurring_transactions(client_id);
+**Indexes (20 total):**
+- `idx_{table}_client_id` on all 10 tables — fast sync lookups by client UUID
+- `idx_{table}_updated_at` on all 10 tables — sync-since-timestamp queries
 
--- Indexes for updated_at queries (sync since timestamp)
-CREATE INDEX IF NOT EXISTS idx_members_updated_at ON members(updated_at);
-CREATE INDEX IF NOT EXISTS idx_accounts_updated_at ON accounts(updated_at);
-CREATE INDEX IF NOT EXISTS idx_transactions_updated_at ON transactions(updated_at);
--- ... same for all tables
+**Auto-update trigger:**
+- `update_updated_at()` function + triggers on all 10 data tables
+- Automatically sets `updated_at = now()` on every UPDATE, ensuring consistent timestamps without application-level bookkeeping
 
--- Sync log table
-CREATE TABLE IF NOT EXISTS sync_log (
-  id SERIAL PRIMARY KEY,
-  user_id UUID NOT NULL,
-  last_sync_at TIMESTAMPTZ DEFAULT now(),
-  direction TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  record_count INTEGER DEFAULT 0
-);
-```
+**Sync log table:**
+- `sync_log` — server-side only, tracks sync operations per user
+- RLS enabled with deny-all policy (`USING (false) WITH CHECK (false)`) — blocks anon/authenticated keys, service role bypasses RLS automatically
+
+### RLS Notes
+
+**Existing tables** (members, accounts, transactions, loans, etc.) already have RLS enabled via `007_enable_rls_all_tables.sql` with `auth.uid() = user_id` policies. The new `client_id` and `updated_at` columns don't need separate RLS policies — they sit on rows already protected by existing policies.
+
+**sync_log** has RLS enabled with a deny-all policy because:
+1. It's only accessed server-side via `supabaseAdmin` (which bypasses RLS)
+2. The deny-all policy (`USING (false) WITH CHECK (false)`) blocks all anon/authenticated key access
+3. This satisfies Supabase's safety check while maintaining zero client-side access
 
 ### New API Endpoint: `/api/sync`
 

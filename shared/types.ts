@@ -2,6 +2,8 @@ export interface Member {
   id: number;
   name: string;
   relationship?: string | null;
+  client_id?: string | null;
+  updated_at?: string;
 }
 
 export interface Account {
@@ -17,6 +19,8 @@ export interface Account {
   member_name?: string;
   parent_name?: string;
   current_balance?: number;
+  client_id?: string | null;
+  updated_at?: string;
 }
 
 export interface Transaction {
@@ -31,6 +35,8 @@ export interface Transaction {
   summary?: string | null;
   user_id?: string;
   linked_account_name?: string;
+  client_id?: string | null;
+  updated_at?: string;
 }
 
 export interface Loan {
@@ -48,6 +54,8 @@ export interface Loan {
   remaining: number;
   user_id?: string;
   lender_name?: string;
+  client_id?: string | null;
+  updated_at?: string;
 }
 
 export interface Investment {
@@ -57,6 +65,8 @@ export interface Investment {
   date: string;
   user_id?: string;
   account_name?: string;
+  client_id?: string | null;
+  updated_at?: string;
 }
 
 export interface InvestmentReturn {
@@ -87,4 +97,6 @@ export interface Group {
   child_count?: number;
   accumulated_balance?: number;
   children?: Account[];
+  client_id?: string | null;
+  updated_at?: string;
 }
