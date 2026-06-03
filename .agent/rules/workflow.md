@@ -100,6 +100,20 @@ Fixes #456
 
 ---
 
+## 4) TODO Tracking
+
+- **Always update `docs/TODO.md`** for every task from a plan
+- Format: `- [ ] **T-XXX** Task description (estimated time) — \`📄 plans/PLAN_NAME.md:§Section\``
+- Mark completed: `- [x] **T-XXX** Task description (estimated time) — \`📄 plans/PLAN_NAME.md:§Section\``
+- Reference the source plan in each task for traceability
+- Example:
+  ```
+  - [ ] **T-121** Add recurring transaction support (4-6h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§Recurring`
+  - [x] **T-121** Add recurring transaction support (4-6h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§Recurring`
+  ```
+
+---
+
 ## 4) Parallel Agents
 
 - **Use parallel agents** for smaller, independent tasks

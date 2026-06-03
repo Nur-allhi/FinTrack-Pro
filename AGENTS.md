@@ -119,6 +119,12 @@ Fixes #456
 - Format: `YYYY-MM-DD: <Fix|Add|Change|Remove> <what> at <path> - <impact> (completed).`
 - Example: `2026-06-03: Add recurring transaction feature at src/features/recurring/ - Enables automated periodic transactions (completed).`
 
+### TODO Tracking Format
+- **Always update `docs/TODO.md`** for every task from a plan
+- Format: `- [ ] **T-XXX** Task description (estimated time) — \`📄 plans/PLAN_NAME.md:§Section\``
+- Mark completed: `- [x] **T-XXX** Task description (estimated time) — \`📄 plans/PLAN_NAME.md:§Section\``
+- Reference the source plan in each task for traceability
+
 ### File Organization
 - **Plans**: Store in `plans/` folder with descriptive filename
 - **Documentation**: Store in `docs/` folder (not plans)

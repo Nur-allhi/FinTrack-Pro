@@ -93,6 +93,7 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
 ### Documentation Rules
 - **Documentation** goes in `docs/` folder
 - **CHANGELOG.md** must be updated for every change
+- **TODO.md** must track all tasks from plans with source references
 - **File organization**:
   - `plans/` - Implementation plans (before coding)
   - `docs/` - Permanent documentation
