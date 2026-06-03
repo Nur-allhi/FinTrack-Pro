@@ -1,5 +1,9 @@
 # AGENTS.md - Working Conventions
 
+> **START HERE**: This file defines how AI agents behave in this workspace.
+> Before any code changes, read `.agent/rules/workflow.md`.
+> At session start, read `docs/SESSIONLOG.md`.
+
 ---
 
 ## 1) Language

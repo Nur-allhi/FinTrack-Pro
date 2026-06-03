@@ -46,6 +46,10 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
 
 # CLAUDE.md - Claude-Specific Instructions
 
+> **START HERE**: This file defines Claude-specific behavior for this workspace.
+> Before any code changes, read `.agent/rules/workflow.md`.
+> At session start, read `docs/SESSIONLOG.md`.
+
 ---
 
 ## 1) Git Workflow (Non-negotiable)
