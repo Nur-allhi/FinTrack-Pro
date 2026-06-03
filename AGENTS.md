@@ -146,10 +146,40 @@ CLAUDE.md       # Claude-specific instructions
 
 ## 6) Context Discovery & File Reading
 - **Before editing/creating files**: Read all relevant files in full to understand context.
+- **Before starting a task**: Read `docs/SESSIONLOG.md` to understand what was fixed/implemented in the last session.
 - **Before starting a task**: Read at minimum `README.md` and relevant files in `docs/*` (if present).
 - **Default discovery tool**: Use `rg` to find source-of-truth implementations quickly.
 - **`docs/structure.md` is optional**: Use it when present for broad navigation; do not block work if missing.
 - **Structure index updates**: Create or refresh `docs/structure.md` only when requested, or when a major restructure makes navigation unreliable.
+
+---
+
+## 7) Session Log
+- **Always update `docs/SESSIONLOG.md`** after finishing any task or session
+- **Always read `docs/SESSIONLOG.md`** at the start of every session to get context
+- Format:
+  ```
+  ## Session N — DD MMM YYYY (Short Title)
+  
+  > **Branch**: `branch-name`
+  > **Tasks**: T-XXX, T-YYY, T-ZZZ
+  > **Status**: completed | in-progress | partial
+  
+  ### Summary
+  Brief description of what was accomplished.
+  
+  ### Changes
+  - What was changed and why
+  
+  ### Files Changed
+  - `path/to/file.ts` — what changed
+  
+  ### Verification
+  - How the changes were verified (tests, lint, etc.)
+  
+  ### Next Steps
+  - What should be done next (if any)
+  ```
 
 ---
 

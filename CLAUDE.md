@@ -94,12 +94,15 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
 - **Documentation** goes in `docs/` folder
 - **CHANGELOG.md** must be updated for every change
 - **TODO.md** must track all tasks from plans with source references
+- **SESSIONLOG.md** must be updated after every task/session
 - **File organization**:
   - `plans/` - Implementation plans (before coding)
   - `docs/` - Permanent documentation
   - `.agent/` - Agent workflows and rules
 
 **Always read `.agent/rules/workflow.md` before starting any code changes.**
+
+**Always read `docs/SESSIONLOG.md` at the start of every session.**
 
 ---
 

@@ -114,6 +114,36 @@ Fixes #456
 
 ---
 
+## 5) Session Log
+
+- **Always read `docs/SESSIONLOG.md`** at the start of every session to get context
+- **Always update `docs/SESSIONLOG.md`** after finishing any task or session
+- Format:
+  ```
+  ## Session N — DD MMM YYYY (Short Title)
+  
+  > **Branch**: `branch-name`
+  > **Tasks**: T-XXX, T-YYY, T-ZZZ
+  > **Status**: completed | in-progress | partial
+  
+  ### Summary
+  Brief description of what was accomplished.
+  
+  ### Changes
+  - What was changed and why
+  
+  ### Files Changed
+  - `path/to/file.ts` — what changed
+  
+  ### Verification
+  - How the changes were verified (tests, lint, etc.)
+  
+  ### Next Steps
+  - What should be done next (if any)
+  ```
+
+---
+
 ## 4) Parallel Agents
 
 - **Use parallel agents** for smaller, independent tasks
