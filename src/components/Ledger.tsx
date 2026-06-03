@@ -132,8 +132,8 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         </button>
       </div>
 
-      <div className="bg-canvas rounded-xl border border-hairline shadow-sm" aria-label="Transaction Ledger">
-        <div className="p-4 md:p-5 bg-primary/5 border-b border-hairline">
+      <div className="rounded-xl border border-hairline" aria-label="Transaction Ledger">
+        <div className="p-4 md:p-5 bg-primary/5 rounded-t-xl">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-base md:text-xl font-normal text-ink tracking-tight">{account.name}</h3>

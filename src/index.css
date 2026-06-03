@@ -230,7 +230,7 @@ h2, h3, h4, h5 {
     @apply transition-all disabled:opacity-50 flex items-center justify-center gap-2;
     background-color: var(--color-primary);
     color: var(--color-on-primary);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-pill);
     padding: 12px 20px;
     font-weight: 700;
     font-size: 0.875rem;
@@ -243,7 +243,7 @@ h2, h3, h4, h5 {
     @apply transition-all disabled:opacity-50 flex items-center justify-center gap-2;
     background-color: var(--color-surface-strong);
     color: var(--color-ink);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-pill);
     padding: 12px 20px;
     font-weight: 600;
     font-size: 0.875rem;

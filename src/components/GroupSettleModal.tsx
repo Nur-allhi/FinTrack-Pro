@@ -55,7 +55,7 @@ export default function GroupSettleModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
             transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            className="bg-canvas rounded-xl border border-hairline shadow-xl w-full max-w-sm p-6 space-y-4"
+            className="bg-canvas rounded-xl border border-hairline shadow-xl w-full max-w-[24rem] p-6 space-y-4"
           >
             <h4 className="text-base font-normal text-ink">Settle a Loan — {borrowerDisplay}</h4>
             <p className="text-xs text-muted">Total outstanding: <strong className="text-ink">{currency}{totalRemaining.toLocaleString()}</strong></p>

@@ -48,7 +48,7 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
     <div ref={containerRef} className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <AnimatePresence>
         {isOpen && !isAnyModalOpen && (
-          <div className="flex flex-col items-end gap-3 mb-2">
+          <div className="flex flex-col items-end gap-3 mb-2 max-w-[calc(100vw-6rem)]">
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -59,11 +59,11 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
                 onNewTransfer();
                 close();
               }}
-              className="flex items-center gap-4 px-6 py-3.5 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
+              className="flex items-center gap-3 px-5 py-3 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
             >
-              <span className="text-xs font-bold uppercase tracking-widest text-ink">Inter-Account Transfer</span>
-              <div className="p-2.5 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
-                <ArrowLeftRight className="w-5 h-5 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-ink truncate">Inter-Account Transfer</span>
+              <div className="p-2 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors shrink-0">
+                <ArrowLeftRight className="w-4 h-4 text-primary" />
               </div>
             </motion.button>
 
@@ -77,11 +77,11 @@ export default function FloatingActionButton({ onNewTransaction, onNewTransfer, 
                 onNewTransaction();
                 close();
               }}
-              className="flex items-center gap-4 px-6 py-3.5 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
+              className="flex items-center gap-3 px-5 py-3 bg-canvas rounded-pill shadow-xl border border-hairline hover:bg-surface-soft transition-all group"
             >
-              <span className="text-xs font-bold uppercase tracking-widest text-ink">New Transaction</span>
-              <div className="p-2.5 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
-                <FileEdit className="w-5 h-5 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-ink truncate">New Transaction</span>
+              <div className="p-2 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors shrink-0">
+                <FileEdit className="w-4 h-4 text-primary" />
               </div>
             </motion.button>
           </div>

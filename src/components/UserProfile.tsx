@@ -74,7 +74,7 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 pb-12 md:pb-16 px-3 md:px-4">
+    <div className="max-w-[36rem] mx-auto space-y-6 md:space-y-8 pb-12 md:pb-16 px-3 md:px-4">
       <div className="flex items-center gap-3 md:gap-6">
         <div className="w-12 md:w-16 h-12 md:h-16 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/20">
           <span className="text-xl md:text-3xl font-bold text-white">{userEmail[0].toUpperCase()}</span>

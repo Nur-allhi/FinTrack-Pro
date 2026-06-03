@@ -10,7 +10,10 @@ interface OfflineIndicatorProps {
 function formatLastSync(ts: number | null): string {
   if (!ts) return '';
   const diff = Date.now() - ts;
-  if (diff < 60000) return 'Just now';
+  if (diff < 60000) {
+    const time = new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `Just now (${time})`;
+  }
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
   return `${Math.floor(diff / 86400000)}d ago`;

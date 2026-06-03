@@ -130,7 +130,6 @@ export function LedgerDesktopToolbar({
   return (
     <div className="hidden md:block px-5 py-2 border-b border-hairline bg-surface-soft/20">
       <div className="flex items-center gap-x-2">
-        <h4 className="text-xs font-bold text-muted uppercase tracking-[0.2em] mr-1 shrink-0">Entries</h4>
         {modes.map(mode => (
           <button
             key={mode}

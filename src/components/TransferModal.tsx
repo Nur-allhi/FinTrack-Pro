@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Account } from '../types';
 import { X, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -120,17 +121,17 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
     }
   };
 
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-12 bg-surface-dark/40 backdrop-blur-sm" style={{ willChange: 'opacity' }}>
-      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="bg-canvas w-full max-w-lg md:max-w-xl lg:max-w-2xl rounded-xl border border-hairline shadow-2xl overflow-hidden" style={{ willChange: 'transform, opacity' }}>
-        <div className="p-6 sm:p-8 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
-          <h3 className="text-2xl font-normal text-ink tracking-tight">Inter-Account Transfer</h3>
-          <button onClick={handleClose} className="p-2 text-muted hover:text-ink transition-colors">
-            <X className="w-6 h-6" />
+  return createPortal(
+    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-12 bg-surface-dark/40 backdrop-blur-sm">
+      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="bg-canvas w-full max-w-[28rem] md:max-w-[32rem] lg:max-w-[42rem] rounded-xl border border-hairline shadow-2xl">
+        <div className="p-4 sm:p-6 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
+          <h3 className="text-lg sm:text-2xl font-normal text-ink tracking-tight">Inter-Account Transfer</h3>
+          <button onClick={handleClose} className="p-1.5 sm:p-2 text-muted hover:text-ink transition-colors">
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <div className="p-6 sm:p-8 md:p-10 lg:p-12">
+        <div className="p-4 sm:p-6 md:p-10 lg:p-12">
           {success ? (
             <div className="py-16 flex flex-col items-center justify-center text-center space-y-6">
               <div className="w-20 h-20 bg-semantic-up/10 rounded-full flex items-center justify-center text-semantic-up shadow-lg shadow-semantic-up/10">
@@ -143,8 +144,8 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
               <button onClick={handleClose} className="btn-primary px-8 mt-4">Return to Dashboard</button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-1 gap-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Source Account</label>
                   <Select
@@ -171,7 +172,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Amount ({currency})</label>
                     <input 
@@ -181,7 +182,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                       value={transfer.amount}
                       onChange={e => setTransfer({...transfer, amount: e.target.value})}
                       placeholder="0.00"
-                      className="w-full px-5 py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm financial-number"
+                      className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm financial-number"
                     />
                   </div>
                   <div className="space-y-2">
@@ -201,23 +202,23 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
                     value={transfer.particulars}
                     onChange={e => setTransfer({...transfer, particulars: e.target.value})}
                     placeholder="Institutional memo"
-                    className="w-full px-5 py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
+                    className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-6">
+              <div className="flex gap-3 pt-4">
                 <button 
                   type="button" 
                   onClick={handleClose}
-                  className="btn-secondary flex-1 h-12 sm:h-14 md:h-16"
+                  className="btn-secondary flex-1 h-11"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={loading}
-                  className="btn-primary flex-[2] h-12 sm:h-14 md:h-16 text-sm md:text-base"
+                  className="btn-primary flex-[2] h-11 text-sm"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                   Authorize Transfer
@@ -227,6 +228,7 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
           )}
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
