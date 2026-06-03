@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
 import OfflineIndicator from './components/OfflineIndicator';
 import UserProfile from './components/UserProfile';
-import FloatingActionButton from './components/FloatingActionButton';
+import BottomNav from './components/layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 
 import { cacheService } from './services/cacheService';
@@ -29,6 +29,7 @@ import Header from './components/layout/Header';
 import { useAuth } from './hooks/useAuth';
 import { useThemeEffects } from './hooks/useThemeEffects';
 import { useOfflineSync } from './hooks/useOfflineSync';
+import { useScrollDirection } from './hooks/useScrollDirection';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const MemberManager = lazy(() => import('./components/MemberManager'));
@@ -73,12 +74,13 @@ export default function App() {
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [dataReady, setDataReady] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
+  const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
 
   const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useOfflineSync(!!isAuthenticated, () => setDataReady(true));
+  const { visible: navVisible, scrollRef } = useScrollDirection();
   useThemeEffects(settings);
 
   useEffect(() => {
@@ -111,8 +113,22 @@ export default function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    if (!showProfile) prevNavRef.current = null;
+  }, [showProfile]);
+
+  const openProfile = () => {
+    prevNavRef.current = { tab: activeTab, accountId: selectedAccountId };
+    setShowProfile(true);
+    setSelectedAccountId(null);
+  };
+
+  const closeProfile = () => {
+    if (prevNavRef.current) {
+      setActiveTab(prevNavRef.current.tab);
+      setSelectedAccountId(prevNavRef.current.accountId);
+    }
     setShowProfile(false);
-  }, [activeTab]);
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -189,18 +205,18 @@ export default function App() {
   if (!isAuthenticated) return <Suspense fallback={null}><Login onLogin={handleLogin} /></Suspense>;
 
   return (
-    <><div className="min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
+    <><div className="h-[100dvh] overflow-hidden md:h-auto md:min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         selectedAccountId={selectedAccountId} setSelectedAccountId={setSelectedAccountId}
-        isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
+        isMobileMenuOpen={false} setIsMobileMenuOpen={() => {}}
         settings={settings} onLogout={handleLogout} navItems={navItems}
-        userEmail={userEmail} showProfile={showProfile} onOpenProfile={() => { setShowProfile(true); setSelectedAccountId(null); setIsMobileMenuOpen(false); }} setShowProfile={setShowProfile}
+        userEmail={userEmail} showProfile={showProfile} onOpenProfile={openProfile} onCloseProfile={closeProfile} setShowProfile={setShowProfile}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 md:pl-64">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 md:pl-64">
         <Header 
-          setIsMobileMenuOpen={setIsMobileMenuOpen} 
+          setIsMobileMenuOpen={() => {}} 
           selectedAccountId={selectedAccountId} 
           activeTabLabel={navItems.find(i => i.id === activeTab)?.label}
           accounts={accounts}
@@ -217,10 +233,12 @@ export default function App() {
             else if (type === 'loan') { setActiveTab('loans'); }
             else { setActiveTab('dashboard'); setDashboardFilter(id); }
           }}
+          userEmail={userEmail}
+          onOpenProfile={openProfile}
         />
 
         <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} />
-        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="contain-layout-style" style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 300px', willChange: 'transform, opacity' }}>
               <Suspense fallback={<LoadingScreen />}>{renderContent()}</Suspense>
@@ -241,7 +259,23 @@ export default function App() {
           </Suspense>
         )}
       </ErrorBoundary>
-      <div className="md:hidden"><FloatingActionButton onNewTransaction={() => setIsTransactionModalOpen(true)} onNewTransfer={() => setIsTransferModalOpen(true)} isTransactionModalOpen={isTransactionModalOpen} isTransferModalOpen={isTransferModalOpen} /></div>
+      <div className="md:hidden">
+        <BottomNav
+          activeTab={activeTab}
+          selectedAccountId={selectedAccountId}
+          onTabChange={(tab) => {
+            if (showProfile) {
+              closeProfile();
+            } else {
+              setActiveTab(tab as typeof activeTab);
+              setSelectedAccountId(null);
+            }
+          }}
+          onNewTransaction={() => setIsTransactionModalOpen(true)}
+          onTransfer={() => setIsTransferModalOpen(true)}
+          visible={navVisible}
+        />
+      </div>
     </div>
       {import.meta.env.VITE_AGENTATION === 'true' && <Agentation />}
     </>

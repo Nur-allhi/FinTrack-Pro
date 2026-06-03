@@ -122,8 +122,8 @@ export default function TransferModal({ accounts, onClose, onUpdate, currency }:
   };
 
   return createPortal(
-    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-12 bg-surface-dark/40 backdrop-blur-sm">
-      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="bg-canvas w-full max-w-[28rem] md:max-w-[32rem] lg:max-w-[42rem] rounded-xl border border-hairline shadow-2xl">
+    <motion.div initial={{ opacity: 0 }} animate={closing ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-12 bg-surface-dark/40 backdrop-blur-sm" onClick={handleClose}>
+      <motion.div initial={{ opacity: 0, y: 40 }} animate={closing ? { opacity: 0, y: 40 } : { opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} onClick={e => e.stopPropagation()} className="bg-canvas w-full max-w-[28rem] md:max-w-[32rem] lg:max-w-[42rem] rounded-xl border border-hairline shadow-2xl">
         <div className="p-4 sm:p-6 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
           <h3 className="text-lg sm:text-2xl font-normal text-ink tracking-tight">Inter-Account Transfer</h3>
           <button onClick={handleClose} className="p-1.5 sm:p-2 text-muted hover:text-ink transition-colors">

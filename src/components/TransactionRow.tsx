@@ -38,7 +38,7 @@ export default React.memo(function TransactionRow({
     <>
       {isNewDate && (
         <tr>
-          <td colSpan={6} className="sticky top-0 z-10 bg-surface-soft px-5 py-2">
+          <td colSpan={6} className="bg-surface-soft px-5 py-2 border-b border-hairline">
             <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">
               {format(new Date(tx.date), 'EEEE, MMMM dd, yyyy')}
             </p>

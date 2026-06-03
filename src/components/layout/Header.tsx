@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Search, X, Sun, Moon, Receipt, Handshake } from 'lucide-react';
+import { Search, X, Sun, Moon, Receipt, Handshake } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../utils/cn';
 import { authService } from '../../services/authService';
@@ -22,6 +22,8 @@ interface HeaderProps {
   onSearchSelect: (type: string, id: number, accountId?: number) => void;
   darkMode: boolean;
   onToggleDarkMode: () => void;
+  userEmail: string;
+  onOpenProfile: () => void;
 }
 
 export default function Header({
@@ -32,7 +34,9 @@ export default function Header({
   members,
   onSearchSelect,
   darkMode,
-  onToggleDarkMode
+  onToggleDarkMode,
+  userEmail,
+  onOpenProfile
 }: HeaderProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -98,12 +102,6 @@ export default function Header({
   return (
     <header className="h-14 md:h-16 bg-canvas border-b border-hairline flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-0 z-40">
       <div className="flex items-center gap-2 md:gap-4">
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="md:hidden p-1.5 text-muted hover:bg-surface-soft rounded-pill"
-        >
-          <Menu className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
         <h2 className="text-base md:text-xl font-normal text-ink tracking-tight">
           {selectedAccountId ? 'Ledger' : activeTabLabel}
         </h2>
@@ -190,6 +188,15 @@ export default function Header({
           )}
         </AnimatePresence>
       </div>
+
+        {/* Profile avatar */}
+        <button
+          onClick={onOpenProfile}
+          className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+          aria-label="Profile"
+        >
+          <span className="text-xs font-bold text-primary">{userEmail[0].toUpperCase()}</span>
+        </button>
       </div>
     </header>
   );

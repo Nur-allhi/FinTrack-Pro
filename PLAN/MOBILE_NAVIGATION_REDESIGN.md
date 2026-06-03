@@ -2,7 +2,7 @@
 
 > **Date:** 2026-06-03
 > **Branch:** `mobile-navigation-redesign`
-> **Status:** Planning → Implementation
+> **Status:** Phase 12 complete, Phase 12b fixes in progress
 
 ---
 
@@ -382,6 +382,89 @@ The hamburger menu button in `Header.tsx` (lines 101-106) can remain for profile
 
 ---
 
+## 9. Post-Implementation Fixes (Phase 12b)
+
+> Three issues found during QA. These fix scroll auto-hide, FAB positioning on Ledger, and sidebar removal on mobile.
+
+### Fix A: Scroll Auto-Hide Not Working
+
+**Root cause:** The root `<div>` uses `min-h-[100dvh]` which allows it to grow beyond the viewport. The scroll container (`flex-1 overflow-y-auto`) never actually overflows, so `scrollTop` stays 0 and the scroll listener never fires.
+
+**Fix:** Change `min-h-[100dvh]` to `h-[100dvh]` on mobile so the layout is viewport-locked and the inner container scrolls.
+
+```tsx
+// App.tsx line 194 — BEFORE:
+<div className="min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
+
+// AFTER:
+<div className="h-[100dvh] overflow-hidden md:h-auto md:min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
+```
+
+- `h-[100dvh]` locks the root to viewport height on mobile → inner `flex-1 overflow-y-auto` div becomes the scroll container
+- `overflow-hidden` prevents the root from scrolling (only the inner div scrolls)
+- `md:h-auto md:min-h-[100dvh]` restores normal behavior on desktop (sidebar layout uses `min-h`)
+
+**File:** `src/App.tsx` line 194
+
+---
+
+### Fix B: FAB Overlaps Bottom Nav on Ledger Page
+
+**Root cause:** The Ledger FAB is positioned at `bottom-8 right-8` (32px from bottom). The bottom nav is 64px tall + safe-area-inset. The FAB overlaps the nav bar items.
+
+**Fix:** Move FAB to `bottom-24 right-6` (96px from bottom) to clear the nav bar. Also reduce size slightly for better balance.
+
+```tsx
+// BottomNav.tsx — FAB button className — BEFORE:
+className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full bg-primary shadow-2xl flex items-center justify-center md:hidden"
+
+// AFTER:
+className="fixed bottom-24 right-6 z-50 w-14 h-14 rounded-full bg-primary shadow-2xl flex items-center justify-center md:hidden"
+```
+
+- `bottom-24` (96px) clears the 64px nav + 32px gap
+- `right-6` (24px) slightly tighter to edge for thumb reach
+
+**File:** `src/components/layout/BottomNav.tsx` line 90
+
+---
+
+### Fix C: Remove Sidebar on Mobile, Add Profile to Header
+
+**Root cause:** With bottom nav handling all primary navigation, the sidebar drawer on mobile is redundant. Profile/sign-out access needs a new home.
+
+**Changes:**
+
+1. **`Sidebar.tsx`** — Add `hidden md:block` to `<aside>` so sidebar is completely removed from mobile DOM:
+   ```tsx
+   <aside className={cn(
+     "hidden md:block fixed inset-y-0 left-0 z-50 w-64 bg-canvas border-r border-hairline ...",
+     // ...
+   )}>
+   ```
+
+2. **`Header.tsx`** — Add `userEmail` and `onOpenProfile` props. Replace hamburger button with profile avatar:
+   ```tsx
+   // Interface additions:
+   userEmail: string;
+   onOpenProfile: () => void;
+
+   // Replace hamburger button with:
+   <button
+     onClick={onOpenProfile}
+     className="md:hidden w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+     aria-label="Profile"
+   >
+     <span className="text-xs font-bold text-primary">{userEmail[0].toUpperCase()}</span>
+   </button>
+   ```
+
+3. **`App.tsx`** — Remove `isMobileMenuOpen` state entirely. Remove `setIsMobileMenuOpen` from Header props. Pass `userEmail` and `onOpenProfile` to Header. Remove `isMobileMenuOpen`/`setIsMobileMenuOpen` from Sidebar props.
+
+**Files:** `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/App.tsx`
+
+---
+
 ## 8. Testing Checklist
 
 ### Functional
@@ -390,10 +473,11 @@ The hamburger menu button in `Header.tsx` (lines 101-106) can remain for profile
 - [ ] Bottom nav hidden on desktop (>= 768px)
 - [ ] All 5 icons are tappable (44×44px hit targets)
 - [ ] Active tab highlighted correctly
-- [ ] Scroll down hides nav, scroll up shows nav
+- [ ] **Scroll down hides nav, scroll up shows nav** (FIX A)
 - [ ] Nav always visible at top of page
 - [ ] + button centered in nav on non-Ledger pages
 - [ ] + button morphs to FAB on Ledger page with smooth animation
+- [ ] **FAB positioned above bottom nav, not overlapping** (FIX B)
 - [ ] Tapping FAB on Ledger opens New Transaction modal
 - [ ] FAB morphs back to nav when leaving Ledger
 - [ ] MoreMenu opens as bottom sheet
@@ -401,7 +485,9 @@ The hamburger menu button in `Header.tsx` (lines 101-106) can remain for profile
 - [ ] Tapping MoreMenu item navigates to correct tab
 - [ ] MoreMenu drag-to-dismiss works
 - [ ] Desktop layout unchanged
-- [ ] Hamburger menu still works on mobile (profile access)
+- [ ] **Sidebar hidden on mobile** (FIX C)
+- [ ] **Profile avatar in Header opens profile on mobile** (FIX C)
+- [ ] Hamburger menu removed from mobile Header
 
 ### Visual & Design
 

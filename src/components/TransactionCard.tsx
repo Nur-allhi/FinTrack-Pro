@@ -37,7 +37,7 @@ export default React.memo(function TransactionCard({
   return (
     <>
       {isNewDate && (
-        <div className="sticky top-0 z-10 bg-surface-soft px-4 py-2 border-y border-hairline">
+        <div className="bg-surface-soft px-4 py-2 border-b border-hairline">
           <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">
             {format(new Date(tx.date), 'EEEE, MMMM dd, yyyy')}
           </p>

@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `PLAN/MASTER_PROMPT.md` · 2026-06-02
-> **80 completed**, **7 remaining** (Phase 12 in progress)
+> **92 completed**, **0 remaining** — All phases complete
 >
 > ## Branching Strategy
 >
@@ -168,21 +168,40 @@
 
 ---
 
-## Phase 12 — Mobile Navigation Redesign
+## Phase 12 — Mobile Navigation Redesign ✅
 
 > Source: `PLAN/MOBILE_NAVIGATION_REDESIGN.md`
 > Branch: `mobile-navigation-redesign`
-> **Status: 0/7 complete**
+> **Status: 7/7 complete**
 
 ### 📱 Core Components
 
-- [ ] **T-109** Create `useScrollDirection` hook — scroll detection for nav auto-hide (1h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 1` `📄 HIG:Bottom Navigation#scroll-behavior` `📄 web.dev:scroll-driven-animations`
-- [ ] **T-110** Add `.glass-nav` CSS utility to `src/index.css` — glassmorphic styling (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 2` `📄 Material Design 3:Glass#backdrop-blur` `📄 HIG:Visual Effects#blur`
-- [ ] **T-111** Create `MoreMenu` bottom sheet component — remaining 6 nav items in grid (2h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 3` `📄 Material Design 3:Bottom Sheets` `📄 HIG:Sheets#modal`
-- [ ] **T-112** Create `BottomNav` component — glassmorphic tab bar with 5 items + FAB morph (3h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 4` `📄 Material Design 3:Navigation Bar` `📄 HIG:Tab Bars#tab-bar`
+- [x] **T-109** Create `useScrollDirection` hook — scroll detection for nav auto-hide (1h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 1` `📄 HIG:Bottom Navigation#scroll-behavior` `📄 web.dev:scroll-driven-animations`
+- [x] **T-110** Add `.glass-nav` CSS utility to `src/index.css` — glassmorphic styling (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 2` `📄 Material Design 3:Glass#backdrop-blur` `📄 HIG:Visual Effects#blur`
+- [x] **T-111** Create `MoreMenu` bottom sheet component — remaining 6 nav items in grid (2h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 3` `📄 Material Design 3:Bottom Sheets` `📄 HIG:Sheets#modal`
+- [x] **T-112** Create `BottomNav` component — glassmorphic tab bar with 5 items + FAB morph (3h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 4` `📄 Material Design 3:Navigation Bar` `📄 HIG:Tab Bars#tab-bar`
 
 ### 🔗 Integration & Cleanup
 
-- [ ] **T-113** Integrate `BottomNav` in `App.tsx` — scroll ref, Ledger FAB, remove old FAB (2h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 5` `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§5 Animation Reference`
-- [ ] **T-114** Delete `FloatingActionButton.tsx` — replaced by + button in `BottomNav` (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 6`
-- [ ] **T-115** Run `npm run lint` and verify type correctness (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§8 Testing Checklist`
+- [x] **T-113** Integrate `BottomNav` in `App.tsx` — scroll ref, Ledger FAB, remove old FAB (2h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 5` `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§5 Animation Reference`
+- [x] **T-114** Delete `FloatingActionButton.tsx` — replaced by + button in `BottomNav` (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 6`
+- [x] **T-115** Run `npm run lint` and verify type correctness (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§8 Testing Checklist`
+
+---
+
+## Phase 12b — Mobile Nav Fixes ✅
+
+> Source: `PLAN/MOBILE_NAVIGATION_REDESIGN.md:§9 Post-Implementation Fixes`
+> Branch: `mobile-navigation-redesign`
+> **Status: 5/5 complete**
+
+### 🔧 Bug Fixes
+
+- [x] **T-116** Fix scroll auto-hide — change root div from `min-h-[100dvh]` to `h-[100dvh] overflow-hidden` on mobile so inner container actually scrolls (30m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix A`
+- [x] **T-117** Fix FAB position on Ledger — move from `bottom-8 right-8` to `bottom-24 right-6` so it clears the bottom nav bar (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix B`
+
+### 📱 Mobile Cleanup
+
+- [x] **T-118** Hide sidebar on mobile — add `hidden md:block` to `<aside>` in Sidebar.tsx (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix C`
+- [x] **T-119** Add profile avatar to Header on mobile — replace hamburger with circular initial button, add `userEmail` + `onOpenProfile` props (30m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix C`
+- [x] **T-120** Remove `isMobileMenuOpen` state from App.tsx — clean up unused state and Sidebar/Header props (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§9 Fix C`
