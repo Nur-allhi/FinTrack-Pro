@@ -7,11 +7,11 @@
 
 ## Quick Reference — Last Session
 
-> **Session 20** — 3 June 2026 (Local-First Architecture — Phase 5)
+> **Session 21** — 3 June 2026 (Local-First Architecture — Phase 6)
 > **Branch**: `feat/local-first`
-> **Tasks**: T-148 through T-152
+> **Tasks**: T-156, T-157, T-158
 > **Status**: completed
-> **Summary**: Implemented Supabase sync engine — push/pull API, client sync service with LWW conflict resolution, migration service, and background sync scheduler.
+> **Summary**: Implemented local JSON export/import for data backup. Created exportService.ts and ImportModal.tsx, updated UserProfile to use local export and preview import modal.
 
 ---
 
@@ -45,6 +45,41 @@ Brief description of what was accomplished.
 ---
 
 ## Session History
+
+## Session 21 — 3 June 2026 (Local-First Architecture — Phase 6)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: T-156, T-157, T-158
+> **Status**: completed
+
+### Summary
+
+Implemented local JSON export/import for data backup. Created exportService.ts and ImportModal.tsx, updated UserProfile to use local export and preview import modal.
+
+### Changes
+
+- Created `src/services/exportService.ts` — exports all local IndexedDB data to JSON with version, timestamp, userId, strips internal fields (sync_status, _deleted, server_id, updated_at)
+- Created `src/components/ImportModal.tsx` — preview modal showing counts of imported data, import with local-wins conflict resolution (skip existing IDs)
+- Updated `src/hooks/useProfileData.ts` — replaced server-based export with local export, added onImportData callback for modal integration
+- Updated `src/components/UserProfile.tsx` — integrated ImportModal, added state for import data, local export button
+
+### Files Changed
+
+- `src/services/exportService.ts` (new)
+- `src/components/ImportModal.tsx` (new)
+- `src/hooks/useProfileData.ts` (modified)
+- `src/components/UserProfile.tsx` (modified)
+
+### Verification
+
+- `npx tsc --noEmit` passes with zero errors
+- `npm run lint` passes
+- `npm run build` succeeds
+
+### Next Steps
+
+- Phase 7: Animations & Polish (T-159 to T-163)
+- Google Drive integration deferred (T-153, T-154, T-155)
 
 ## Session 20 — 3 June 2026 (Local-First Architecture — Phase 5)
 

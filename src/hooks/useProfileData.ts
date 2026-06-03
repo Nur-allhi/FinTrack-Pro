@@ -1,29 +1,23 @@
 import { useRef } from 'react';
 import { authService } from '../services/authService';
 import { parseCsvTransactions } from '../utils/csvImport';
+import { exportLocalData, downloadJson, ExportData } from '../services/exportService';
 
 interface UseProfileDataOptions {
   currency: string;
   accounts: { id: number; name: string }[];
   toast: (msg: string, type: 'success' | 'error') => void;
+  onImportData?: (data: ExportData) => void;
 }
 
-export function useProfileData({ currency, accounts, toast }: UseProfileDataOptions) {
+export function useProfileData({ currency, accounts, toast, onImportData }: UseProfileDataOptions) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const csvFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
     try {
-      const res = await authService.apiFetch('/api/export');
-      if (!res.ok) throw new Error('Export failed');
-      const data = await res.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `fintrack-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const data = await exportLocalData();
+      downloadJson(data);
       toast('Data exported successfully.', 'success');
     } catch { toast('Failed to export data.', 'error'); }
   };
@@ -34,13 +28,19 @@ export function useProfileData({ currency, accounts, toast }: UseProfileDataOpti
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      if (!data.members || !data.accounts) throw new Error('Invalid format');
-      const res = await authService.apiFetch('/api/import', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
-      });
-      if (!res.ok) { const errData = await res.json().catch(() => ({})); throw new Error(errData.error || `Server error (${res.status})`); }
-      toast('Data imported. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1500);
+      if (!data.members || !data.accounts || !data.data) throw new Error('Invalid format');
+      // If callback provided, pass data; otherwise, import directly (legacy)
+      if (onImportData) {
+        onImportData(data as ExportData);
+      } else {
+        // Fallback to server import (should not be used in local-first mode)
+        const res = await authService.apiFetch('/api/import', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+        });
+        if (!res.ok) { const errData = await res.json().catch(() => ({})); throw new Error(errData.error || `Server error (${res.status})`); }
+        toast('Data imported. Reloading...', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      }
     } catch (err) { toast(err instanceof Error ? err.message : 'Failed to import.', 'error'); }
     finally { if (fileInputRef.current) fileInputRef.current.value = ''; }
   };

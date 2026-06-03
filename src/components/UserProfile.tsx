@@ -3,6 +3,8 @@ import { User, Mail, ShieldCheck, KeyRound, Database, Upload, RefreshCw, Loader2
 import { authService } from '../services/authService';
 import { useToast } from './Toast';
 import { useProfileData } from '../hooks/useProfileData';
+import ImportModal from './ImportModal';
+import { ExportData } from '../services/exportService';
 
 interface UserProfileProps {
   userEmail: string;
@@ -15,7 +17,15 @@ interface UserProfileProps {
 
 export default function UserProfile({ userEmail, onRefreshData, onExportData, onClearCache, currency = '৳', accounts = [] }: UserProfileProps) {
   const { toast } = useToast();
-  const { fileInputRef, csvFileInputRef, handleExport, handleImport, handleCsvImport, handleClearAll } = useProfileData({ currency, accounts, toast });
+  const { fileInputRef, csvFileInputRef, handleExport, handleImport, handleCsvImport, handleClearAll } = useProfileData({
+    currency,
+    accounts,
+    toast,
+    onImportData: (data) => {
+      setImportData(data);
+      setImportModalOpen(true);
+    },
+  });
   const [name, setName] = useState('');
   const [originalName, setOriginalName] = useState('');
   const [provider, setProvider] = useState('');
@@ -28,6 +38,8 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
   const [newPassword, setNewPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importData, setImportData] = useState<ExportData | null>(null);
 
   useEffect(() => {
     authService.apiFetch('/api/auth/me').then(r => r.json()).then(d => {
@@ -240,6 +252,12 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
           <p className="text-xs text-muted break-all font-mono">User ID: {userId}</p>
         </div>
       )}
+      <ImportModal
+        open={importModalOpen}
+        data={importData}
+        onClose={() => { setImportModalOpen(false); setImportData(null); }}
+        onImported={() => { onRefreshData(); }}
+      />
     </div>
   );
 }

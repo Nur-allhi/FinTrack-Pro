@@ -264,9 +264,9 @@
 - [ ] **T-153** Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
 - [ ] **T-154** Create `supabase/migrations/016_add_google_tokens.sql` — Google OAuth tokens table (30m) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
 - [ ] **T-155** Create `src/services/googleDriveService.ts` — Google Drive backup/restore (3h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
-- [ ] **T-156** Update `src/components/UserProfile.tsx` — add Google Drive + Export/Import buttons (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.3`
-- [ ] **T-157** Create `src/services/exportService.ts` — JSON export for local backup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
-- [ ] **T-158** Create `src/components/ImportModal.tsx` — JSON import (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
+- [x] **T-156** Update `src/components/UserProfile.tsx` — add Google Drive + Export/Import buttons (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.3`
+- [x] **T-157** Create `src/services/exportService.ts` — JSON export for local backup (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
+- [x] **T-158** Create `src/components/ImportModal.tsx` — JSON import (2h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.2`
 
 ### 🎬 Phase 7 — Animations & Polish
 
