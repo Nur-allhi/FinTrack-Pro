@@ -41,3 +41,94 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+---
+
+# CLAUDE.md - Claude-Specific Instructions
+
+---
+
+## 1) Git Workflow (Non-negotiable)
+
+### Branch Rules
+- **NEVER code directly in `main` branch.** All development must happen in feature/fix branches.
+- **Branch naming convention**: `<type>/<short-description>` where type is:
+  - `feature/` - New functionality
+  - `fix/` - Bug fixes
+  - `hotfix/` - Critical production fixes
+  - `refactor/` - Code restructuring without behavior change
+  - `docs/` - Documentation only
+  - `test/` - Adding or updating tests
+  - `chore/` - Maintenance tasks
+
+### Workflow Process
+1. **Plan First**: Always create a plan in `plans/` folder before coding
+2. **Get Confirmation**: Wait for user approval before proceeding
+3. **Create Branch**: Branch from `main` with clear naming
+4. **Implement**: Make changes in the feature branch
+5. **Commit Often**: Commit after every logical change with detailed messages
+6. **Update CHANGELOG**: Add entry for every change
+7. **Merge on Approval**: Only merge to `main` when user explicitly commands
+
+### Commit Message Format
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+---
+
+## 2) Planning & Documentation
+
+### Planning Rules
+- **Always plan first** and ask user confirmation before implementing
+- **Store plans** in `plans/` folder with descriptive filenames
+- **Plans are NOT documentation** - they are implementation blueprints
+
+### Documentation Rules
+- **Documentation** goes in `docs/` folder
+- **CHANGELOG.md** must be updated for every change
+- **File organization**:
+  - `plans/` - Implementation plans (before coding)
+  - `docs/` - Permanent documentation
+  - `.agent/` - Agent workflows and rules
+
+---
+
+## 3) Parallel Agents
+
+- **Use parallel agents** for smaller, independent tasks
+- **Launch multiple agents concurrently** when possible
+- **Each agent** should handle a specific, well-defined task
+- **Coordinate results** before merging to main
+
+---
+
+## 4) GitNexus Integration
+
+- **MUST run impact analysis** before editing any symbol
+- **MUST run detect_changes()** before committing
+- **MUST warn user** if impact analysis returns HIGH or CRITICAL risk
+
+---
+
+## 5) Core Principles
+
+- **Clarify Ambiguity First**: Ask 1-2 clarifying questions before proceeding
+- **Code Only What Was Asked**: Follow scope strictly
+- **Minimum Viable Change**: Simplest fix that works
+- **Reuse Before Rewriting**: Prefer existing modules
+- **File Length Limit**: Keep every file under 300 LOC
+- **Configuration and Secrets**: Load from environment variables only
+
+---
+
+## 6) Execution Discipline
+
+- **Run only necessary commands**
+- **Timeout**: Default 60s; cap at 70-80s for long-running commands
+- **Permission errors**: Explain clearly and propose safe manual steps
+- **New dependencies**: Do not add unless truly necessary and user agrees

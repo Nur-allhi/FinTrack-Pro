@@ -4,6 +4,41 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+## June 3, 2026 — Industry Standard Workflow Implementation
+
+**What got done:**
+
+**Git Workflow Rules (Non-negotiable)**
+- Added branch naming convention: `<type>/<short-description>`
+- Implemented plan-first approach: always create plan in `plans/` folder before coding
+- Added user confirmation requirement before proceeding with implementation
+- Added commit message format with type, scope, subject, body, and footer
+- Added requirement to commit after every logical change with detailed messages
+
+**Documentation Rules**
+- Added CHANGELOG update requirement for every change, no matter how minor
+- Added file organization rules: `plans/` for implementation plans, `docs/` for documentation
+- Added documentation hierarchy: plans → docs → agent workflows → AGENTS.md → CLAUDE.md
+
+**Parallel Agents**
+- Added support for parallel agents for smaller, independent tasks
+- Added guidance for launching multiple agents concurrently
+- Added coordination requirements before merging to main
+
+**Files Updated:**
+- `AGENTS.md` - Added Git workflow, documentation, and parallel agent rules
+- `CLAUDE.md` - Added Claude-specific workflow instructions
+- `.agent/rules/workflow.md` - Created new workflow rules file
+- `.agent/rules/GEMINI.md` - Updated to reference workflow rules
+
+**Impact:**
+- Establishes industry-standard workflow for the project
+- Ensures consistent git practices across all development
+- Improves code quality through planning and review process
+- Enables parallel development for faster delivery
+
+---
+
 ## June 1, 2026 — All Remaining TODOs Resolved
 
 **What got done:**
@@ -32,10 +67,10 @@ All the changes made to FinTrack Pro, written in plain English.
 - Strips HTML tags from name, particulars, category, summary, borrower_name, relationship.
 
 **Docs Updated**
-- `AUDIT_REPORT.md` — all 27 issues resolved, no partially-fixed or unfixed items remain.
-- `IMPLEMENTATION_PLAN.md` — all 62 tasks marked done.
-- `PROJECTPLAN.md` — Phase 11 fully checked off.
-- `TODO.md` — 53 completed, 0 remaining (all phases).
+- `docs/AUDIT_REPORT.md` — all 27 issues resolved, no partially-fixed or unfixed items remain.
+- `docs/IMPLEMENTATION_PLAN.md` — all 62 tasks marked done.
+- `docs/PROJECTPLAN.md` — Phase 11 fully checked off.
+- `docs/TODO.md` — 53 completed, 0 remaining (all phases).
 
 ---
 
@@ -66,9 +101,9 @@ All the changes made to FinTrack Pro, written in plain English.
 - SW precache: 2,677 kB → 1,488 kB (-44%). Excluded lazy vendor chunks.
 
 **Docs Updated**
-- `PERFORMANCE_REPORT.md` — full audit with before/after metrics.
-- `TODO.md` — 53 completed, 0 remaining.
-- `AUDIT_REPORT.md` — added P5 performance section.
+- `docs/PERFORMANCE_REPORT.md` — full audit with before/after metrics.
+- `docs/TODO.md` — 53 completed, 0 remaining.
+- `docs/AUDIT_REPORT.md` — added P5 performance section.
 
 ---
 

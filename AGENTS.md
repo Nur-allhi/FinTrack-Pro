@@ -31,7 +31,66 @@
 
 ---
 
-## 3) Decision Order & Clarification Gate
+## 3) Git Workflow & Branching Strategy
+
+### Branch Rules (Non-negotiable)
+- **NEVER code directly in `main` branch.** All development must happen in feature/fix branches.
+- **Branch naming convention**: `<type>/<short-description>` where type is:
+  - `feature/` - New functionality
+  - `fix/` - Bug fixes
+  - `hotfix/` - Critical production fixes
+  - `refactor/` - Code restructuring without behavior change
+  - `docs/` - Documentation only
+  - `test/` - Adding or updating tests
+  - `chore/` - Maintenance tasks
+- Examples: `feature/add-recurring-transactions`, `fix/calculate-interest-correctly`, `docs/update-api-reference`
+
+### Workflow Process
+1. **Plan First**: Always create a plan in `plans/` folder before coding
+2. **Get Confirmation**: Wait for user approval before proceeding
+3. **Create Branch**: Branch from `main` with clear naming
+4. **Implement**: Make changes in the feature branch
+5. **Commit Often**: Commit after every logical change with detailed messages
+6. **Update CHANGELOG**: Add entry for every change (see Section 5)
+7. **Merge on Approval**: Only merge to `main` when user explicitly commands
+
+### Commit Message Format
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+- **type**: feat, fix, docs, style, refactor, test, chore
+- **scope**: module/feature affected (optional)
+- **subject**: imperative mood, max 50 chars
+- **body**: what and why, not how (max 72 chars per line)
+- **footer**: breaking changes, issue references
+
+Examples:
+```
+feat(transactions): add recurring transaction support
+
+- Implement RecurringTransaction model
+- Add cron job for auto-generation
+- Update API endpoints
+
+Closes #123
+```
+
+```
+fix(interest): correct daily interest calculation
+
+Was using 365 days instead of actual days in month.
+Changed to use getDaysInMonth() for accuracy.
+
+Fixes #456
+```
+
+---
+
+## 4) Decision Order & Clarification Gate
 - **Rule precedence (highest to lowest)**:
   1. Safety and non-destructive behavior
   2. Core Principles (Section 2)
@@ -51,7 +110,31 @@
 
 ---
 
-## 4) Context Discovery & File Reading
+## 5) Documentation & File Organization
+
+### CHANGELOG Format
+- **Always update `CHANGELOG.md`** for every change, no matter how minor
+- Format: `YYYY-MM-DD: <Fix|Add|Change|Remove> <what> at <path> - <impact> (completed).`
+- Example: `2026-06-03: Add recurring transaction feature at src/features/recurring/ - Enables automated periodic transactions (completed).`
+
+### File Organization
+- **Plans**: Store in `plans/` folder with descriptive filename
+- **Documentation**: Store in `docs/` folder (not plans)
+- **Temporary files**: Delete immediately after use
+- **Agent workflows**: Use `.agent/` folder for best workflow practices
+
+### Documentation Hierarchy
+```
+plans/          # Implementation plans (before coding)
+docs/           # Permanent documentation
+.agent/         # Agent workflows and rules
+AGENTS.md       # Working conventions (this file)
+CLAUDE.md       # Claude-specific instructions
+```
+
+---
+
+## 6) Context Discovery & File Reading
 - **Before editing/creating files**: Read all relevant files in full to understand context.
 - **Before starting a task**: Read at minimum `README.md` and relevant files in `docs/*` (if present).
 - **Default discovery tool**: Use `rg` to find source-of-truth implementations quickly.
@@ -60,9 +143,7 @@
 
 ---
 
-
-
-## 5) Execution Discipline
+## 7) Execution Discipline
 - **Run only necessary commands**; avoid destructive commands (`rm`, `git reset`...) unless explicitly requested.
 - **Timeout**: Default 60s; cap at 70-80s for potentially long-running commands.
 - **Permission errors**: Explain clearly and propose safe manual steps.
@@ -70,11 +151,11 @@
 
 ---
 
-## 6) Auto-Documentation (Conditional)
+## 8) Auto-Documentation (Conditional)
 After completing impactful changes (feature/bugfix/schema/architecture), update briefly:
 - `README.md`: If stable info (stack/versions/overview) is affected.
-- `SESSIONLOG.md`, `CHANGELOG.md`, `docs/structure.md`: Update if the file exists, or create only when explicitly requested.
-- `SESSIONLOG.md`: Append a new session entry with summary, files changed, and any notable decisions.
+- `docs/SESSIONLOG.md`, `CHANGELOG.md`, `docs/structure.md`: Update if the file exists, or create only when explicitly requested.
+- `docs/SESSIONLOG.md`: Append a new session entry with summary, files changed, and any notable decisions.
 - `CHANGELOG.md` format (when used): `YYYY-MM-DD: <Fix|Add|Change|Remove> <what> at <path> - <impact> (completed).`
 
 ## gitnexus

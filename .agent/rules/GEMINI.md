@@ -18,6 +18,7 @@ Agent activated → Check frontmatter "skills:" → Read SKILL.md (INDEX) → Re
 
 - **Selective Reading:** DO NOT read ALL files in a skill folder. Read `SKILL.md` first, then only read sections matching the user's request.
 - **Rule Priority:** P0 (GEMINI.md) > P1 (Agent .md) > P2 (SKILL.md). All rules are binding.
+- **Workflow Rules:** Always follow `.agent/rules/workflow.md` for git workflow, planning, and documentation conventions.
 
 ### 2. Enforcement Protocol
 
@@ -39,6 +40,12 @@ Agent activated → Check frontmatter "skills:" → Read SKILL.md (INDEX) → Re
 | **COMPLEX CODE** | "build", "create", "implement", "refactor" | TIER 0 + TIER 1 (full) + Agent | **{task-slug}.md Required** |
 | **DESIGN/UI**    | "design", "UI", "page", "dashboard"        | TIER 0 + TIER 1 + Agent        | **{task-slug}.md Required** |
 | **SLASH CMD**    | /create, /orchestrate, /debug              | Command-specific flow          | Variable                    |
+
+**IMPORTANT: All code changes require:**
+1. Plan in `plans/` folder
+2. User confirmation
+3. Feature/fix branch (never code in main)
+4. CHANGELOG update
 
 ---
 
@@ -157,6 +164,34 @@ When user's prompt is NOT in English:
 
 > 🔴 **Mobile + frontend-specialist = WRONG.** Mobile = mobile-developer ONLY.
 
+### 🌿 Git Workflow Rules (MANDATORY)
+
+**Before ANY code changes:**
+
+1. **NEVER code in `main` branch** - Always create feature/fix branch
+2. **Plan first** - Create plan in `plans/` folder
+3. **Get user confirmation** - Wait for approval before proceeding
+4. **Commit often** - After every logical change with detailed messages
+5. **Update CHANGELOG** - For every change, no matter how minor
+
+**Branch naming**: `<type>/<short-description>`
+- `feature/` - New functionality
+- `fix/` - Bug fixes
+- `hotfix/` - Critical production fixes
+- `refactor/` - Code restructuring
+- `docs/` - Documentation only
+- `test/` - Adding or updating tests
+- `chore/` - Maintenance tasks
+
+**Commit message format**:
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
 ### 🛑 Socratic Gate
 
 **For complex requests, STOP and ASK first:**
@@ -257,6 +292,12 @@ When user's prompt is NOT in English:
 ---
 
 ## 📁 QUICK REFERENCE
+
+### Workflow Rules
+- **Plans**: `plans/` folder - Implementation plans (before coding)
+- **Documentation**: `docs/` folder - Permanent documentation
+- **Agent workflows**: `.agent/` folder - Agent workflows and rules
+- **Git workflow**: `.agent/rules/workflow.md` - Complete workflow rules
 
 ### Agents & Skills
 
