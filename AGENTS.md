@@ -33,6 +33,8 @@
 
 ## 3) Git Workflow & Branching Strategy
 
+> **MANDATORY:** Before any code changes, read `.agent/rules/workflow.md` for complete workflow rules.
+
 ### Branch Rules (Non-negotiable)
 - **NEVER code directly in `main` branch.** All development must happen in feature/fix branches.
 - **Branch naming convention**: `<type>/<short-description>` where type is:
@@ -131,6 +133,8 @@ docs/           # Permanent documentation
 AGENTS.md       # Working conventions (this file)
 CLAUDE.md       # Claude-specific instructions
 ```
+
+**Always read `.agent/rules/workflow.md` before starting any code changes.**
 
 ---
 

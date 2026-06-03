@@ -50,6 +50,8 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
 
 ## 1) Git Workflow (Non-negotiable)
 
+> **MANDATORY:** Before any code changes, read `.agent/rules/workflow.md` for complete workflow rules.
+
 ### Branch Rules
 - **NEVER code directly in `main` branch.** All development must happen in feature/fix branches.
 - **Branch naming convention**: `<type>/<short-description>` where type is:
@@ -95,6 +97,8 @@ This project is indexed by GitNexus as **FinTrack-Pro** (1990 symbols, 2940 rela
   - `plans/` - Implementation plans (before coding)
   - `docs/` - Permanent documentation
   - `.agent/` - Agent workflows and rules
+
+**Always read `.agent/rules/workflow.md` before starting any code changes.**
 
 ---
 
