@@ -176,13 +176,13 @@
 
 ### 📱 Core Components
 
-- [ ] **T-109** Create `useScrollDirection` hook — scroll detection for nav auto-hide (1h)
-- [ ] **T-110** Add `.glass-nav` CSS utility to `src/index.css` — glassmorphic styling (15m)
-- [ ] **T-111** Create `MoreMenu` bottom sheet component — remaining 6 nav items in grid (2h)
-- [ ] **T-112** Create `BottomNav` component — glassmorphic tab bar with 5 items + FAB morph (3h)
+- [ ] **T-109** Create `useScrollDirection` hook — scroll detection for nav auto-hide (1h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 1` `📄 HIG:Bottom Navigation#scroll-behavior` `📄 web.dev:scroll-driven-animations`
+- [ ] **T-110** Add `.glass-nav` CSS utility to `src/index.css` — glassmorphic styling (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 2` `📄 Material Design 3:Glass#backdrop-blur` `📄 HIG:Visual Effects#blur`
+- [ ] **T-111** Create `MoreMenu` bottom sheet component — remaining 6 nav items in grid (2h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 3` `📄 Material Design 3:Bottom Sheets` `📄 HIG:Sheets#modal`
+- [ ] **T-112** Create `BottomNav` component — glassmorphic tab bar with 5 items + FAB morph (3h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 4` `📄 Material Design 3:Navigation Bar` `📄 HIG:Tab Bars#tab-bar`
 
 ### 🔗 Integration & Cleanup
 
-- [ ] **T-113** Integrate `BottomNav` in `App.tsx` — scroll ref, Ledger FAB, remove old FAB (2h)
-- [ ] **T-114** Delete `FloatingActionButton.tsx` — replaced by + button in `BottomNav` (15m)
-- [ ] **T-115** Run `npm run lint` and verify type correctness (15m)
+- [ ] **T-113** Integrate `BottomNav` in `App.tsx` — scroll ref, Ledger FAB, remove old FAB (2h) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 5` `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§5 Animation Reference`
+- [ ] **T-114** Delete `FloatingActionButton.tsx` — replaced by + button in `BottomNav` (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§4 Step 6`
+- [ ] **T-115** Run `npm run lint` and verify type correctness (15m) — `📄 PLAN/MOBILE_NAVIGATION_REDESIGN.md:§8 Testing Checklist`
