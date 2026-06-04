@@ -31,6 +31,8 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   const loadedRef = useRef(false);
   const fetchingRef = useRef(false);
   const prevAuthRef = useRef(isAuthenticated);
+  const authRef = useRef(isAuthenticated);
+  authRef.current = isAuthenticated;
 
   const loadFromLocal = useCallback(async () => {
     const [localMembers, localAccounts] = await Promise.all([
@@ -42,7 +44,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   }, []);
 
   const fetchData = useCallback(async (showToast = false) => {
-    if (!isAuthenticated) {
+    if (!authRef.current) {
       if (showToast) toast("Sign in to sync data.", 'error');
       return;
     }
@@ -194,7 +196,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       fetchingRef.current = false;
       setDataLoading(false);
     }
-  }, [isAuthenticated, toast]);
+  }, [toast]);
 
   // Initial load: read local first, then background fetch (runs once)
   useEffect(() => {
@@ -251,7 +253,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     const offCleanup = offlineService.onOffline(() => setIsOnline(false));
     const onCleanup = offlineService.onOnline(async () => {
       setIsOnline(true);
-      if (isAuthenticated) {
+      if (authRef.current) {
         const result = await offlineService.syncQueue(authService.apiFetch.bind(authService));
         await fetchData();
         if (result.synced > 0) {

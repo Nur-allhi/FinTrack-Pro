@@ -227,24 +227,25 @@ export async function initialSync(): Promise<boolean> {
 // Background sync scheduler
 let _syncInterval: ReturnType<typeof setInterval> | null = null;
 let _started = false;
+let _handleVisibility: (() => void) | null = null;
+let _handleOnline: (() => void) | null = null;
 
 export function startSyncScheduler() {
   if (_started) return;
   _started = true;
 
-  // Sync on visibility change (tab focus)
-  document.addEventListener('visibilitychange', () => {
+  _handleVisibility = () => {
     if (document.visibilityState === 'visible') {
       syncNow();
     }
-  });
-
-  // Sync on online event
-  window.addEventListener('online', () => {
+  };
+  _handleOnline = () => {
     syncNow();
-  });
+  };
 
-  // 30-second interval sync
+  document.addEventListener('visibilitychange', _handleVisibility);
+  window.addEventListener('online', _handleOnline);
+
   _syncInterval = setInterval(() => {
     if (navigator.onLine) {
       syncNow();
@@ -256,6 +257,14 @@ export function stopSyncScheduler() {
   if (_syncInterval) {
     clearInterval(_syncInterval);
     _syncInterval = null;
+  }
+  if (_handleVisibility) {
+    document.removeEventListener('visibilitychange', _handleVisibility);
+    _handleVisibility = null;
+  }
+  if (_handleOnline) {
+    window.removeEventListener('online', _handleOnline);
+    _handleOnline = null;
   }
   _started = false;
 }

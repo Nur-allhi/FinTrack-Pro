@@ -75,6 +75,7 @@ export function useAuth() {
 
   const handleLogout = useCallback(async () => {
     await localDb.clearAll();
+    await localDb.setMeta('sync_timestamp', null);
     await authService.signOut();
     setGuestMode(true);
     setAuthStatus('guest');

@@ -4,6 +4,7 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-04: Fix member doubling root causes — remove event listener leaks in sync scheduler, fix fetchData stale closure with authRef, clear sync timestamp on logout (completed).
 2026-06-04: Fix critical account data leak on switch — clear IndexedDB on logout, reset loadedRef, skip stale local data on login transition (completed).
 2026-06-04: Skip DashboardCharts data fetch when charts are disabled — no API calls if showSpendingChart and showBalanceTrend are off (completed).
 2026-06-04: Fix 429 rate limit errors on refresh — increase API limit to 300/min, change DashboardCharts to sequential fetches (completed).
