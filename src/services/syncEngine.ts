@@ -1,4 +1,4 @@
-import { localDb, LocalRecord } from './localDb';
+import { localDb, LocalRecord, EntityName } from './localDb';
 import { authService } from './authService';
 
 const SYNC_TABLES = [
@@ -133,8 +133,24 @@ async function pullChanges(): Promise<number> {
     const changes = data.changes?.[table];
     if (!Array.isArray(changes) || changes.length === 0) continue;
 
-    // Convert server records to local format
-    const localRecords = changes.map((r: Record<string, unknown>) => ({
+    // Get local records for LWW comparison
+    const localRecords = await localDb.getAllRecords(table as EntityName);
+    const localMap = new Map(localRecords.map(r => [r.id, r]));
+
+    // Filter: skip records where local has pending changes or is newer
+    const toUpsert = changes.filter((r: Record<string, unknown>) => {
+      const local = localMap.get(r.client_id as string);
+      if (!local) return true; // new record, upsert
+      if (local.sync_status === 'pending') return false; // local has unpushed changes, skip
+      // Both synced — LWW by updated_at
+      const serverTime = new Date((r.updated_at as string) || 0).getTime();
+      const localTime = new Date(local.updated_at).getTime();
+      return serverTime > localTime;
+    });
+
+    if (toUpsert.length === 0) continue;
+
+    const localRecords2 = toUpsert.map((r: Record<string, unknown>) => ({
       id: r.client_id || crypto.randomUUID(),
       server_id: r.id,
       updated_at: (r.updated_at as string) || new Date().toISOString(),
@@ -143,8 +159,8 @@ async function pullChanges(): Promise<number> {
       ...r,
     }));
 
-    await upsertFromServer(table as SyncTable, localRecords);
-    totalPulled += changes.length;
+    await upsertFromServer(table as SyncTable, localRecords2);
+    totalPulled += toUpsert.length;
   }
 
   if (totalPulled > 0 || data.pulledAt) {

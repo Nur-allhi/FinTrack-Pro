@@ -36,9 +36,9 @@ export function useAuth() {
         const res = await authService.apiFetch('/api/auth/me');
         if (res.ok) {
           setGuestMode(false);
-          setAuthStatus('authenticated');
           const d = await res.json();
           if (d.user?.email) setUserEmail(d.user.email);
+          setAuthStatus('authenticated');
         } else {
           setGuestMode(true);
           localDb.getOrCreateGuestId().catch(() => {});
@@ -64,12 +64,12 @@ export function useAuth() {
     sessionStorage.removeItem('guest_mode');
     setGuestMode(false);
     await authService.setSession(token);
-    setAuthStatus('authenticated');
     const res = await authService.apiFetch('/api/auth/me');
     if (res.ok) {
       const d = await res.json();
       if (d.user?.email) setUserEmail(d.user.email);
     }
+    setAuthStatus('authenticated');
     toast("Login successful.", 'success');
   }, []);
 

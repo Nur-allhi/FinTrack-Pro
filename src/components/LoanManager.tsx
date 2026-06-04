@@ -50,8 +50,10 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
     particulars: r.particulars,
     status: r.status as 'active' | 'settled' | 'defaulted',
     settled_date: r.settled_date,
-    lender_name: undefined,
-    borrower_account_name: undefined,
+    lender_name: accounts.find(a => a.id === Number(r.lender_account_id))?.name,
+    borrower_account_name: r.borrower_account_id
+      ? accounts.find(a => a.id === Number(r.borrower_account_id))?.name
+      : undefined,
   });
 
   const fetchLoans = async (showLoading = false) => {

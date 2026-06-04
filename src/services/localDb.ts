@@ -81,12 +81,22 @@ export interface LocalInvestmentReturn extends LocalRecord {
   percentage: number | null;
 }
 
+export interface LocalGroupChild {
+  id: number;
+  name: string;
+  type: string;
+  current_balance: number;
+}
+
 export interface LocalGroup extends LocalRecord {
   server_id?: number | null;
   name: string;
   type: string;
   member_id: string | null;
   color: string;
+  child_count: number;
+  accumulated_balance: number;
+  children: LocalGroupChild[];
 }
 
 export interface LocalBudget extends LocalRecord {
@@ -155,56 +165,76 @@ function getDB(): Promise<IDBPDatabase<LocalDB>> {
   return dbPromise;
 }
 
+async function withDB<T>(fn: (db: IDBPDatabase<LocalDB>) => Promise<T>): Promise<T> {
+  try {
+    const db = await getDB();
+    return await fn(db);
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'InvalidStateError') {
+      dbPromise = null;
+      const db = await getDB();
+      return await fn(db);
+    }
+    throw err;
+  }
+}
+
 function now(): string {
   return new Date().toISOString();
 }
 
-type EntityName = 'members' | 'accounts' | 'transactions' | 'loans'
+export type EntityName = 'members' | 'accounts' | 'transactions' | 'loans'
   | 'loan_settlements' | 'investments' | 'investment_returns'
   | 'groups' | 'budgets' | 'recurring_transactions';
 
 async function putAll<T extends LocalRecord>(store: EntityName, records: T[]): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction(store, 'readwrite');
-  for (const r of records) {
-    tx.store.put(r);
-  }
-  await tx.done;
+  await withDB(async (db) => {
+    const tx = db.transaction(store, 'readwrite');
+    for (const r of records) {
+      tx.store.put(r);
+    }
+    await tx.done;
+  });
 }
 
 async function getAllVisible<T extends LocalRecord>(store: EntityName): Promise<T[]> {
-  const db = await getDB();
-  const all = await db.getAll(store);
-  return all.filter(r => !r._deleted);
+  return withDB(async (db) => {
+    const all = await db.getAll(store);
+    return all.filter(r => !r._deleted);
+  });
+}
+
+async function getAllRecords<T extends LocalRecord>(store: EntityName): Promise<T[]> {
+  return withDB(async (db) => db.getAll(store));
 }
 
 async function getUnsynced<T extends LocalRecord>(store: EntityName): Promise<T[]> {
-  const db = await getDB();
-  const all = await db.getAll(store);
-  return all.filter(r => r.sync_status === 'pending' && !r._deleted);
+  return withDB(async (db) => {
+    const all = await db.getAll(store);
+    return all.filter(r => r.sync_status === 'pending' && !r._deleted);
+  });
 }
 
 async function put<T extends LocalRecord>(store: EntityName, record: T): Promise<void> {
-  const db = await getDB();
-  await db.put(store, record);
+  await withDB(async (db) => db.put(store, record));
 }
 
 async function remove(store: EntityName, id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete(store, id);
+  await withDB(async (db) => db.delete(store, id));
 }
 
 async function markSynced<T extends LocalRecord>(store: EntityName, ids: string[]): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction(store, 'readwrite');
-  for (const id of ids) {
-    const record = await tx.store.get(id);
-    if (record) {
-      record.sync_status = 'synced';
-      tx.store.put(record);
+  await withDB(async (db) => {
+    const tx = db.transaction(store, 'readwrite');
+    for (const id of ids) {
+      const record = await tx.store.get(id);
+      if (record) {
+        record.sync_status = 'synced';
+        tx.store.put(record);
+      }
     }
-  }
-  await tx.done;
+    await tx.done;
+  });
 }
 
 export const localDb = {
@@ -217,7 +247,12 @@ export const localDb = {
   async markMembersSynced(ids: string[]): Promise<void> { await markSynced('members', ids); },
 
   // Accounts
-  async getAccounts(): Promise<LocalAccount[]> { return getAllVisible('accounts'); },
+  async getAccounts(): Promise<LocalAccount[]> {
+    return withDB(async (db) => {
+      const all = await db.getAll('accounts');
+      return all.filter(r => !r._deleted && r.type !== 'group');
+    });
+  },
   async getUnsyncedAccounts(): Promise<LocalAccount[]> { return getUnsynced('accounts'); },
   async putAccount(record: LocalAccount): Promise<void> { await put('accounts', record); },
   async putAccounts(records: LocalAccount[]): Promise<void> { await putAll('accounts', records); },
@@ -227,9 +262,10 @@ export const localDb = {
   // Transactions
   async getTransactions(accountId?: string): Promise<LocalTransaction[]> {
     if (accountId) {
-      const db = await getDB();
-      const all = await db.getAllFromIndex('transactions', 'account_id', accountId);
-      return all.filter(r => !r._deleted);
+      return withDB(async (db) => {
+        const all = await db.getAllFromIndex('transactions', 'account_id', accountId);
+        return all.filter(r => !r._deleted);
+      });
     }
     return getAllVisible('transactions');
   },
@@ -281,15 +317,17 @@ export const localDb = {
 
   // Metadata
   async getMeta(key: string): Promise<unknown> {
-    const db = await getDB();
-    return (await db.get('metadata', key)) as unknown;
+    return withDB(async (db) => db.get('metadata', key) as unknown);
   },
   async setMeta(key: string, value: unknown): Promise<void> {
-    const db = await getDB();
-    await db.put('metadata', value as Record<string, unknown>, key);
+    await withDB(async (db) => db.put('metadata', value as Record<string, unknown>, key));
   },
 
   // Bulk operations
+  async getAllRecords<T extends LocalRecord>(store: EntityName): Promise<T[]> {
+    return getAllRecords<T>(store);
+  },
+
   async getAllUnsynced(): Promise<LocalRecord[]> {
     const [members, accounts, transactions, loans] = await Promise.all([
       this.getUnsyncedMembers(),
@@ -301,62 +339,64 @@ export const localDb = {
   },
 
   async getDeletedItems(): Promise<{ entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[]> {
-    const db = await getDB();
-    const results: { entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[] = [];
-    const stores = [
-      { name: 'transactions' as EntityName, label: 'Transaction' },
-      { name: 'accounts' as EntityName, label: 'Account' },
-      { name: 'loans' as EntityName, label: 'Loan' },
-    ];
-    for (const { name, label } of stores) {
-      const all = await db.getAll(name);
-      for (const r of all) {
-        if (r._deleted) {
-          const summary = 'name' in r ? (r as { name: string }).name : 'particulars' in r ? (r as { particulars: string }).particulars : label;
-          results.push({
-            entity_type: name,
-            entity_label: label,
-            id: r.id,
-            deleted_at: r.updated_at,
-            summary,
-            server_id: 'server_id' in r ? (r as { server_id?: number | null }).server_id : null,
-          });
+    return withDB(async (db) => {
+      const results: { entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[] = [];
+      const stores = [
+        { name: 'transactions' as EntityName, label: 'Transaction' },
+        { name: 'accounts' as EntityName, label: 'Account' },
+        { name: 'loans' as EntityName, label: 'Loan' },
+      ];
+      for (const { name, label } of stores) {
+        const all = await db.getAll(name);
+        for (const r of all) {
+          if (r._deleted) {
+            const summary = 'name' in r ? (r as { name: string }).name : 'particulars' in r ? (r as { particulars: string }).particulars : label;
+            results.push({
+              entity_type: name,
+              entity_label: label,
+              id: r.id,
+              deleted_at: r.updated_at,
+              summary,
+              server_id: 'server_id' in r ? (r as { server_id?: number | null }).server_id : null,
+            });
+          }
         }
       }
-    }
-    return results.sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
+      return results.sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
+    });
   },
 
   async restoreItem(entityType: string, id: string): Promise<void> {
-    const db = await getDB();
-    const storeName = entityType as EntityName;
-    const record = await db.get(storeName, id);
-    if (record) {
-      record._deleted = false;
-      record.sync_status = 'pending';
-      record.updated_at = now();
-      await db.put(storeName, record);
-    }
+    await withDB(async (db) => {
+      const storeName = entityType as EntityName;
+      const record = await db.get(storeName, id);
+      if (record) {
+        record._deleted = false;
+        record.sync_status = 'pending';
+        record.updated_at = now();
+        await db.put(storeName, record);
+      }
+    });
   },
 
   async permanentDelete(entityType: string, id: string): Promise<void> {
-    const db = await getDB();
-    await db.delete(entityType as EntityName, id);
+    await withDB(async (db) => db.delete(entityType as EntityName, id));
   },
 
   async emptyBin(entityType?: string): Promise<void> {
-    const db = await getDB();
-    const stores: EntityName[] = entityType
-      ? [entityType as EntityName]
-      : ['transactions', 'accounts', 'loans'];
-    for (const s of stores) {
-      const all = await db.getAll(s);
-      for (const r of all) {
-        if (r._deleted) {
-          await db.delete(s, r.id);
+    await withDB(async (db) => {
+      const stores: EntityName[] = entityType
+        ? [entityType as EntityName]
+        : ['transactions', 'accounts', 'loans'];
+      for (const s of stores) {
+        const all = await db.getAll(s);
+        for (const r of all) {
+          if (r._deleted) {
+            await db.delete(s, r.id);
+          }
         }
       }
-    }
+    });
   },
 
   async markAllSynced(): Promise<void> {
@@ -372,34 +412,34 @@ export const localDb = {
   },
 
   async clearAll(): Promise<void> {
-    const db = await getDB();
-    const stores: EntityName[] = [
-      'members', 'accounts', 'transactions', 'loans',
-      'loan_settlements', 'investments', 'investment_returns',
-      'groups', 'budgets', 'recurring_transactions'
-    ];
-    for (const s of stores) {
-      await db.clear(s);
-    }
+    await withDB(async (db) => {
+      const stores: EntityName[] = [
+        'members', 'accounts', 'transactions', 'loans',
+        'loan_settlements', 'investments', 'investment_returns',
+        'groups', 'budgets', 'recurring_transactions'
+      ];
+      for (const s of stores) {
+        await db.clear(s);
+      }
+    });
   },
 
   async getSettings(): Promise<Record<string, unknown> | undefined> {
-    const db = await getDB();
-    return db.get('metadata', 'app_settings');
+    return withDB(async (db) => db.get('metadata', 'app_settings'));
   },
 
   async setSettings(settings: Record<string, unknown>): Promise<void> {
-    const db = await getDB();
-    await db.put('metadata', settings, 'app_settings');
+    await withDB(async (db) => db.put('metadata', settings, 'app_settings'));
   },
 
   async getOrCreateGuestId(): Promise<string> {
-    const db = await getDB();
-    const existing = await db.get('metadata', 'guest_id') as { value: string } | undefined;
-    if (existing?.value) return existing.value;
-    const id = crypto.randomUUID();
-    await db.put('metadata', { value: id }, 'guest_id');
-    return id;
+    return withDB(async (db) => {
+      const existing = await db.get('metadata', 'guest_id') as { value: string } | undefined;
+      if (existing?.value) return existing.value;
+      const id = crypto.randomUUID();
+      await db.put('metadata', { value: id }, 'guest_id');
+      return id;
+    });
   },
 
   async getTransactionCount(): Promise<number> {

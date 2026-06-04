@@ -7,11 +7,11 @@
 
 ## Quick Reference — Last Session
 
-> **Session 22** — 4 June 2026 (Local-First — Phase 7 Animations & Polish)
+> **Session 23** — 4 June 2026 (Deferred Google Drive Tasks)
 > **Branch**: `feat/local-first`
-> **Tasks**: T-159, T-160, T-161, T-162, T-163
-> **Status**: completed
-> **Summary**: Completed Phase 7 animations & polish. Created AnimatedBalance component with color-flash on value change, enhanced OfflineIndicator with status dots and cloud icons. T-159/160/163 were already implemented.
+> **Tasks**: T-153, T-154, T-155
+> **Status**: deferred
+> **Summary**: Deferred Google Drive backup tasks — requires manual Google Cloud Console setup. Local JSON export/import already provides backup functionality.
 
 ---
 
@@ -45,6 +45,27 @@ Brief description of what was accomplished.
 ---
 
 ## Session History
+
+## Session 23 — 4 June 2026 (Deferred Google Drive Tasks)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: T-153, T-154, T-155
+> **Status**: deferred
+
+### Summary
+
+Deferred Google Drive backup tasks (T-153, T-154, T-155) — requires manual Google Cloud Console setup that cannot be automated.
+
+### Changes
+
+- Updated `docs/TODO.md` — marked T-153, T-154, T-155 as "(Deferred)" with note about manual setup requirement
+
+### Next Steps
+
+- Google Drive integration can be revisited when Google Cloud Console credentials are available
+- Local JSON export/import (T-157, T-158) already provides backup functionality
+
+---
 
 ## Session 22 — 4 June 2026 (Local-First — Phase 7 Animations & Polish)
 

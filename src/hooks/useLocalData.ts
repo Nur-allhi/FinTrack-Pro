@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { localDb, LocalMember, LocalAccount, LocalTransaction } from '../services/localDb';
+import { localDb, LocalMember, LocalAccount, LocalGroup, LocalTransaction } from '../services/localDb';
 import { authService } from '../services/authService';
 import { offlineService, syncState } from '../services/offlineService';
 import { generateId } from '../utils/ids';
@@ -14,7 +14,7 @@ function toApiAccount(r: LocalAccount) {
     id: r.server_id ?? 0, name: r.name, type: r.type as 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group',
     member_id: r.member_id, parent_id: r.parent_id,
     color: r.color, archived: r.archived,
-    initial_balance: r.initial_balance, current_balance: r.current_balance,
+    initial_balance: r.initial_balance || 0, current_balance: r.current_balance || 0,
   };
 }
 
@@ -49,7 +49,6 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       return;
     }
     setDataLoading(true);
-    setLastUpdate(Date.now());
     try {
       const [membersRes, accountsRes] = await Promise.all([
         authService.apiFetch('/api/members'),
@@ -58,41 +57,130 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
       if (membersRes.ok) {
         const data = await membersRes.json();
-        const records: LocalMember[] = data.map((m: { id: number; name: string; relationship?: string; client_id?: string; updated_at?: string }) => ({
-          id: m.client_id || generateId(),
-          server_id: m.id,
-          name: m.name,
-          relationship: m.relationship || '',
-          updated_at: m.updated_at || new Date().toISOString(),
-          sync_status: 'synced' as const,
-          _deleted: false,
-        }));
-        setMembers(records);
-        await localDb.putMembers(records);
+        // Build map of existing local records by server_id to avoid duplicates
+        const localMembers = await localDb.getMembers();
+        const localByServerId = new Map(localMembers.map(m => [m.server_id, m]));
+
+        const toUpsert: LocalMember[] = data.map((m: { id: number; name: string; relationship?: string; client_id?: string; updated_at?: string }) => {
+          const existing = localByServerId.get(m.id);
+          if (existing) {
+            // Preserve local id and pending status
+            return {
+              ...existing,
+              name: m.name,
+              relationship: m.relationship || '',
+              updated_at: m.updated_at || existing.updated_at,
+              sync_status: existing.sync_status === 'pending' ? 'pending' as const : 'synced' as const,
+            };
+          }
+          // New record — use client_id or generate UUID
+          return {
+            id: m.client_id || generateId(),
+            server_id: m.id,
+            name: m.name,
+            relationship: m.relationship || '',
+            updated_at: m.updated_at || new Date().toISOString(),
+            sync_status: 'synced' as const,
+            _deleted: false,
+          };
+        });
+
+        await localDb.putMembers(toUpsert);
+        setMembers(await localDb.getMembers());
       }
 
       if (accountsRes.ok) {
         const data = await accountsRes.json();
-        const records: LocalAccount[] = data.map((a: Record<string, unknown>) => ({
-          id: (a.client_id as string) || generateId(),
-          server_id: a.id as number,
-          name: a.name as string,
-          type: (a.type as string) || 'cash',
-          member_id: a.member_id as string | null,
-          parent_id: a.parent_id as string | null,
-          color: (a.color as string) || '#A78BFA',
-          archived: (a.archived as number) || 0,
-          initial_balance: (a.initial_balance as number) || 0,
-          current_balance: (a.current_balance as number) || 0,
-          updated_at: (a.updated_at as string) || new Date().toISOString(),
-          sync_status: 'synced' as const,
-          _deleted: false,
-        }));
-        setAccounts(records);
-        await localDb.putAccounts(records);
+        // Build map of existing local records by server_id to avoid duplicates
+        const localAccounts = await localDb.getAccounts();
+        const localByServerId = new Map(localAccounts.map(a => [a.server_id, a]));
+
+        const toUpsert: LocalAccount[] = data.map((a: Record<string, unknown>) => {
+          const existing = localByServerId.get(a.id as number);
+          if (existing) {
+            // Preserve local id and pending status
+            return {
+              ...existing,
+              name: a.name as string,
+              type: (a.type as string) || existing.type,
+              member_id: (a.member_id as string | null) ?? existing.member_id,
+              parent_id: (a.parent_id as string | null) ?? existing.parent_id,
+              color: (a.color as string) || existing.color,
+              archived: (a.archived as number) || existing.archived,
+              initial_balance: (a.initial_balance as number) ?? existing.initial_balance,
+              current_balance: (a.current_balance as number) ?? existing.current_balance,
+              updated_at: (a.updated_at as string) || existing.updated_at,
+              sync_status: existing.sync_status === 'pending' ? 'pending' as const : 'synced' as const,
+            };
+          }
+          // New record — use client_id or generate UUID
+          return {
+            id: (a.client_id as string) || generateId(),
+            server_id: a.id as number,
+            name: a.name as string,
+            type: (a.type as string) || 'cash',
+            member_id: a.member_id as string | null,
+            parent_id: a.parent_id as string | null,
+            color: (a.color as string) || '#A78BFA',
+            archived: (a.archived as number) || 0,
+            initial_balance: (a.initial_balance as number) || 0,
+            current_balance: (a.current_balance as number) || 0,
+            updated_at: (a.updated_at as string) || new Date().toISOString(),
+            sync_status: 'synced' as const,
+            _deleted: false,
+          };
+        });
+
+        // Filter out groups — they belong in the groups store
+        const nonGroupRecords = toUpsert.filter(r => r.type !== 'group');
+        await localDb.putAccounts(nonGroupRecords);
+        setAccounts(await localDb.getAccounts());
+      }
+
+      // Fetch groups
+      const groupsRes = await authService.apiFetch('/api/groups');
+      if (groupsRes.ok) {
+        const data = await groupsRes.json();
+        const localGroups = await localDb.getGroups();
+        const localByServerId = new Map(localGroups.map(g => [g.server_id, g]));
+
+        const toUpsert: LocalGroup[] = data.map((g: Record<string, unknown>) => {
+          const existing = localByServerId.get(g.id as number);
+          const children = (g.children as Array<{ id: number; name: string; type: string; current_balance: number }>) || [];
+          if (existing) {
+            return {
+              ...existing,
+              name: g.name as string,
+              member_id: g.member_id != null ? String(g.member_id) : null,
+              color: (g.color as string) || existing.color,
+              child_count: (g.child_count as number) ?? existing.child_count,
+              accumulated_balance: (g.accumulated_balance as number) ?? existing.accumulated_balance,
+              children,
+              updated_at: existing.updated_at,
+              sync_status: existing.sync_status === 'pending' ? 'pending' as const : 'synced' as const,
+            };
+          }
+          return {
+            id: (g.client_id as string) || generateId(),
+            server_id: g.id as number,
+            name: g.name as string,
+            type: (g.type as string) || 'group',
+            member_id: g.member_id != null ? String(g.member_id) : null,
+            color: (g.color as string) || '#A78BFA',
+            child_count: (g.child_count as number) || 0,
+            accumulated_balance: (g.accumulated_balance as number) || 0,
+            children,
+            updated_at: new Date().toISOString(),
+            sync_status: 'synced' as const,
+            _deleted: false,
+          };
+        });
+
+        await localDb.putGroups(toUpsert);
       }
 
       setLastSync(Date.now());
+      setLastUpdate(Date.now());
       offlineService.setLastSync();
       if (showToast) toast("Data refreshed.", 'success');
     } catch (error) {
