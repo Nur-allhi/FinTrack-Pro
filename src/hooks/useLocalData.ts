@@ -92,6 +92,15 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         });
 
         await localDb.putMembers(toUpsert);
+        // Purge records not in server response (deleted server-side, or sync engine duplicates)
+        const serverMemberIds = new Set(data.map((m: { id: number }) => m.id));
+        const allLocalMembers = await localDb.getMembers();
+        const orphanedMemberIds = allLocalMembers
+          .filter(m => m.server_id != null && !serverMemberIds.has(m.server_id))
+          .map(m => m.id);
+        if (orphanedMemberIds.length) {
+          await Promise.all(orphanedMemberIds.map(id => localDb.deleteMember(id)));
+        }
         setMembers(await localDb.getMembers());
       }
 
@@ -140,6 +149,15 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         // Filter out groups — they belong in the groups store
         const nonGroupRecords = toUpsert.filter(r => r.type !== 'group');
         await localDb.putAccounts(nonGroupRecords);
+        // Purge records not in server response (deleted server-side, or sync engine duplicates)
+        const serverAccountIds = new Set(data.map((a: { id: number }) => a.id));
+        const allLocalAccounts = await localDb.getAccounts();
+        const orphanedAccountIds = allLocalAccounts
+          .filter(a => a.server_id != null && !serverAccountIds.has(a.server_id))
+          .map(a => a.id);
+        if (orphanedAccountIds.length) {
+          await Promise.all(orphanedAccountIds.map(id => localDb.deleteAccount(id)));
+        }
         setAccounts(await localDb.getAccounts());
       }
 

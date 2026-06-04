@@ -133,13 +133,13 @@ async function pullChanges(): Promise<number> {
     const changes = data.changes?.[table];
     if (!Array.isArray(changes) || changes.length === 0) continue;
 
-    // Get local records for LWW comparison
-    const localRecords = await localDb.getAllRecords(table as EntityName);
-    const localMap = new Map(localRecords.map(r => [r.id, r]));
+    // Get local records for LWW comparison — key by server_id
+    const localRecords = await localDb.getAllRecords(table as EntityName) as Array<LocalRecord & { server_id?: number | null }>;
+    const localMap = new Map(localRecords.map(r => [r.server_id, r]));
 
     // Filter: skip records where local has pending changes or is newer
     const toUpsert = changes.filter((r: Record<string, unknown>) => {
-      const local = localMap.get(r.client_id as string);
+      const local = localMap.get(r.id as number);
       if (!local) return true; // new record, upsert
       if (local.sync_status === 'pending') return false; // local has unpushed changes, skip
       // Both synced — LWW by updated_at
@@ -150,14 +150,18 @@ async function pullChanges(): Promise<number> {
 
     if (toUpsert.length === 0) continue;
 
-    const localRecords2 = toUpsert.map((r: Record<string, unknown>) => ({
-      id: r.client_id || crypto.randomUUID(),
-      server_id: r.id,
-      updated_at: (r.updated_at as string) || new Date().toISOString(),
-      sync_status: 'synced' as const,
-      _deleted: false,
-      ...r,
-    }));
+    const localRecords2 = toUpsert.map((r: Record<string, unknown>) => {
+      const existing = localMap.get(r.id as number);
+      return {
+        ...r,
+        // Canonical fields after spread so server data can't override our key structure
+        id: existing?.id || crypto.randomUUID(),
+        server_id: r.id,
+        updated_at: (r.updated_at as string) || new Date().toISOString(),
+        sync_status: 'synced' as const,
+        _deleted: false,
+      };
+    });
 
     await upsertFromServer(table as SyncTable, localRecords2);
     totalPulled += toUpsert.length;
@@ -203,12 +207,12 @@ export async function initialSync(): Promise<boolean> {
       if (!Array.isArray(rows) || rows.length === 0) continue;
 
       const localRecords = rows.map((r: Record<string, unknown>) => ({
-        id: r.client_id || crypto.randomUUID(),
+        ...r,
+        id: crypto.randomUUID(),
         server_id: r.id,
         updated_at: (r.updated_at as string) || new Date().toISOString(),
         sync_status: 'synced' as const,
         _deleted: false,
-        ...r,
       }));
 
       await upsertFromServer(table as SyncTable, localRecords);

@@ -4,6 +4,7 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-04: Fix member/data duplication after fresh login — pullChanges() matched by client_id (always undefined) instead of server_id, creating duplicate IndexedDB entries; fetchData() now purges orphaned server_id records (completed).
 2026-06-04: Fix member doubling root causes — remove event listener leaks in sync scheduler, fix fetchData stale closure with authRef, clear sync timestamp on logout (completed).
 2026-06-04: Fix critical account data leak on switch — clear IndexedDB on logout, reset loadedRef, skip stale local data on login transition (completed).
 2026-06-04: Skip DashboardCharts data fetch when charts are disabled — no API calls if showSpendingChart and showBalanceTrend are off (completed).
