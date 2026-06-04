@@ -556,3 +556,38 @@ Completed 19 tasks from Phase 10 of `docs/TODO.md`:
 ## Sessions 1–4 (Historical)
 
 Refer to earlier project records for Sessions 1–4 (initial build, PWA, dark mode, settings reorganization, admin panel, user profile).
+
+---
+
+## Session 25 — 4 Jun 2026 (Dashboard-Ledger Balance Sync + Recharts Warning)
+
+> **Branch**: `feat/local-first`
+> **Status**: partial
+
+### Summary
+Fixed bi-directional balance desync between Dashboard and Ledger. Two independent transaction submission paths (TransactionModal → localDb, TransactionForm → API) were not sharing data. Also attempted fix for recharts width/height -1 warning but warning persists — likely needing InvestmentDetail.tsx fix and useLayoutEffect dimension check approach.
+
+### Changes
+- `src/hooks/useTransactions.ts` — Added localDb pending transaction merge in both fetchTransactions and initial load useEffect. Ledger now sees TransactionModal's transactions.
+- `src/components/Ledger.tsx` — handleAddOrUpdateTransaction and handleDelete now call onUpdate(account.id, delta) to notify Dashboard of balance changes.
+- `src/App.tsx` — Ledger onUpdate handler now calls applyAccountDelta + fetchData.
+- `src/components/DashboardCharts.tsx` — Card containers stay in DOM during loading; ResponsiveContainer only mounts after layout ready. Removed accounts from useEffect deps to prevent cascading API calls.
+
+### Remaining Issues
+- Recharts width/height -1 warning still shown (InvestmentDetail.tsx also uses ResponsiveContainer unconditionally)
+- Dashboard balance update still has delay (likely needs `setLastUpdate` bump in `applyAccountDelta` for real-time ledger refresh)
+
+### Files Changed
+- `src/App.tsx` — Ledger onUpdate handler
+- `src/components/DashboardCharts.tsx` — recharts container fix
+- `src/components/Ledger.tsx` — onUpdate calls with delta
+- `src/hooks/useTransactions.ts` — localDb merge in fetch/load
+- `AGENTS.md`, `CLAUDE.md` — gitnexus index stats
+
+### Verification
+- TypeScript compilation: passes (npx tsc --noEmit)
+- gitnexus detect_changes: 11 affected processes, risk level HIGH
+
+### Next Steps
+- Fix InvestmentDetail.tsx ResponsiveContainer same way
+- Add setLastUpdate(Date.now()) to applyAccountDelta for real-time ledger refresh
