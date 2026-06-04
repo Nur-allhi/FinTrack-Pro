@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
 import { Account, Transaction, Loan, Investment, Member, WriteOperation } from '../types';
 import { localDb, LocalTransaction, LocalLoan, LocalInvestment, LocalInvestmentReturn } from '../services/localDb';
+import { flushPending } from '../services/syncEngine';
 import { generateId } from '../utils/ids';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
@@ -421,6 +422,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
 
       if (ok) {
         const msg = isEdit ? 'Updated.' : 'Saved.';
+        flushPending();
         if (batchMode) {
           toast(`${mode} ${msg}`, 'success');
           resetAllForms();

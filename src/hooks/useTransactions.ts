@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Account, Transaction } from '../types';
 
 import { localDb, LocalTransaction } from '../services/localDb';
+import { flushPending } from '../services/syncEngine';
 import { useToast } from '../components/Toast';
 import { generateId } from '../utils/ids';
 
@@ -137,6 +138,8 @@ export function useTransactions(account: Account) {
       }
     }
 
+    flushPending();
+
     return { success: true };
   };
 
@@ -171,6 +174,8 @@ export function useTransactions(account: Account) {
     } catch (e) {
       console.error("Failed to adjust account balance on delete:", e);
     }
+
+    flushPending();
 
     setTransactions(prev => prev.filter(t => t.id !== id));
   };

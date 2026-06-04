@@ -1,11 +1,17 @@
 import { Wifi, WifiOff, RefreshCw, Cloud, CloudOff } from 'lucide-react';
 import { cn } from '../utils/cn';
 
+export interface SyncProgress {
+  current: number;
+  total: number;
+}
+
 interface OfflineIndicatorProps {
   isOnline: boolean;
   isSyncing?: boolean;
   pendingCount?: number;
   lastSyncAt?: number | null;
+  progress?: SyncProgress | null;
 }
 
 function formatLastSync(ts: number | null): string {
@@ -33,7 +39,7 @@ function StatusDot({ color }: { color: 'green' | 'amber' | 'gray' }) {
   );
 }
 
-export default function OfflineIndicator({ isOnline, isSyncing = false, pendingCount = 0, lastSyncAt }: OfflineIndicatorProps) {
+export default function OfflineIndicator({ isOnline, isSyncing = false, pendingCount = 0, lastSyncAt, progress }: OfflineIndicatorProps) {
   if (isOnline && pendingCount === 0 && !isSyncing) {
     return lastSyncAt ? (
       <div className="flex items-center justify-center gap-2 px-4 py-1 text-[10px] font-medium text-muted/60">
@@ -52,7 +58,7 @@ export default function OfflineIndicator({ isOnline, isSyncing = false, pendingC
           <span>Syncing {pendingCount} pending change{pendingCount !== 1 ? 's' : ''}...</span>
         </div>
         <div className="h-1 bg-semantic-up/20">
-          <div className="h-full bg-semantic-up animate-pulse rounded-full transition-all" style={{ width: '60%' }} />
+          <div className="h-full bg-semantic-up animate-pulse rounded-full transition-all" style={{ width: progress ? `${(progress.current / progress.total) * 100}%` : '100%' }} />
         </div>
       </div>
     );

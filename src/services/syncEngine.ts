@@ -26,6 +26,7 @@ export function onSyncStateChange(listener: (syncing: boolean) => void) {
 function setSyncing(v: boolean) {
   _isSyncing = v;
   _syncListeners.forEach(l => l(v));
+  syncState.setState({ state: v ? 'syncing' : 'idle', progress: v ? _syncProgress : null });
 }
 
 export function isSyncing() {
@@ -87,6 +88,9 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     }
   }
 
+  _syncProgress = { current: 0, total: SYNC_TABLES.length };
+  syncState.setState({ progress: _syncProgress });
+
   if (totalUnsynced === 0) return { pushed: 0, conflicts: 0 };
 
   const res = await authService.apiFetch('/api/sync/push', {
@@ -101,7 +105,10 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
   let pushed = 0;
   let conflicts = 0;
 
-  for (const table of SYNC_TABLES) {
+  for (const [i, table] of SYNC_TABLES.entries()) {
+    _syncProgress = { current: i + 1, total: SYNC_TABLES.length };
+    syncState.setState({ progress: _syncProgress });
+
     const result = data.results?.[table];
     if (!result) continue;
     pushed += result.pushed || 0;
@@ -117,6 +124,8 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     }
   }
 
+  _syncProgress = null;
+  syncState.setState({ progress: null });
   return { pushed, conflicts };
 }
 
@@ -138,7 +147,10 @@ async function pullChanges(): Promise<number> {
     if (a.server_id != null) accountIdMap.set(a.server_id, a.id);
   }
 
-  for (const table of SYNC_TABLES) {
+  for (const [i, table] of SYNC_TABLES.entries()) {
+    _syncProgress = { current: i + 1, total: SYNC_TABLES.length };
+    syncState.setState({ progress: _syncProgress });
+
     const changes = data.changes?.[table];
     if (!Array.isArray(changes) || changes.length === 0) continue;
 
@@ -201,6 +213,8 @@ async function pullChanges(): Promise<number> {
     await localDb.setMeta('sync_timestamp', data.pulledAt || new Date().toISOString());
   }
 
+  _syncProgress = null;
+  syncState.setState({ progress: null });
   return totalPulled;
 }
 
@@ -218,6 +232,22 @@ export async function syncNow(): Promise<SyncResult> {
   } catch (err) {
     console.error('Sync failed:', err);
     return { pushed: 0, pulled: 0, conflicts: 0 };
+  } finally {
+    setSyncing(false);
+  }
+}
+
+// Push-only sync: flush pending local changes to server (no pull)
+export async function flushPending(): Promise<void> {
+  if (_isSyncing) return;
+  if (!navigator.onLine) return;
+
+  setSyncing(true);
+  try {
+    await pushUnsynced();
+    await refreshPendingCount();
+  } catch (err) {
+    console.error('Flush failed:', err);
   } finally {
     setSyncing(false);
   }
@@ -261,6 +291,7 @@ export async function initialSync(): Promise<boolean> {
 
 // Background sync scheduler
 let _syncInterval: ReturnType<typeof setInterval> | null = null;
+let _reconcileInterval: ReturnType<typeof setInterval> | null = null;
 let _started = false;
 let _handleVisibility: (() => void) | null = null;
 let _handleOnline: (() => void) | null = null;
@@ -289,12 +320,22 @@ export function startSyncScheduler() {
       syncNow();
     }
   }, 30_000);
+
+  _reconcileInterval = setInterval(() => {
+    if (navigator.onLine) {
+      syncNow();
+    }
+  }, 5 * 60 * 1000);
 }
 
 export function stopSyncScheduler() {
   if (_syncInterval) {
     clearInterval(_syncInterval);
     _syncInterval = null;
+  }
+  if (_reconcileInterval) {
+    clearInterval(_reconcileInterval);
+    _reconcileInterval = null;
   }
   if (_handleVisibility) {
     document.removeEventListener('visibilitychange', _handleVisibility);
@@ -313,11 +354,19 @@ export function stopSyncScheduler() {
 
 type SyncStateListener = (state: SyncStatus) => void;
 
+export type SyncProgress = {
+  current: number;
+  total: number;
+};
+
 export type SyncStatus = {
   state: 'idle' | 'syncing' | 'error';
   lastSyncAt: number | null;
   pendingCount: number;
+  progress: SyncProgress | null;
 };
+
+let _syncProgress: SyncProgress | null = null;
 
 let _syncUIState: SyncStatus = {
   state: 'idle',
@@ -326,6 +375,7 @@ let _syncUIState: SyncStatus = {
     return stored ? Number(stored) : null;
   })(),
   pendingCount: 0,
+  progress: null,
 };
 const _syncUIListeners: Set<SyncStateListener> = new Set();
 

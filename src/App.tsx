@@ -83,7 +83,7 @@ export default function App() {
   const [settings, setSettings] = useState(defaultSettings);
   const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
 
-  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData, reloadFromLocal } = useLocalData(isAuthenticated);
+  const { isOnline, lastSync, pendingCount, isSyncing, syncProgress, members, accounts, dataLoading, lastUpdate, fetchData, reloadFromLocal } = useLocalData(isAuthenticated);
   const { visible: navVisible, scrollRef } = useScrollDirection();
   useThemeEffects(settings);
 
@@ -281,7 +281,7 @@ export default function App() {
           onOpenProfile={openProfile}
         />
 
-        <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} />
+        <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} progress={syncProgress} />
         <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}>

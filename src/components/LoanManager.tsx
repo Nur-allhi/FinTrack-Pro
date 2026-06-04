@@ -3,6 +3,7 @@ import { Loan, Account, WriteOperation } from '../types';
 import { Plus, Loader2 } from 'lucide-react';
 import { useToast } from './Toast';
 import { localDb, LocalLoan } from '../services/localDb';
+import { flushPending } from '../services/syncEngine';
 import LoanGroupCard, { LoanGroup } from './LoanGroupCard';
 import LoanFilters from './LoanFilters';
 
@@ -59,6 +60,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
       if (local) {
         await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
       }
+      flushPending();
       toast("Loan deleted.", 'success'); fetchLoans();
     }
     catch { toast("Failed to delete loan.", 'error'); } finally { setDeletingId(null); }

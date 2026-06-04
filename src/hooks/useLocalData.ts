@@ -24,6 +24,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   const [lastSync, setLastSync] = useState<number | null>(getLastSync());
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<{ current: number; total: number } | null>(null);
   const [members, setMembers] = useState<LocalMember[]>([]);
   const [accounts, setAccounts] = useState<LocalAccount[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
@@ -290,6 +291,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     const unsub = syncState.subscribe(s => {
       setPendingCount(s.pendingCount);
       setIsSyncing(s.state === 'syncing');
+      setSyncProgress(s.progress ?? null);
     });
     return unsub;
   }, []);
@@ -322,6 +324,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     lastSync,
     pendingCount,
     isSyncing,
+    syncProgress,
     members: apiMembers,
     accounts: apiAccounts,
     localMembers: members,
