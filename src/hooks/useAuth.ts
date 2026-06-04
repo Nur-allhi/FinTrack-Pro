@@ -86,11 +86,14 @@ export function useAuth() {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await localDb.clearAll();
-    await localDb.setMeta('sync_timestamp', null);
-    await authService.signOut();
+    try {
+      await localDb.clearAll();
+      await localDb.setMeta('sync_timestamp', null);
+    } catch (err) {
+      console.error("Failed to clear local data:", err);
+    }
 
-    // Clear all client-side storage to prevent stale auth data
+    await authService.signOut();
     localStorage.clear();
     sessionStorage.clear();
 

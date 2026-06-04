@@ -233,22 +233,22 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  // On login transition: clear stale state, IndexedDB, and fetch fresh data
+  // On login transition: clear stale state and fetch fresh data
   useEffect(() => {
-    if (isAuthenticated && !prevAuthRef.current) {
-      loadedRef.current = false;
-      setMembers([]);
-      setAccounts([]);
-      // Clear stale IndexedDB data before fetching fresh server data
-      localDb.clearAll().catch(() => {});
-      localDb.setMeta('sync_timestamp', null).catch(() => {});
-      if (offlineService.isOnline()) fetchData();
+    if (!isAuthenticated || prevAuthRef.current) {
+      if (!isAuthenticated && prevAuthRef.current) {
+        loadedRef.current = false;
+        setMembers([]);
+        setAccounts([]);
+      }
+      prevAuthRef.current = isAuthenticated;
+      return;
     }
-    if (!isAuthenticated && prevAuthRef.current) {
-      loadedRef.current = false;
-      setMembers([]);
-      setAccounts([]);
-    }
+
+    loadedRef.current = false;
+    setMembers([]);
+    setAccounts([]);
+    if (offlineService.isOnline()) fetchData();
     prevAuthRef.current = isAuthenticated;
   }, [isAuthenticated, fetchData]);
 
