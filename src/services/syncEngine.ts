@@ -93,10 +93,16 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
 
   if (totalUnsynced === 0) return { pushed: 0, conflicts: 0 };
 
+  // Server expects client_id, not id — map before sending
+  const recordsWithClientId: Record<string, Record<string, unknown>[]> = {};
+  for (const [table, recs] of Object.entries(records)) {
+    recordsWithClientId[table] = recs.map(r => ({ ...r, client_id: r.id }));
+  }
+
   const res = await authService.apiFetch('/api/sync/push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ records }),
+    body: JSON.stringify({ records: recordsWithClientId }),
   });
 
   if (!res.ok) return { pushed: 0, conflicts: 0 };
@@ -420,8 +426,21 @@ export function setLastSync() {
   syncState.setState({ lastSyncAt: now });
 }
 
+// Reset any accounts incorrectly marked as pending — account balances are derived data.
+async function resetStaleAccountPending() {
+  try {
+    const accounts = await localDb.getUnsyncedAccounts();
+    if (accounts.length > 0) {
+      await localDb.markAccountsSynced(accounts.map(a => a.id));
+    }
+  } catch (e) {
+    console.error('Failed to reset stale account pending status:', e);
+  }
+}
+
 export async function initPendingCount() {
   try {
+    await resetStaleAccountPending();
     const count = await localDb.getUnsyncedCount();
     syncState.setState({ pendingCount: count });
   } catch (e) {

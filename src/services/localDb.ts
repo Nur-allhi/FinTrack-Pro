@@ -293,7 +293,6 @@ async function adjustAccountBalance(accountLocalId: string, delta: number): Prom
     if (!account) return null;
     account.current_balance = (account.current_balance || 0) + delta;
     account.updated_at = now();
-    account.sync_status = 'pending';
     await db.put('accounts', account);
     return account;
   });
@@ -406,7 +405,7 @@ export const localDb = {
 
   async getUnsyncedCount(): Promise<number> {
     const stores: EntityName[] = [
-      'members', 'accounts', 'transactions', 'loans',
+      'members', 'transactions', 'loans',
       'loan_settlements', 'investments', 'investment_returns',
       'budgets', 'recurring_transactions',
     ];
