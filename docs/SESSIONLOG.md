@@ -7,6 +7,16 @@
 
 ## Quick Reference — Last Session
 
+> **Session 29** — 4 June 2026 (Three-Layer Schema Alignment)
+> **Branch**: `feat/unified-write-modal`
+> **Tasks**: T-200, T-201, T-202, T-203, T-204, T-205, T-206, T-207, T-208, T-209, T-210, T-211, T-212, T-213, T-214, T-215, T-216, T-217, T-218, T-219
+> **Status**: completed
+> **Summary**: Fixed all 17 schema mismatches across Supabase, IndexedDB, and App types. Phase 0: added deleted_at/user_id columns via Management API, fixed 261 orphaned records. Phase 1: created shared/schema.ts canonical definitions, regenerated all type files. Phase 2: sync engine push now strips local-only fields and maps _deleted↔deleted_at; pull handles deleted_at; server-side defense-in-depth added. Phase 3: fixed FK type coercions via server_id→local_id maps. Phase 4: IndexedDB v2 with proper indexes. tsc clean, build passes. Commit 6ab89e9.
+
+---
+
+## Quick Reference — Last Session
+
 > **Session 28** — 4 June 2026 (Unified Write Modal)
 > **Branch**: `feat/unified-write-modal` (from `feat/local-first`)
 > **Tasks**: T-178, T-179, T-180, T-181, T-182, T-183, T-184, T-185
