@@ -349,6 +349,54 @@
 
 ---
 
+---
+
+## Phase 17 — Three-Layer Alignment (Supabase → IndexedDB → App Types)
+
+> **Plan**: `📄 plans/THREE_LAYER_ALIGNMENT.md`
+> **Branch**: `feat/unified-write-modal`
+> **Status**: 0/18 complete
+
+### Phase 0 — Supabase Schema Audit & Fix
+
+- [ ] **T-200** Verify all 10 tables have `client_id UUID UNIQUE` + `updated_at TIMESTAMPTZ` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 0`
+- [ ] **T-201** Add `deleted_at TIMESTAMPTZ` to `members`, `investments`, `investment_returns`, `budgets`, `recurring_transactions` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 0`
+- [ ] **T-202** Add `user_id UUID` to `investment_returns` table — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 0`
+- [ ] **T-203** Run diagnostic query to find records with `client_id IS NULL` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 0`
+
+### Phase 1 — Canonical Schema Definition
+
+- [ ] **T-204** Create `shared/schema.ts` — central field map per entity, canonical definitions — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 1`
+- [ ] **T-205** Regenerate `shared/types.ts` from `schema.ts` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 1`
+- [ ] **T-206** Regenerate `src/types.ts` — app-specific types aligned to canonical schema — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 1`
+- [ ] **T-207** Regenerate localDb types (`LocalMember`, `LocalAccount`, etc.) aligned to canonical schema — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 1`
+
+### Phase 2 — Fix Sync Engine Push (CRITICAL)
+
+- [ ] **T-208** Strip local-only fields (`sync_status`, `_deleted`, `server_id`) before push — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 2`
+- [ ] **T-209** Map `_deleted` boolean → `deleted_at` timestamp on push — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 2`
+- [ ] **T-210** Handle `deleted_at` on pull — map to `_deleted: true` locally — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 2`
+- [ ] **T-211** Include `_deleted` records in unsynced collection so server learns of deletions — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 2`
+- [ ] **T-212** Strip local-only fields on server side (defense in depth) — `api/routes/sync.ts` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 2`
+
+### Phase 3 — Fix Type Coercions
+
+- [ ] **T-213** Fix `member_id`/`parent_id` type coercion — add `Number()` conversion in `fetchData`, store as `number` in localDb — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 3`
+- [ ] **T-214** Fix `linked_transaction_id` type — store as `number \| null` in localDb — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 3`
+- [ ] **T-215** Add missing app types (`LoanSettlement`, `Budget`, `RecurringTransaction`, `Group`) to `src/types.ts` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 3`
+- [ ] **T-216** Add string union types to localDb (`type`, `status` fields instead of plain `string`) — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 3`
+
+### Phase 4 — Align IndexedDB Schema
+
+- [ ] **T-217** Add missing fields to localDb types (`currency`, `lender_name`, `created_at`, `transaction_id`, etc.) — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 4`
+
+### Phase 5 — Stale Data Cleanup + Verification
+
+- [ ] **T-218** Add startup schema migration check in `localDb.ts:init` — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 5`
+- [ ] **T-219** Run full verification suite (tsc, build, gitnexus, manual tests) — `📄 plans/THREE_LAYER_ALIGNMENT.md:§Phase 6`
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
