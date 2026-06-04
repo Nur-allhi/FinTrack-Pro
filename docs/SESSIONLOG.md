@@ -591,3 +591,24 @@ Fixed bi-directional balance desync between Dashboard and Ledger. Two independen
 ### Next Steps
 - Fix InvestmentDetail.tsx ResponsiveContainer same way
 - Add setLastUpdate(Date.now()) to applyAccountDelta for real-time ledger refresh
+
+---
+
+## Session 26 — 4 Jun 2026 (Read Path Analysis & Plan)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: Dashboard-Ledger balance desync root cause analysis
+> **Status**: planning
+
+### Summary
+Analyzed the Dashboard-Ledger balance desync. Identified that `useTransactions.ts` still reads from server API despite the local-first plan specifying "Read directly from IndexedDB". Created `docs/LOCAL_FIRST_READ_PATH_FIX.md` with a 6-phase fix plan.
+
+### Root Cause
+- Two independent write paths: TransactionModal (localDb) vs useTransactions (server API)
+- `useTransactions` fetches from server, patches pending localDb via fragile heuristic merge
+- Race condition: sync engine marks records 'synced' before Ledger merge runs
+- No reactive event system — localDb changes don't trigger re-renders
+- `DashboardCharts` never migrated to localDb
+
+### Files Changed
+- `docs/LOCAL_FIRST_READ_PATH_FIX.md` — new implementation plan

@@ -275,6 +275,46 @@
 
 ---
 
+## Phase 14 — Local-First Read Path Fix (In Progress)
+
+> Source: `docs/LOCAL_FIRST_READ_PATH_FIX.md`
+> Branch: `feat/local-first`
+> **Status: 0/6 complete**
+
+### Phase 14.1 — Reactive Change Events
+
+- [ ] **T-164** Add pub/sub event system to `localDb.ts` — listener registry, `onChange()`/`offChange()`, notify after every put/remove (1-2h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 1`
+- [ ] **T-165** Add `adjustAccountBalance()` to `localDb.ts` — atomic read-update-write with notification (1h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 1`
+
+### Phase 14.2 — Unify Write Path (useTransactions → localDb first)
+
+- [ ] **T-166** Rewrite `useTransactions.addOrUpdateTransaction` — write to localDb first, then server (2h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 2`
+- [ ] **T-167** Rewrite `useTransactions.deleteTransaction` — localDb soft-delete primary, server DELETE secondary (1h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 2`
+
+### Phase 14.3 — Unify Read Path (useTransactions reads from localDb)
+
+- [ ] **T-168** Rewrite `useTransactions` to read ALL transactions from localDb as primary source (3h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 3`
+- [ ] **T-169** Subscribe `useTransactions` to localDb change events, remove 30s polling and `lastUpdate` prop (1h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 3`
+
+### Phase 14.4 — Fix DashboardCharts
+
+- [ ] **T-170** Rewrite `DashboardCharts` to read from localDb, subscribe to changes, remove server API fetches (2h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 4`
+
+### Phase 14.5 — Fix Sync Engine server_id Mapping
+
+- [ ] **T-171** Update `POST /api/sync/push` to return `server_id` for inserted records (1h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 5`
+- [ ] **T-172** Update `syncEngine.pushUnsynced` to save `server_id` on local records after push (1h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 5`
+
+### Phase 14.6 — Cleanup
+
+- [ ] **T-173** Delete `cacheService.ts`, remove all imports (30m) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 6`
+- [ ] **T-174** Remove `lastUpdate` prop from Ledger and App.tsx (30m) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 6`
+- [ ] **T-175** Remove `offlineService.ts`, merge unique functionality into syncEngine (1h) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 6`
+- [ ] **T-176** Simplify `TransactionModal.tsx` — replace fire-and-forget balance update with `adjustAccountBalance()` (30m) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 6`
+- [ ] **T-177** Simplify `App.tsx` — remove `fetchData` from TransactionModal `onUpdate`, clean up stale props (30m) — `📄 docs/LOCAL_FIRST_READ_PATH_FIX.md:§Phase 6`
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
