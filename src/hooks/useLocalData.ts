@@ -30,6 +30,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const loadedRef = useRef(false);
   const fetchingRef = useRef(false);
+  const initialLoadDoneRef = useRef(false);
   const prevAuthRef = useRef(isAuthenticated);
   const authRef = useRef(isAuthenticated);
   authRef.current = isAuthenticated;
@@ -216,18 +217,21 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     }
   }, [toast]);
 
-  // Initial load: read local first, then background fetch (runs once)
+  // Initial load: read local first, then background fetch (runs once when first authenticated)
   useEffect(() => {
-    if (loadedRef.current) return;
-    loadedRef.current = true;
+    if (!isAuthenticated) return;
+    if (initialLoadDoneRef.current) return;
+    initialLoadDoneRef.current = true;
 
     loadFromLocal().then(() => {
       onInitialLoad?.();
-      if (isAuthenticated && offlineService.isOnline()) {
+      if (offlineService.isOnline()) {
         fetchData();
       }
     });
-  }, [isAuthenticated, loadFromLocal, fetchData, onInitialLoad]);
+    // Only when first authenticated. Auth transitions handled by login transition effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // On login transition: clear stale state and fetch fresh data directly
   useEffect(() => {
