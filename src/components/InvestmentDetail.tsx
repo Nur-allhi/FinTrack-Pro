@@ -1,28 +1,17 @@
 import React, { useState } from 'react';
-import { Investment, InvestmentReturn } from '../types';
-import { Plus, TrendingUp, ArrowUpRight, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import DatePicker from './DatePicker';
+import { Investment, InvestmentReturn, WriteOperation } from '../types';
+import { Plus, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { authService } from '../services/authService';
 
 interface InvestmentDetailProps {
   investment: Investment;
   returns: InvestmentReturn[];
   currency: string;
-  onAddReturn: () => void;
-  onRefresh: () => void;
+  onWriteOperation: (op: WriteOperation) => void;
 }
 
-export default function InvestmentDetail({ investment, returns, currency, onAddReturn, onRefresh }: InvestmentDetailProps) {
-  const [isAddingReturn, setIsAddingReturn] = useState(false);
-  const [newReturn, setNewReturn] = useState({
-    date: format(new Date(), 'yyyy-MM-dd'),
-    amount: '',
-    percentage: ''
-  });
-
+export default function InvestmentDetail({ investment, returns, currency, onWriteOperation }: InvestmentDetailProps) {
   const totalReturns = returns.reduce((sum, r) => sum + r.amount, 0);
 
   const chartData = [...returns].reverse().map(r => ({
@@ -31,26 +20,6 @@ export default function InvestmentDetail({ investment, returns, currency, onAddR
     percentage: r.percentage
   }));
 
-  const handleAddReturn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await authService.apiFetch(`/api/investments/${investment.id}/returns`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newReturn,
-          amount: parseFloat(newReturn.amount),
-          percentage: parseFloat(newReturn.percentage)
-        })
-      });
-      setIsAddingReturn(false);
-      setNewReturn({ date: format(new Date(), 'yyyy-MM-dd'), amount: '', percentage: '' });
-      onRefresh();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <div className="card-xl space-y-12">
       <div className="flex items-center justify-between">
@@ -58,50 +27,11 @@ export default function InvestmentDetail({ investment, returns, currency, onAddR
           <h4 className="text-3xl font-normal text-ink tracking-tight">{investment.account_name}</h4>
           <p className="text-sm text-muted font-medium mt-1">Institutional Principal: <span className="financial-number text-ink">{currency}{investment.principal.toLocaleString()}</span></p>
         </div>
-        <button onClick={() => setIsAddingReturn(true)} className="btn-pill">
+        <button onClick={() => onWriteOperation({ type: 'investment_return', investment })} className="btn-pill">
           <Plus className="w-4 h-4" />
           Audit Yield
         </button>
       </div>
-
-      <AnimatePresence>
-        {isAddingReturn && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            style={{ willChange: 'transform, opacity' }}
-            className="overflow-hidden"
-          >
-            <div className="p-8 bg-semantic-up/5 rounded-xl border border-semantic-up/10 shadow-sm shadow-semantic-up/5">
-              <div className="flex items-center justify-between mb-6">
-                <h5 className="text-sm font-bold text-semantic-up uppercase tracking-widest">Log Institutional Yield</h5>
-                <button onClick={() => setIsAddingReturn(false)} className="p-1 text-semantic-up/40 hover:text-semantic-up">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <form onSubmit={handleAddReturn} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Value Date</label>
-                  <DatePicker value={newReturn.date} onChange={v => setNewReturn({...newReturn, date: v})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Return ({currency})</label>
-                  <input type="number" required value={newReturn.amount} onChange={e => setNewReturn({...newReturn, amount: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-semantic-up/60 uppercase tracking-widest">Yield %</label>
-                  <input type="number" step="0.01" required value={newReturn.percentage} onChange={e => setNewReturn({...newReturn, percentage: e.target.value})} className="w-full px-4 py-2.5 bg-canvas border border-semantic-up/20 text-ink rounded-md outline-none text-sm financial-number" />
-                </div>
-                <div className="md:col-span-3 flex justify-end gap-4 pt-2">
-                  <button type="submit" className="btn-primary h-[48px] px-10 bg-semantic-up hover:bg-semantic-up/90 border-none">Save Yield Entry</button>
-                </div>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 bg-surface-soft rounded-xl border border-hairline">

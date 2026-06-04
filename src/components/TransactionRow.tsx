@@ -16,8 +16,6 @@ interface TransactionRowProps {
   setDeletingId: (id: number | null) => void;
   onDelete: (id: number) => void;
   onEdit: (tx: Transaction) => void;
-  editingTxId: number | null;
-  renderEditForm?: () => React.ReactNode;
 }
 
 export default React.memo(function TransactionRow({
@@ -29,9 +27,7 @@ export default React.memo(function TransactionRow({
   deletingId,
   setDeletingId,
   onDelete,
-  onEdit,
-  editingTxId,
-  renderEditForm
+  onEdit
 }: TransactionRowProps) {
   const isDebit = tx.amount < 0;
 
@@ -123,21 +119,6 @@ export default React.memo(function TransactionRow({
                   {tx.summary && <span className="italic">{tx.summary}</span>}
                 </div>
               </div>
-            </td>
-          </motion.tr>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {editingTxId === tx.id && renderEditForm && (
-          <motion.tr
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ type: 'tween', duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            style={{ willChange: 'transform, opacity' }}
-          >
-            <td colSpan={6} className="p-0">
-              {renderEditForm()}
             </td>
           </motion.tr>
         )}

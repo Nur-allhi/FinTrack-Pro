@@ -7,11 +7,101 @@
 
 ## Quick Reference — Last Session
 
-> **Session 24** — 4 June 2026 (Dashboard Balance Fix + Recycle Bin)
+> **Session 28** — 4 June 2026 (Unified Write Modal)
+> **Branch**: `feat/unified-write-modal` (from `feat/local-first`)
+> **Tasks**: T-178, T-179, T-180, T-181, T-182, T-183, T-184, T-185
+> **Status**: completed
+> **Summary**: Replaced all 6 independent write modals (TransactionModal, TransferModal, TransactionForm, LoanForm, SettleModal, GroupSettleModal) with a single Unified Write Modal routing all writes through localDb → sync engine. Removed direct server API calls from useTransactions, removed applyAccountDelta + fetchData recompute from useLocalData, removed 'accounts' from syncEngine SYNC_TABLES. All inline edit forms removed from Ledger, LoanManager, InvestmentTracker, InvestmentDetail. Added WriteOperation type to src/types.ts. Deleted 6 old component files. tsc --noEmit clean, build passes.
+
+---
+
+## Session 27 — 4 June 2026 (Phase 14 — Local-First Read Path Fix)
+
 > **Branch**: `feat/local-first`
-> **Tasks**: Recycle bin deleted transactions, Dashboard instant balance
-> **Status**: partial
-> **Summary**: Fixed recycle bin not showing deleted transactions (soft-delete in localDb). Fixed dashboard balance delay (applyAccountDelta + fire-and-forget IndexedDB write + removed content-visibility:auto). Debug logs confirm applyAccountDelta works (found:true, balance updates correctly) but visual delay persists — likely chart rendering issue (recharts width/height -1 error seen).
+> **Tasks**: T-164, T-165, T-166, T-167, T-168, T-169, T-170, T-171, T-172, T-173, T-174, T-175, T-176, T-177
+> **Status**: completed
+
+### Summary
+Implemented the full Phase 14 plan from `docs/LOCAL_FIRST_READ_PATH_FIX.md`. localDb is now the single source of truth for the UI. useTransactions, DashboardCharts, and useLocalData all read directly from IndexedDB via localDb and subscribe to change events. Writes go to localDb first, then best-effort server sync. cacheService and offlineService are deleted (functionality merged into syncEngine + localDb). Production build passes.
+
+### Changes
+
+**localDb.ts (532 LOC, +81):**
+- Added `onChange(store, listener)` pub/sub returning unsubscribe, plus `notify(store, record, action)`.
+- `put`/`putAll`/`remove` now call `notify` after the IDB transaction commits.
+- Added `adjustAccountBalance(accountLocalId, delta)` — atomic read-update-write with `notify('accounts', …)`.
+- Added `markPushed(store, mappings)` — atomic `withDB` transaction that sets `server_id` + `sync_status='synced'` and notifies.
+- Added `getUnsyncedCount()` for the pending-count indicator.
+- Refactored `restoreItem`/`permanentDelete`/`emptyBin` to use the new helper.
+
+**useTransactions.ts (217 LOC, −97):**
+- `addOrUpdateTransaction` writes to `localDb.putTransaction` first, then `adjustAccountBalance`, then attempts server API; on success stores `server_id` and marks `sync_status='synced'`.
+- `deleteTransaction` soft-deletes in localDb first, adjusts balance, then best-effort server DELETE.
+- Read path: `localDb.getTransactions()` → `toUiTransaction` map → sort by date desc. Subscribes to `localDb.onChange('transactions', …)`.
+- Removed `lastUpdate` parameter, `cacheService` import, `offlineService` import, 30s polling, `fetchTransactions` API call.
+
+**DashboardCharts.tsx (176 LOC):**
+- Fully rewritten to read from `localDb.getTransactions()` and subscribe to `localDb.onChange('transactions', …)`.
+- Removed all `authService.apiFetch` calls.
+
+**TransactionModal.tsx (224 LOC):**
+- `handleSubmit` looks up `targetAccount` by `server_id`, then `putTransaction` + `adjustAccountBalance(targetAccount.id, amount)` awaited atomically.
+
+**syncEngine.ts (347 LOC, +73):**
+- Added `syncState`, `isOnline`, `onOnline`, `onOffline`, `getLastSync`, `setLastSync`, `initPendingCount`.
+- `pushUnsynced` now uses `localDb.markPushed` to set `server_id` + `sync_status='synced'` on local records.
+
+**api/routes/sync.ts:**
+- `POST /push` now returns `ids: [{ client_id, server_id }]` for inserts/updates; results type extended.
+
+**App.tsx (338 LOC, −2):**
+- `cacheService` and `offlineService` imports removed.
+- `Ledger` `onUpdate` no longer calls `fetchData` (onChange subs handle refresh).
+- `TransactionModal` `onUpdate` replaced with no-op (onChange subs handle refresh).
+
+**useLocalData.ts (360 LOC, +13):**
+- Added `localDb.onChange('accounts', …)` and `localDb.onChange('members', …)` subscriptions — re-reads and sets state when localDb changes.
+- Imports `syncState`/`isOnline`/`onOnline`/`onOffline`/`getLastSync`/`setLastSync`/`initPendingCount` from `syncEngine` (replacing `offlineService` import).
+
+**useAuth.ts:**
+- `initPendingCount` import moved from `offlineService` to `syncEngine`.
+
+**useThemeEffects.ts:**
+- Removed unused `cacheService` import.
+
+**Deleted:**
+- `src/services/cacheService.ts`
+- `src/services/offlineService.ts` (functionality merged into syncEngine)
+- `src/hooks/useOfflineSync.ts` (legacy unused)
+- `src/tests/offlineService.test.ts` (10 tests; offlineService no longer exists)
+
+### Files Changed
+- `src/services/localDb.ts` — pub/sub + adjustAccountBalance + markPushed + getUnsyncedCount
+- `src/hooks/useTransactions.ts` — local-first read/write path
+- `src/hooks/useLocalData.ts` — onChange subscriptions for accounts/members
+- `src/hooks/useAuth.ts` — import path update
+- `src/hooks/useThemeEffects.ts` — remove unused import
+- `src/components/DashboardCharts.tsx` — read from localDb
+- `src/components/TransactionModal.tsx` — atomic write
+- `src/components/Ledger.tsx` — remove lastUpdate prop
+- `src/App.tsx` — remove fetchData from onUpdate wiring
+- `src/services/syncEngine.ts` — absorb offlineService + use markPushed
+- `api/routes/sync.ts` — return server_id in push results
+- `src/services/cacheService.ts` — DELETED
+- `src/services/offlineService.ts` — DELETED
+- `src/hooks/useOfflineSync.ts` — DELETED
+- `src/tests/offlineService.test.ts` — DELETED
+
+### Verification
+- `npx tsc --noEmit` — clean
+- `npm run build` — succeeds, no errors
+- `npx gitnexus detect_changes --repo FinTrack-Pro` — 11 files / 109 symbols / 43 affected processes (expected: core data layer touched)
+
+### Next Steps
+- Phase 6 (Google Drive setup) — T-153 / T-154 / T-155 (Deferred)
+- Recharts `width/height = -1` warning in `InvestmentDetail.tsx` (leftover from Session 25, out of Phase 14 scope)
+- `GroupManager` still references `lastUpdate` (out of T-174 scope; harmless if not used)
+- `localDb.ts` (532 LOC), `useLocalData.ts` (360 LOC), `syncEngine.ts` (347 LOC), `App.tsx` (338 LOC) all exceed the 300 LOC rule — consider refactoring in a future task
 
 ---
 
@@ -591,6 +681,81 @@ Fixed bi-directional balance desync between Dashboard and Ledger. Two independen
 ### Next Steps
 - Fix InvestmentDetail.tsx ResponsiveContainer same way
 - Add setLastUpdate(Date.now()) to applyAccountDelta for real-time ledger refresh
+
+---
+
+## Session 28 — 4 June 2026 (Unified Write Modal — Bugfixing Data Flow)
+
+> **Branch**: `feat/unified-write-modal` (created from `feat/local-first`)
+> **Tasks**: T-178, T-179, T-180, T-181, T-182, T-183, T-184, T-185
+> **Status**: completed
+
+### Summary
+Implemented the Unified Write Modal to fix 5 data-flow bugs causing Dashboard/Ledger balance desync. Replaced 6 independent write modals/components with a single `<WriteModal>` that routes all writes through localDb → sync engine. Removed all direct server API calls from write paths. Removed `applyAccountDelta` and `fetchData` recompute blocks. Removed `'accounts'` from sync engine SYNC_TABLES. Added `WriteOperation` union type to `src/types.ts`. Deleted 6 old component files. TypeScript and production build both pass clean.
+
+### Root Cause (5 Bugs Fixed)
+1. **Duplicate records**: useTransactions.addOrUpdateTransaction wrote directly to server API, creating duplicates when sync engine also pushed
+2. **Race condition on balance**: applyAccountDelta in App.tsx ran alongside useLocalData's fetchData, creating inconsistent intermediate states
+3. **Balance drift over time**: accounts data in sync engine SYNC_TABLES was written server-side via push, then overwritten by pull, causing balance to revert to stale values
+4. **Inline edit state fragmentation**: TransactionForm, LoanForm, SettleModal, and others each managed their own form state and server write paths, with no single orchestration layer
+5. **Client_id dedup on server**: server already filtered duplicates by client_id + user_id (confirmed in api/routes/sync.ts:50-55) — latent fix was already in place
+
+### Changes
+- **Step 4**: Removed direct server API calls from useTransactions — writes only go to localDb
+- **Step 5**: Removed applyAccountDelta function and fetchData recompute block from useLocalData
+- **Step 6**: Removed 'accounts' from SYNC_TABLES in syncEngine — account balances are derived data
+- **Step 3**: Replaced isTransferModalOpen/isTransactionModalOpen in App.tsx with single writeOperation state + WriteModal
+- **Step 12**: Dashboard.tsx — replaced onOpenTransfer + onOpenTransaction with single onWriteOperation
+- **Step 7**: Ledger.tsx — removed inline TransactionForm, all writes go through onWriteOperation modal
+- **Step 8**: LoanManager.tsx — removed inline LoanForm + SettleModal, wired to modal
+- **Step 9**: InvestmentTracker.tsx — removed inline create form, wired to modal
+- **Step 10**: InvestmentDetail.tsx — removed inline return form + direct server API call, wired to modal
+- **Step 11**: Confirmed client_id dedup already existed on server — no changes needed
+- **Step 13**: Deleted 6 old component files (TransactionModal, TransferModal, TransactionForm, LoanForm, SettleModal, GroupSettleModal)
+- **Step 14**: tsc --noEmit passes with zero errors
+- **Step 15**: npm run build succeeds
+- Cleaned up TransactionRow/TransactionCard (removed editingTxId/renderEditForm props)
+- Cleaned up LoanGroupCard (removed GroupSettleModal import/group-settle logic)
+- Moved WriteOperation type to src/types.ts, removed local definition from WriteModal.tsx
+
+### Files Changed
+- `src/types.ts` — Added `WriteOperation` union type (7 modes)
+- `src/components/WriteModal.tsx` — New: modal shell with all 7 mode submit handlers
+- `src/components/WriteModalForms.tsx` — New: pure form components per mode
+- `src/App.tsx` — Single writeOperation state, WriteModal rendering, BottomNav wiring
+- `src/hooks/useTransactions.ts` — Simplified: no server API, no isSyncing, no optimistic state
+- `src/hooks/useLocalData.ts` — Removed applyAccountDelta + fetchData balance recompute
+- `src/services/syncEngine.ts` — Removed 'accounts' from SYNC_TABLES, getters, markers, putters
+- `src/components/Dashboard.tsx` — Single onWriteOperation prop
+- `src/components/Ledger.tsx` — Inline form removed, all writes through onWriteOperation
+- `src/components/LoanManager.tsx` — Inline forms removed, wired to modal
+- `src/components/InvestmentTracker.tsx` — Inline form removed, wired to modal
+- `src/components/InvestmentDetail.tsx` — Inline return form + server API removed, wired to modal
+- `src/components/TransactionRow.tsx` — Removed editingTxId/renderEditForm props
+- `src/components/TransactionCard.tsx` — Removed editingTxId/renderEditForm props
+- `src/components/LoanGroupCard.tsx` — Removed GroupSettleModal import and group settle logic
+- _Deleted_: TransactionModal.tsx, TransferModal.tsx, TransactionForm.tsx, LoanForm.tsx, SettleModal.tsx, GroupSettleModal.tsx
+
+### New Files Created
+- `src/components/WriteModal.tsx` (569 LOC)
+- `src/components/WriteModalForms.tsx` (467 LOC)
+
+### Verification
+- `npx tsc --noEmit` — zero errors
+- `npm run build` — production build succeeds
+
+### Key Decisions
+- WriteOperation type lives in src/types.ts — avoids circular imports
+- 'accounts' removed from sync engine entirely — balances are derived data
+- Group settle removed from LoanGroupCard — each loan settled individually via modal
+- Inline transaction editing removed — edit/create both open WriteModal
+- Loan creates now generate corresponding transactions (affect account balances)
+- Batch mode toggle in modal corner for multi-entry data entry
+
+### Next Steps
+1. Commit all changes to `feat/unified-write-modal` branch
+2. Manual verification: create transaction, transfer, loan, settle loan, batch mode toggle, offline write + online sync
+3. Merge to `feat/local-first` then to `main` on approval
 
 ---
 

@@ -1,32 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Account, Investment, InvestmentReturn } from '../types';
+import { Account, Investment, InvestmentReturn, WriteOperation } from '../types';
 import { Plus, TrendingUp, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { cn } from '../utils/cn';
 import { localDb } from '../services/localDb';
-import { generateId } from '../utils/ids';
-import Select from './Select';
-import DatePicker from './DatePicker';
 import InvestmentDetail from './InvestmentDetail';
 
 interface InvestmentTrackerProps {
   accounts: Account[];
-  onUpdate: () => void;
+  onWriteOperation: (op: WriteOperation) => void;
   currency: string;
 }
 
-export default function InvestmentTracker({ accounts, onUpdate, currency }: InvestmentTrackerProps) {
+export default function InvestmentTracker({ accounts, onWriteOperation, currency }: InvestmentTrackerProps) {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [selectedInv, setSelectedInv] = useState<Investment | null>(null);
   const [returns, setReturns] = useState<InvestmentReturn[]>([]);
-  const [isAdding, setIsAdding] = useState(false);
-  
-  const [newInv, setNewInv] = useState({
-    account_id: '',
-    principal: '',
-    date: format(new Date(), 'yyyy-MM-dd')
-  });
 
   const fetchInvestments = async () => {
     const local = await localDb.getInvestments();
@@ -53,27 +42,6 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
   useEffect(() => { fetchInvestments(); }, []);
   useEffect(() => { if (selectedInv) fetchReturns(selectedInv.id); }, [selectedInv]);
 
-  const handleCreateInv = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const record = {
-        id: generateId(),
-        account_id: newInv.account_id,
-        principal: parseFloat(newInv.principal),
-        date: newInv.date,
-        updated_at: new Date().toISOString(),
-        sync_status: 'pending' as const,
-        _deleted: false,
-      };
-      await localDb.putInvestment(record);
-      setIsAdding(false);
-      fetchInvestments();
-      onUpdate();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
@@ -81,55 +49,11 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
           <h3 className="text-lg md:text-2xl lg:text-3xl font-normal text-ink tracking-tight">Investments</h3>
           <p className="text-xs md:text-sm text-muted font-medium">Track asset performance.</p>
         </div>
-        <button onClick={() => setIsAdding(true)} className="btn-primary text-xs md:text-sm px-4 md:px-6 py-2 md:py-3 self-start">
+        <button onClick={() => onWriteOperation({ type: 'investment_create' })} className="btn-primary text-xs md:text-sm px-4 md:px-6 py-2 md:py-3 self-start">
           <Plus className="w-4 md:w-5 h-4 md:h-5" />
           Add
         </button>
       </div>
-
-      <AnimatePresence>
-        {isAdding && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            style={{ willChange: 'transform, opacity' }}
-            className="overflow-hidden"
-          >
-            <div className="card-xl border-primary/20 bg-primary/5">
-              <div className="flex items-center justify-between mb-4 md:mb-6">
-                <h4 className="text-base md:text-lg font-normal text-ink">New Investment</h4>
-                <button onClick={() => setIsAdding(false)} className="p-1 md:p-2 text-muted hover:text-ink">×</button>
-              </div>
-              <form onSubmit={handleCreateInv} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <div className="space-y-1 md:space-y-2">
-                  <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Account</label>
-                  <Select
-                    value={newInv.account_id}
-                    onChange={v => setNewInv({...newInv, account_id: v})}
-                    placeholder="Select Account"
-                    options={accounts.filter(a => a.type === 'investment').map(a => ({ value: String(a.id), label: a.name }))}
-                  />
-                </div>
-                <div className="space-y-1 md:space-y-2">
-                  <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Principal</label>
-                  <input type="number" required value={newInv.principal} onChange={e => setNewInv({...newInv, principal: e.target.value})}
-                    placeholder="0.00" className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-xs md:text-sm financial-number" />
-                </div>
-                <div className="space-y-1 md:space-y-2">
-                  <label className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Date</label>
-                  <DatePicker value={newInv.date} onChange={v => setNewInv({...newInv, date: v})} />
-                </div>
-                <div className="md:col-span-3 flex justify-end gap-3 md:gap-4 pt-4 md:pt-6">
-                  <button type="button" onClick={() => setIsAdding(false)} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3">Cancel</button>
-                  <button type="submit" className="btn-primary text-xs md:text-sm px-6 md:px-10 py-2 md:py-3">Save</button>
-                </div>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-1 space-y-3 md:space-y-4">
@@ -180,8 +104,7 @@ export default function InvestmentTracker({ accounts, onUpdate, currency }: Inve
               investment={selectedInv}
               returns={returns}
               currency={currency}
-              onAddReturn={() => {}}
-              onRefresh={() => fetchReturns(selectedInv.id)}
+              onWriteOperation={onWriteOperation}
             />
           ) : (
             <div className="h-full flex flex-col items-center justify-center card-xl p-24 text-center space-y-8 bg-surface-soft/30 border-dashed">

@@ -1,41 +1,24 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Loan, Account } from '../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Loan, Account, WriteOperation } from '../types';
 import { Plus, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { format } from 'date-fns';
 import { useToast } from './Toast';
 import { localDb, LocalLoan } from '../services/localDb';
-import { generateId } from '../utils/ids';
-import LoanForm, { LoanFormState } from './LoanForm';
 import LoanGroupCard, { LoanGroup } from './LoanGroupCard';
-import SettleModal from './SettleModal';
 import LoanFilters from './LoanFilters';
 
 interface LoanManagerProps {
   accounts: Account[];
-  onUpdate: () => void;
+  onWriteOperation: (op: WriteOperation) => void;
   currency: string;
 }
 
-export default function LoanManager({ accounts, onUpdate, currency }: LoanManagerProps) {
+export default function LoanManager({ accounts, onWriteOperation, currency }: LoanManagerProps) {
   const { toast } = useToast();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled'>('all');
   const [groupingMode, setGroupingMode] = useState<'pair' | 'borrower'>('pair');
-  const [showForm, setShowForm] = useState(false);
-  const [loanType, setLoanType] = useState<'inter_account' | 'person'>('person');
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [settlingId, setSettlingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [settleModal, setSettleModal] = useState<{ id: number; borrowerName: string; amount: number; remaining: number } | null>(null);
-  const [settleAmount, setSettleAmount] = useState('');
-  const [settleError, setSettleError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState<LoanFormState>({
-    lender_account_id: '', borrower_account_id: '', borrower_name: '', amount: '',
-    date_given: format(new Date(), 'yyyy-MM-dd'), due_date: '', interest_rate: '', particulars: ''
-  });
-  const isWriting = useRef(false);
 
   const toApiLoan = (r: LocalLoan): Loan => ({
     id: r.server_id ?? 0,
@@ -67,76 +50,6 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
 
   useEffect(() => { fetchLoans(true); }, []);
 
-  const resetForm = () => {
-    setForm({ lender_account_id: '', borrower_account_id: '', borrower_name: '', amount: '', date_given: format(new Date(), 'yyyy-MM-dd'), due_date: '', interest_rate: '', particulars: '' });
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loanType === 'inter_account' && form.lender_account_id === form.borrower_account_id) { toast("Lender and borrower accounts must be different.", 'error'); return; }
-    if (loanType === 'person' && !form.lender_account_id) { toast("Select an account.", 'error'); return; }
-    if (isWriting.current) return;
-    isWriting.current = true;
-    try {
-      const borrowerName = loanType === 'person' ? (form.borrower_name || form.particulars) : null;
-      if (loanType === 'person' && !borrowerName) { toast("Enter a borrower name.", 'error'); isWriting.current = false; return; }
-      const amount = parseFloat(form.amount);
-      const record: LocalLoan = {
-        id: generateId(),
-        lender_account_id: form.lender_account_id,
-        borrower_account_id: loanType === 'inter_account' ? form.borrower_account_id : null,
-        borrower_name: borrowerName,
-        amount,
-        remaining: amount,
-        date_given: form.date_given,
-        due_date: form.due_date || null,
-        interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null,
-        particulars: form.particulars,
-        status: 'active',
-        settled_date: null,
-        updated_at: new Date().toISOString(),
-        sync_status: 'pending',
-        _deleted: false,
-      };
-      await localDb.putLoan(record);
-      toast("Loan created.", 'success');
-      setShowForm(false); resetForm(); fetchLoans(); onUpdate();
-    } catch { toast("Failed to create loan.", 'error'); } finally { isWriting.current = false; }
-  };
-
-  const handleSettleOpen = (loan: Loan) => {
-    const borrowerDisplay = loan.borrower_name || loan.borrower_account_name || `Account #${loan.borrower_account_id}`;
-    setSettleModal({ id: loan.id, borrowerName: borrowerDisplay, amount: loan.amount, remaining: loan.remaining });
-    setSettleAmount(String(loan.remaining)); setSettleError('');
-  };
-
-  const handleSettleSubmit = async () => {
-    if (!settleModal) return;
-    const amount = parseFloat(settleAmount);
-    if (isNaN(amount) || amount <= 0) { setSettleError("Enter a valid amount."); return; }
-    if (amount > settleModal.remaining) { setSettleError(`Cannot exceed remaining amount (${settleModal.remaining}).`); return; }
-    setSettlingId(settleModal.id);
-    try {
-      const localLoans = await localDb.getLoans();
-      const local = localLoans.find(l => l.server_id === settleModal.id);
-      if (local) {
-        const newRemaining = local.remaining - amount;
-        const isSettled = newRemaining <= 0;
-        await localDb.putLoan({
-          ...local,
-          remaining: Math.max(0, newRemaining),
-          status: isSettled ? 'settled' : 'active',
-          settled_date: isSettled ? new Date().toISOString().split('T')[0] : null,
-          updated_at: new Date().toISOString(),
-          sync_status: 'pending',
-        });
-        if (isSettled) toast("Loan fully settled.", 'success');
-        else toast(`Settlement recorded. Remaining: ${newRemaining}`, 'success');
-      }
-      setSettleModal(null); setSettleAmount(''); fetchLoans(); onUpdate();
-    } catch { toast("Failed to settle loan.", 'error'); } finally { setSettlingId(null); }
-  };
-
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this loan record?")) return;
     setDeletingId(id);
@@ -146,35 +59,9 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
       if (local) {
         await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
       }
-      toast("Loan deleted.", 'success'); fetchLoans(); onUpdate();
+      toast("Loan deleted.", 'success'); fetchLoans();
     }
     catch { toast("Failed to delete loan.", 'error'); } finally { setDeletingId(null); }
-  };
-
-  const openEdit = (loan: Loan) => {
-    setEditingId(loan.id); setLoanType(loan.borrower_name ? 'person' : 'inter_account');
-    setForm({ lender_account_id: String(loan.lender_account_id), borrower_account_id: loan.borrower_account_id ? String(loan.borrower_account_id) : '', borrower_name: loan.borrower_name || '', amount: String(loan.amount), date_given: loan.date_given, due_date: loan.due_date || '', interest_rate: loan.interest_rate ? String(loan.interest_rate) : '', particulars: loan.particulars });
-    setShowForm(true);
-  };
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!editingId) return;
-    try {
-      const localLoans = await localDb.getLoans();
-      const local = localLoans.find(l => l.server_id === editingId);
-      if (local) {
-        await localDb.putLoan({
-          ...local,
-          borrower_name: loanType === 'person' ? (form.borrower_name || null) : local.borrower_name,
-          due_date: form.due_date || null,
-          interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null,
-          particulars: form.particulars,
-          updated_at: new Date().toISOString(),
-          sync_status: 'pending',
-        });
-      }
-      toast("Loan updated.", 'success'); setShowForm(false); setEditingId(null); resetForm(); fetchLoans(); onUpdate();
-    } catch { toast("Failed to update loan.", 'error'); }
   };
 
   const filteredLoans = statusFilter === 'all' ? loans : loans.filter(l => l.status === statusFilter);
@@ -196,8 +83,6 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
       .sort((a, b) => a.borrowerName.localeCompare(b.borrowerName));
   }, [filteredLoans, groupingMode]);
 
-  const closeForm = () => { setShowForm(false); setEditingId(null); resetForm(); };
-
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
@@ -210,25 +95,10 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
             <span>Total outstanding: <strong className="text-ink">{currency}{loans.filter(l => l.status === 'active').reduce((s, l) => s + l.remaining, 0).toLocaleString()}</strong></span>
           </div>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary text-xs md:text-sm px-4 md:px-6 py-2 md:py-3 self-start">
+        <button onClick={() => onWriteOperation({ type: 'loan_create' })} className="btn-primary text-xs md:text-sm px-4 md:px-6 py-2 md:py-3 self-start">
           <Plus className="w-4 md:w-5 h-4 md:h-5" /> New Loan
         </button>
       </div>
-
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            style={{ willChange: 'transform, opacity' }}
-            className="overflow-hidden"
-          >
-            <LoanForm editingId={editingId} loanType={loanType} form={form} loading={loading} accounts={accounts} onFormChange={setForm} onLoanTypeChange={(t) => { setLoanType(t); setForm({ ...form, borrower_account_id: '', borrower_name: '' }); }} onSubmit={editingId ? handleUpdate : handleCreate} onCancel={closeForm} />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <LoanFilters statusFilter={statusFilter} setStatusFilter={setStatusFilter} groupingMode={groupingMode} setGroupingMode={setGroupingMode} />
 
@@ -241,11 +111,9 @@ export default function LoanManager({ accounts, onUpdate, currency }: LoanManage
 
       <div className="space-y-4">
         {groupedLoans.map(group => (
-          <LoanGroupCard key={group.key} group={group} currency={currency} settlingId={settlingId} deletingId={deletingId} onSettleOpen={handleSettleOpen} onEdit={openEdit} onDelete={handleDelete} onRefresh={() => fetchLoans()} groupingMode={groupingMode} />
+          <LoanGroupCard key={group.key} group={group} currency={currency} settlingId={null} deletingId={deletingId} onSettleOpen={(loan) => onWriteOperation({ type: 'loan_settle', loan })} onEdit={(loan) => onWriteOperation({ type: 'loan_edit', loan })} onDelete={handleDelete} onRefresh={() => fetchLoans()} groupingMode={groupingMode} />
         ))}
       </div>
-
-      <SettleModal open={!!settleModal} borrowerName={settleModal?.borrowerName || ''} amount={settleModal?.amount || 0} remaining={settleModal?.remaining || 0} currency={currency} settleAmount={settleAmount} setSettleAmount={setSettleAmount} settleError={settleError} setSettleError={setSettleError} onSettle={handleSettleSubmit} onCancel={() => { setSettleModal(null); setSettleAmount(''); setSettleError(''); }} settling={settlingId !== null} />
     </div>
   );
 }

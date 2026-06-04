@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { cacheService } from '../services/cacheService';
 
 interface ThemeSettings {
   darkMode: boolean;

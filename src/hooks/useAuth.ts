@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { authService, setOnSessionExpired, setGuestMode } from '../services/authService';
-import { offlineService, initPendingCount } from '../services/offlineService';
+import { initPendingCount, syncNow } from '../services/syncEngine';
 import { localDb } from '../services/localDb';
 import { useToast } from '../components/Toast';
 
@@ -86,6 +86,25 @@ export function useAuth() {
   }, []);
 
   const handleLogout = useCallback(async () => {
+    // Push any pending local changes to the server before clearing localDb.
+    // If the network is offline or the push fails, warn the user.
+    if (navigator.onLine) {
+      try {
+        await syncNow();
+        const pending = await localDb.getUnsyncedCount().catch(() => 0);
+        if (pending > 0) {
+          toast(`${pending} change${pending !== 1 ? 's' : ''} couldn't be synced. Please retry from a stable connection.`, 'info');
+        }
+      } catch (err) {
+        console.warn("Sync before logout failed:", err);
+      }
+    } else {
+      const pending = await localDb.getUnsyncedCount().catch(() => 0);
+      if (pending > 0) {
+        toast(`You're offline. ${pending} pending change${pending !== 1 ? 's' : ''} will sync on next sign-in.`, 'info');
+      }
+    }
+
     try {
       await localDb.clearAll();
       await localDb.setMeta('sync_timestamp', null);
@@ -99,7 +118,7 @@ export function useAuth() {
 
     setAuthStatus('guest');
     setUserEmail('');
-  }, []);
+  }, [toast]);
 
   return {
     isAuthenticated: authStatus === 'authenticated',

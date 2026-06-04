@@ -187,6 +187,35 @@ export type EntityName = 'members' | 'accounts' | 'transactions' | 'loans' | 'gr
   | 'loan_settlements' | 'investments' | 'investment_returns'
   | 'groups' | 'budgets' | 'recurring_transactions';
 
+export type ChangeAction = 'put' | 'remove';
+export type ChangeListener<T extends LocalRecord = LocalRecord> = (record: T | null, action: ChangeAction) => void;
+
+const _listeners: Map<EntityName, Set<ChangeListener>> = new Map();
+
+function notify<T extends LocalRecord>(store: EntityName, record: T | null, action: ChangeAction): void {
+  const set = _listeners.get(store);
+  if (!set || set.size === 0) return;
+  for (const listener of set) {
+    try {
+      listener(record, action);
+    } catch (e) {
+      console.error(`localDb.onChange listener for ${store} threw:`, e);
+    }
+  }
+}
+
+function onChange<T extends LocalRecord>(store: EntityName, listener: ChangeListener<T>): () => void {
+  let set = _listeners.get(store);
+  if (!set) {
+    set = new Set();
+    _listeners.set(store, set);
+  }
+  set.add(listener as ChangeListener);
+  return () => {
+    set!.delete(listener as ChangeListener);
+  };
+}
+
 async function putAll<T extends LocalRecord>(store: EntityName, records: T[]): Promise<void> {
   await withDB(async (db) => {
     const tx = db.transaction(store, 'readwrite');
@@ -195,6 +224,7 @@ async function putAll<T extends LocalRecord>(store: EntityName, records: T[]): P
     }
     await tx.done;
   });
+  for (const r of records) notify(store, r, 'put');
 }
 
 async function getAllVisible<T extends LocalRecord>(store: EntityName): Promise<T[]> {
@@ -217,10 +247,12 @@ async function getUnsynced<T extends LocalRecord>(store: EntityName): Promise<T[
 
 async function put<T extends LocalRecord>(store: EntityName, record: T): Promise<void> {
   await withDB(async (db) => db.put(store, record));
+  notify(store, record, 'put');
 }
 
 async function remove(store: EntityName, id: string): Promise<void> {
   await withDB(async (db) => db.delete(store, id));
+  notify(store, null, 'remove');
 }
 
 async function markSynced<T extends LocalRecord>(store: EntityName, ids: string[]): Promise<void> {
@@ -237,7 +269,41 @@ async function markSynced<T extends LocalRecord>(store: EntityName, ids: string[
   });
 }
 
+async function markPushed(store: EntityName, mappings: { client_id: string; server_id: number }[]): Promise<void> {
+  const updated: LocalRecord[] = [];
+  await withDB(async (db) => {
+    const tx = db.transaction(store, 'readwrite');
+    for (const { client_id, server_id } of mappings) {
+      const record = await tx.store.get(client_id);
+      if (record) {
+        (record as LocalRecord & { server_id?: number | null }).server_id = server_id;
+        record.sync_status = 'synced';
+        tx.store.put(record);
+        updated.push(record);
+      }
+    }
+    await tx.done;
+  });
+  for (const r of updated) notify(store, r, 'put');
+}
+
+async function adjustAccountBalance(accountLocalId: string, delta: number): Promise<LocalAccount | null> {
+  const updated = await withDB(async (db) => {
+    const account = await db.get('accounts', accountLocalId);
+    if (!account) return null;
+    account.current_balance = (account.current_balance || 0) + delta;
+    account.updated_at = now();
+    account.sync_status = 'pending';
+    await db.put('accounts', account);
+    return account;
+  });
+  if (updated) notify('accounts', updated, 'put');
+  return updated;
+}
+
 export const localDb = {
+  onChange,
+
   // Members
   async getMembers(): Promise<LocalMember[]> { return getAllVisible('members'); },
   async getUnsyncedMembers(): Promise<LocalMember[]> { return getUnsynced('members'); },
@@ -338,6 +404,20 @@ export const localDb = {
     return [...members, ...accounts, ...transactions, ...loans];
   },
 
+  async getUnsyncedCount(): Promise<number> {
+    const stores: EntityName[] = [
+      'members', 'accounts', 'transactions', 'loans',
+      'loan_settlements', 'investments', 'investment_returns',
+      'budgets', 'recurring_transactions',
+    ];
+    let count = 0;
+    for (const s of stores) {
+      const all = await getAllRecords(s);
+      count += all.filter(r => r.sync_status === 'pending' && !r._deleted).length;
+    }
+    return count;
+  },
+
   async getDeletedItems(): Promise<{ entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[]> {
     return withDB(async (db) => {
       const results: { entity_type: string; entity_label: string; id: string; deleted_at: string; summary: string; server_id?: number | null }[] = [];
@@ -369,36 +449,29 @@ export const localDb = {
   },
 
   async restoreItem(entityType: string, id: string): Promise<void> {
-    await withDB(async (db) => {
-      const storeName = entityType as EntityName;
-      const record = await db.get(storeName, id);
-      if (record) {
-        record._deleted = false;
-        record.sync_status = 'pending';
-        record.updated_at = now();
-        await db.put(storeName, record);
-      }
-    });
+    const storeName = entityType as EntityName;
+    const record = await withDB(async (db) => db.get(storeName, id));
+    if (record) {
+      await put(storeName, { ...record, _deleted: false, sync_status: 'pending', updated_at: now() });
+    }
   },
 
   async permanentDelete(entityType: string, id: string): Promise<void> {
-    await withDB(async (db) => db.delete(entityType as EntityName, id));
+    await remove(entityType as EntityName, id);
   },
 
   async emptyBin(entityType?: string): Promise<void> {
-    await withDB(async (db) => {
-      const stores: EntityName[] = entityType
-        ? [entityType as EntityName]
-        : ['transactions', 'accounts', 'loans', 'members', 'groups'];
-      for (const s of stores) {
-        const all = await db.getAll(s);
-        for (const r of all) {
-          if (r._deleted) {
-            await db.delete(s, r.id);
-          }
+    const stores: EntityName[] = entityType
+      ? [entityType as EntityName]
+      : ['transactions', 'accounts', 'loans', 'members', 'groups'];
+    for (const s of stores) {
+      const all = await getAllRecords(s);
+      for (const r of all) {
+        if (r._deleted) {
+          await remove(s, r.id);
         }
       }
-    });
+    }
   },
 
   async markAllSynced(): Promise<void> {
@@ -447,5 +520,13 @@ export const localDb = {
   async getTransactionCount(): Promise<number> {
     const db = await getDB();
     return db.count('transactions');
+  },
+
+  async adjustAccountBalance(accountLocalId: string, delta: number): Promise<LocalAccount | null> {
+    return adjustAccountBalance(accountLocalId, delta);
+  },
+
+  async markPushed(store: EntityName, mappings: { client_id: string; server_id: number }[]): Promise<void> {
+    return markPushed(store, mappings);
   },
 };

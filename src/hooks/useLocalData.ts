@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { localDb, LocalMember, LocalAccount, LocalGroup, LocalTransaction } from '../services/localDb';
 import { authService } from '../services/authService';
-import { offlineService, syncState } from '../services/offlineService';
+import { syncState, isOnline, onOnline, onOffline, getLastSync, setLastSync as setLastSyncStamp, initPendingCount } from '../services/syncEngine';
 import { generateId } from '../utils/ids';
 import { useToast } from '../components/Toast';
 
@@ -20,8 +20,8 @@ function toApiAccount(r: LocalAccount) {
 
 export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => void) {
   const { toast } = useToast();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [lastSync, setLastSync] = useState<number | null>(offlineService.getLastSync());
+  const [isOnlineState, setIsOnlineState] = useState(navigator.onLine);
+  const [lastSync, setLastSync] = useState<number | null>(getLastSync());
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [members, setMembers] = useState<LocalMember[]>([]);
@@ -44,20 +44,13 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     setAccounts(localAccounts);
   }, []);
 
-  const applyAccountDelta = useCallback((accountServerId: number, amount: number) => {
-    setAccounts(prev => prev.map(a =>
-      a.server_id === accountServerId
-        ? { ...a, current_balance: (a.current_balance || 0) + amount }
-        : a
-    ));
-  }, []);
 
   const fetchData = useCallback(async (showToast = false) => {
     if (!authRef.current) {
       if (showToast) toast("Sign in to sync data.", 'error');
       return;
     }
-    if (!offlineService.isOnline()) {
+    if (!isOnline()) {
       if (showToast) toast("Cannot refresh while offline.", 'error');
       return;
     }
@@ -122,7 +115,6 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         const toUpsert: LocalAccount[] = data.map((a: Record<string, unknown>) => {
           const existing = localByServerId.get(a.id as number);
           if (existing) {
-            // Preserve local id and pending status
             return {
               ...existing,
               name: a.name as string,
@@ -132,7 +124,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
               color: (a.color as string) || existing.color,
               archived: (a.archived as number) || existing.archived,
               initial_balance: (a.initial_balance as number) ?? existing.initial_balance,
-              current_balance: (a.current_balance as number) ?? existing.current_balance,
+              current_balance: existing.current_balance,
               updated_at: (a.updated_at as string) || existing.updated_at,
               sync_status: existing.sync_status === 'pending' ? 'pending' as const : 'synced' as const,
             };
@@ -158,23 +150,6 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         // Filter out groups — they belong in the groups store
         const nonGroupRecords = toUpsert.filter(r => r.type !== 'group');
         await localDb.putAccounts(nonGroupRecords);
-        // Re-apply pending local transaction adjustments to account balances
-        const pendingTxns = await localDb.getUnsyncedTransactions();
-        const pendingAdjustment = new Map<string | number, number>();
-        for (const t of pendingTxns) {
-          const key = t.account_id;
-          pendingAdjustment.set(key, (pendingAdjustment.get(key) || 0) + (t.amount || 0));
-        }
-        if (pendingAdjustment.size > 0) {
-          const adjustedAccounts = await localDb.getAccounts();
-          for (const acc of adjustedAccounts) {
-            const adj = pendingAdjustment.get(String(acc.server_id));
-            if (adj) {
-              acc.current_balance = (acc.current_balance || 0) + adj;
-            }
-          }
-          await localDb.putAccounts(adjustedAccounts);
-        }
         // Purge records not in server response (deleted server-side, or sync engine duplicates)
         const serverAccountIds = new Set(data.map((a: { id: number }) => a.id));
         const allLocalAccounts = await localDb.getAccounts();
@@ -231,7 +206,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
       setLastSync(Date.now());
       setLastUpdate(Date.now());
-      offlineService.setLastSync();
+      setLastSyncStamp();
       if (showToast) toast("Data refreshed.", 'success');
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -250,7 +225,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
     loadFromLocal().then(() => {
       onInitialLoad?.();
-      if (offlineService.isOnline()) {
+      if (isOnline()) {
         fetchData();
       }
     });
@@ -273,7 +248,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     loadedRef.current = false;
     setMembers([]);
     setAccounts([]);
-    if (offlineService.isOnline()) fetchData();
+    if (isOnline()) fetchData();
     prevAuthRef.current = isAuthenticated;
   }, [isAuthenticated, fetchData]);
 
@@ -281,7 +256,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   useEffect(() => {
     if (!isAuthenticated) return;
     const interval = setInterval(() => {
-      if (document.visibilityState === 'visible' && offlineService.isOnline()) fetchData();
+      if (document.visibilityState === 'visible' && isOnline()) fetchData();
     }, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated, fetchData]);
@@ -290,7 +265,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   useEffect(() => {
     if (!isAuthenticated) return;
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && offlineService.isOnline()) {
+      if (document.visibilityState === 'visible' && isOnline()) {
         fetchData();
       }
     };
@@ -300,22 +275,15 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
   // Online/offline events
   useEffect(() => {
-    const offCleanup = offlineService.onOffline(() => setIsOnline(false));
-    const onCleanup = offlineService.onOnline(async () => {
-      setIsOnline(true);
+    const offCleanup = onOffline(() => setIsOnlineState(false));
+    const onCleanup = onOnline(async () => {
+      setIsOnlineState(true);
       if (authRef.current) {
-        const result = await offlineService.syncQueue(authService.apiFetch.bind(authService));
         await fetchData();
-        if (result.synced > 0) {
-          const msg = result.failed > 0
-            ? `Synced ${result.synced} change${result.synced !== 1 ? 's' : ''}, ${result.failed} failed.`
-            : `Synced ${result.synced} pending change${result.synced !== 1 ? 's' : ''}.`;
-          toast(msg, result.failed > 0 ? 'error' : 'success');
-        }
       }
     });
     return () => { offCleanup(); onCleanup(); };
-  }, [isAuthenticated, fetchData, toast]);
+  }, [isAuthenticated, fetchData]);
 
   // Sync state listener
   useEffect(() => {
@@ -326,11 +294,31 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     return unsub;
   }, []);
 
+  // Subscribe to localDb account changes
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const unsub = localDb.onChange('accounts', async () => {
+      const localAccounts = await localDb.getAccounts();
+      setAccounts(localAccounts);
+    });
+    return unsub;
+  }, [isAuthenticated]);
+
+  // Subscribe to localDb member changes
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const unsub = localDb.onChange('members', async () => {
+      const localMembers = await localDb.getMembers();
+      setMembers(localMembers);
+    });
+    return unsub;
+  }, [isAuthenticated]);
+
   const apiMembers = useMemo(() => members.map(toApiMember), [members]);
   const apiAccounts = useMemo(() => accounts.map(toApiAccount), [accounts]);
 
   return {
-    isOnline,
+    isOnline: isOnlineState,
     lastSync,
     pendingCount,
     isSyncing,
@@ -342,6 +330,5 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     lastUpdate,
     fetchData,
     reloadFromLocal: loadFromLocal,
-    applyAccountDelta,
   };
 }

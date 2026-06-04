@@ -56,6 +56,15 @@ export interface OfflineActionBody {
   [key: string]: unknown;
 }
 
+export type WriteOperation =
+  | { type: 'transaction'; prefillAccountId?: number; editTx?: Transaction }
+  | { type: 'transfer' }
+  | { type: 'loan_create' }
+  | { type: 'loan_edit'; loan: Loan }
+  | { type: 'loan_settle'; loan: Loan }
+  | { type: 'investment_create' }
+  | { type: 'investment_return'; investment: Investment };
+
 export interface Loan {
   id: number;
   lender_account_id: number;

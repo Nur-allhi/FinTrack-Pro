@@ -43,17 +43,55 @@ export async function migrateServerData(): Promise<{ migrated: number; errors: n
 
     const data = await res.json();
 
-    for (const table of TABLES) {
+    // First pass: store members and accounts; build account server_id → local_id map
+    const accountIdMap = new Map<number, string>();
+    for (const table of ['members', 'accounts'] as const) {
       const rows = data.data?.[table] as ServerRecord[] | undefined;
       if (!Array.isArray(rows) || rows.length === 0) continue;
 
-      // Assign client_ids to records that don't have them
       const recordsNeedingIds = rows.filter(r => !r.client_id);
       if (recordsNeedingIds.length > 0) {
         await assignClientIds(table, recordsNeedingIds);
       }
 
-      // Convert to local format and store
+      const localRecords = rows.map(r => serverToLocal(table, r));
+      await storeLocal(table, localRecords);
+      migrated += rows.length;
+
+      if (table === 'accounts') {
+        for (let i = 0; i < rows.length; i++) {
+          const r = rows[i];
+          if (r.client_id) accountIdMap.set(r.id, r.client_id);
+          else accountIdMap.set(r.id, (localRecords[i] as { id: string }).id);
+        }
+      }
+    }
+
+    // Second pass: transactions and loans (need account id translation)
+    for (const table of ['transactions', 'loans'] as const) {
+      const rows = data.data?.[table] as ServerRecord[] | undefined;
+      if (!Array.isArray(rows) || rows.length === 0) continue;
+
+      const recordsNeedingIds = rows.filter(r => !r.client_id);
+      if (recordsNeedingIds.length > 0) {
+        await assignClientIds(table, recordsNeedingIds);
+      }
+
+      const localRecords = rows.map(r => serverToLocal(table, r, accountIdMap));
+      await storeLocal(table, localRecords);
+      migrated += rows.length;
+    }
+
+    // Third pass: budgets/recurring (no special handling needed)
+    for (const table of ['budgets', 'recurring_transactions'] as const) {
+      const rows = data.data?.[table] as ServerRecord[] | undefined;
+      if (!Array.isArray(rows) || rows.length === 0) continue;
+
+      const recordsNeedingIds = rows.filter(r => !r.client_id);
+      if (recordsNeedingIds.length > 0) {
+        await assignClientIds(table, recordsNeedingIds);
+      }
+
       const localRecords = rows.map(r => serverToLocal(table, r));
       await storeLocal(table, localRecords);
       migrated += rows.length;
@@ -69,7 +107,7 @@ export async function migrateServerData(): Promise<{ migrated: number; errors: n
   return { migrated, errors };
 }
 
-function serverToLocal(table: TableName, record: ServerRecord) {
+function serverToLocal(table: TableName, record: ServerRecord, accountIdMap?: Map<number, string>) {
   const base = {
     id: record.client_id || crypto.randomUUID(),
     server_id: record.id,
@@ -96,7 +134,7 @@ function serverToLocal(table: TableName, record: ServerRecord) {
     case 'transactions':
       return {
         ...base,
-        account_id: record.account_id as string,
+        account_id: accountIdMap?.get(Number(record.account_id)) || (record.account_id as string),
         date: record.date as string,
         particulars: record.particulars as string,
         category: (record.category as string) || 'Uncategorized',
@@ -108,8 +146,10 @@ function serverToLocal(table: TableName, record: ServerRecord) {
     case 'loans':
       return {
         ...base,
-        lender_account_id: record.lender_account_id as string,
-        borrower_account_id: (record.borrower_account_id as string) || null,
+        lender_account_id: accountIdMap?.get(Number(record.lender_account_id)) || (record.lender_account_id as string),
+        borrower_account_id: record.borrower_account_id != null
+          ? (accountIdMap?.get(Number(record.borrower_account_id)) || (record.borrower_account_id as string))
+          : null,
         borrower_name: (record.borrower_name as string) || null,
         amount: record.amount as number,
         remaining: record.remaining as number,

@@ -2,7 +2,7 @@ import { localDb, LocalRecord, EntityName } from './localDb';
 import { authService } from './authService';
 
 const SYNC_TABLES = [
-  'members', 'accounts', 'transactions', 'loans',
+  'members', 'transactions', 'loans',
   'loan_settlements', 'investments', 'investment_returns',
   'budgets', 'recurring_transactions',
 ] as const;
@@ -35,7 +35,6 @@ export function isSyncing() {
 async function getUnsyncedForTable(table: SyncTable): Promise<LocalRecord[]> {
   const getter = {
     members: () => localDb.getUnsyncedMembers(),
-    accounts: () => localDb.getUnsyncedAccounts(),
     transactions: () => localDb.getUnsyncedTransactions(),
     loans: () => localDb.getUnsyncedLoans(),
     loan_settlements: async () => { const db = await import('./localDb'); return db.localDb.getLoanSettlements(); },
@@ -50,7 +49,6 @@ async function getUnsyncedForTable(table: SyncTable): Promise<LocalRecord[]> {
 async function markTableSynced(table: SyncTable, ids: string[]): Promise<void> {
   const markers = {
     members: () => localDb.markMembersSynced(ids),
-    accounts: () => localDb.markAccountsSynced(ids),
     transactions: () => localDb.markTransactionsSynced(ids),
     loans: () => localDb.markLoansSynced(ids),
     loan_settlements: async () => {},
@@ -65,7 +63,6 @@ async function markTableSynced(table: SyncTable, ids: string[]): Promise<void> {
 async function upsertFromServer(table: SyncTable, records: Record<string, unknown>[]): Promise<void> {
   const putters = {
     members: (r: Record<string, unknown>[]) => localDb.putMembers(r as never[]),
-    accounts: (r: Record<string, unknown>[]) => localDb.putAccounts(r as never[]),
     transactions: (r: Record<string, unknown>[]) => localDb.putTransactions(r as never[]),
     loans: (r: Record<string, unknown>[]) => localDb.putLoans(r as never[]),
     loan_settlements: (r: Record<string, unknown>[]) => localDb.putLoanSettlements(r as never[]),
@@ -110,8 +107,13 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     pushed += result.pushed || 0;
     conflicts += result.conflicts || 0;
     if (result.pushed > 0) {
-      const ids = (records[table] || []).map(r => r.id);
-      await markTableSynced(table as SyncTable, ids);
+      const ids = result.ids || [];
+      if (ids.length > 0) {
+        await localDb.markPushed(table as EntityName, ids);
+      } else {
+        const fallbackIds = (records[table] || []).map(r => r.id);
+        await markTableSynced(table as SyncTable, fallbackIds);
+      }
     }
   }
 
@@ -129,16 +131,44 @@ async function pullChanges(): Promise<number> {
   const data = await res.json();
   let totalPulled = 0;
 
+  // Build account server_id → local_id map (for translating transactions.loans account refs)
+  const localAccounts = await localDb.getAccounts();
+  const accountIdMap = new Map<number, string>();
+  for (const a of localAccounts) {
+    if (a.server_id != null) accountIdMap.set(a.server_id, a.id);
+  }
+
   for (const table of SYNC_TABLES) {
     const changes = data.changes?.[table];
     if (!Array.isArray(changes) || changes.length === 0) continue;
+
+    // Translate server numeric account refs to local UUIDs before storage
+    const translated = changes.map((r: Record<string, unknown>) => {
+      if (table === 'transactions' && r.account_id != null) {
+        const localId = accountIdMap.get(Number(r.account_id));
+        if (localId) return { ...r, account_id: localId };
+      }
+      if (table === 'loans') {
+        let updated = r;
+        if (r.lender_account_id != null) {
+          const localId = accountIdMap.get(Number(r.lender_account_id));
+          if (localId) updated = { ...updated, lender_account_id: localId };
+        }
+        if (r.borrower_account_id != null) {
+          const localId = accountIdMap.get(Number(r.borrower_account_id));
+          if (localId) updated = { ...updated, borrower_account_id: localId };
+        }
+        return updated;
+      }
+      return r;
+    });
 
     // Get local records for LWW comparison — key by server_id
     const localRecords = await localDb.getAllRecords(table as EntityName) as Array<LocalRecord & { server_id?: number | null }>;
     const localMap = new Map(localRecords.map(r => [r.server_id, r]));
 
     // Filter: skip records where local has pending changes or is newer
-    const toUpsert = changes.filter((r: Record<string, unknown>) => {
+    const toUpsert = translated.filter((r: Record<string, unknown>) => {
       const local = localMap.get(r.id as number);
       if (!local) return true; // new record, upsert
       if (local.sync_status === 'pending') return false; // local has unpushed changes, skip
@@ -183,6 +213,7 @@ export async function syncNow(): Promise<SyncResult> {
   try {
     const pushResult = await pushUnsynced();
     const pulled = await pullChanges();
+    await refreshPendingCount();
     return { pushed: pushResult.pushed, pulled, conflicts: pushResult.conflicts };
   } catch (err) {
     console.error('Sync failed:', err);
@@ -233,6 +264,7 @@ let _syncInterval: ReturnType<typeof setInterval> | null = null;
 let _started = false;
 let _handleVisibility: (() => void) | null = null;
 let _handleOnline: (() => void) | null = null;
+let _stopPendingRefresh: (() => void) | null = null;
 
 export function startSyncScheduler() {
   if (_started) return;
@@ -249,6 +281,8 @@ export function startSyncScheduler() {
 
   document.addEventListener('visibilitychange', _handleVisibility);
   window.addEventListener('online', _handleOnline);
+
+  _stopPendingRefresh = startPendingCountAutoRefresh();
 
   _syncInterval = setInterval(() => {
     if (navigator.onLine) {
@@ -270,5 +304,96 @@ export function stopSyncScheduler() {
     window.removeEventListener('online', _handleOnline);
     _handleOnline = null;
   }
+  if (_stopPendingRefresh) {
+    _stopPendingRefresh();
+    _stopPendingRefresh = null;
+  }
   _started = false;
+}
+
+type SyncStateListener = (state: SyncStatus) => void;
+
+export type SyncStatus = {
+  state: 'idle' | 'syncing' | 'error';
+  lastSyncAt: number | null;
+  pendingCount: number;
+};
+
+let _syncUIState: SyncStatus = {
+  state: 'idle',
+  lastSyncAt: (() => {
+    const stored = localStorage.getItem('last_sync');
+    return stored ? Number(stored) : null;
+  })(),
+  pendingCount: 0,
+};
+const _syncUIListeners: Set<SyncStateListener> = new Set();
+
+function _notifySyncUI() {
+  _syncUIListeners.forEach(fn => fn({ ..._syncUIState }));
+}
+
+export const syncState = {
+  subscribe(fn: SyncStateListener): () => void {
+    _syncUIListeners.add(fn);
+    fn({ ..._syncUIState });
+    return () => { _syncUIListeners.delete(fn); };
+  },
+  get(): SyncStatus { return { ..._syncUIState }; },
+  setState(partial: Partial<SyncStatus>) {
+    _syncUIState = { ..._syncUIState, ...partial };
+    _notifySyncUI();
+  },
+};
+
+export function isOnline(): boolean {
+  return navigator.onLine;
+}
+
+export function onOnline(callback: () => void): () => void {
+  window.addEventListener('online', callback);
+  return () => window.removeEventListener('online', callback);
+}
+
+export function onOffline(callback: () => void): () => void {
+  window.addEventListener('offline', callback);
+  return () => window.removeEventListener('offline', callback);
+}
+
+export function getLastSync(): number | null {
+  return _syncUIState.lastSyncAt;
+}
+
+export function setLastSync() {
+  const now = Date.now();
+  localStorage.setItem('last_sync', String(now));
+  syncState.setState({ lastSyncAt: now });
+}
+
+export async function initPendingCount() {
+  try {
+    const count = await localDb.getUnsyncedCount();
+    syncState.setState({ pendingCount: count });
+  } catch (e) {
+    console.error('Failed to init pending count:', e);
+  }
+}
+
+export async function refreshPendingCount() {
+  try {
+    const count = await localDb.getUnsyncedCount();
+    syncState.setState({ pendingCount: count });
+  } catch (e) {
+    console.error('Failed to refresh pending count:', e);
+  }
+}
+
+export function startPendingCountAutoRefresh() {
+  const stores = [
+    'members', 'transactions', 'loans',
+    'loan_settlements', 'investments', 'investment_returns',
+    'budgets', 'recurring_transactions',
+  ] as const;
+  const unsubs = stores.map(store => localDb.onChange(store, refreshPendingCount));
+  return () => { unsubs.forEach(u => u()); };
 }

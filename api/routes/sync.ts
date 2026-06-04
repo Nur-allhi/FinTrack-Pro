@@ -33,7 +33,7 @@ router.post("/push", async (req, res) => {
       return sendError(res, 400, "records object required", "VALIDATION_ERROR");
     }
 
-    const results: Record<string, { pushed: number; conflicts: number }> = {};
+    const results: Record<string, { pushed: number; conflicts: number; ids: { client_id: string; server_id: number }[] }> = {};
     const client = db();
 
     for (const table of SYNC_TABLES) {
@@ -42,11 +42,11 @@ router.post("/push", async (req, res) => {
 
       let pushed = 0;
       let conflicts = 0;
+      const ids: { client_id: string; server_id: number }[] = [];
 
       for (const record of tableRecords) {
         if (!record.client_id) continue;
 
-        // Check if server has this record by client_id
         const { data: existing } = await client
           .from(table)
           .select('id, updated_at')
@@ -55,13 +55,10 @@ router.post("/push", async (req, res) => {
           .maybeSingle();
 
         if (existing) {
-          // Server record exists — check for conflict (LWW)
           if (new Date(record.updated_at) < new Date(existing.updated_at)) {
-            // Server wins — skip push
             conflicts++;
             continue;
           }
-          // Local wins — update server
           const { id, client_id: _cid, updated_at: _ua, ...fields } = record;
           const { error } = await client
             .from(table)
@@ -73,24 +70,26 @@ router.post("/push", async (req, res) => {
             continue;
           }
           pushed++;
+          ids.push({ client_id: record.client_id, server_id: existing.id });
         } else {
-          // New record — insert
           const { id: _localId, ...fields } = record;
-          const { error } = await client
+          const { data: inserted, error } = await client
             .from(table)
-            .insert({ ...fields, user_id: userId, client_id: record.client_id, updated_at: record.updated_at });
-          if (error) {
-            logger.error({ requestId: req.requestId, error: error.message, table, client_id: record.client_id }, "sync push insert");
+            .insert({ ...fields, user_id: userId, client_id: record.client_id, updated_at: record.updated_at })
+            .select('id')
+            .single();
+          if (error || !inserted) {
+            logger.error({ requestId: req.requestId, error: error?.message, table, client_id: record.client_id }, "sync push insert");
             continue;
           }
           pushed++;
+          ids.push({ client_id: record.client_id, server_id: inserted.id });
         }
       }
 
-      results[table] = { pushed, conflicts };
+      results[table] = { pushed, conflicts, ids };
     }
 
-    // Log sync operation
     const totalPushed = Object.values(results).reduce((s, r) => s + r.pushed, 0);
     if (totalPushed > 0) {
       await client.from('sync_log').insert({

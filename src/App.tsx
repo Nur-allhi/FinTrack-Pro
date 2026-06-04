@@ -18,13 +18,12 @@ import UserProfile from './components/UserProfile';
 import BottomNav from './components/layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 
-import { cacheService } from './services/cacheService';
 import { localDb } from './services/localDb';
 import { authService } from './services/authService';
-import { offlineService } from './services/offlineService';
 import { syncNow, startSyncScheduler, stopSyncScheduler } from './services/syncEngine';
 import { useToast } from './components/Toast';
 import { Agentation } from 'agentation';
+import type { WriteOperation } from './types';
 
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -42,9 +41,8 @@ const ReportGenerator = lazy(() => import('./components/ReportGenerator'));
 const Settings = lazy(() => import('./components/Settings'));
 const GroupManager = lazy(() => import('./components/GroupManager'));
 const LoanManager = lazy(() => import('./components/LoanManager'));
-const TransferModal = lazy(() => import('./components/TransferModal'));
-const TransactionModal = lazy(() => import('./components/TransactionModal'));
 const RecycleBin = lazy(() => import('./components/RecycleBin'));
+const WriteModal = lazy(() => import('./components/WriteModal'));
 const SignupNudge = lazy(() => import('./components/SignupNudge'));
 const Login = lazy(() => import('./components/Login'));
 const Signup = lazy(() => import('./components/Signup'));
@@ -79,14 +77,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'recyclebin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [writeOperation, setWriteOperation] = useState<WriteOperation | null>(null);
   const [showSignupNudge, setShowSignupNudge] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
   const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
 
-  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData, reloadFromLocal, applyAccountDelta } = useLocalData(isAuthenticated);
+  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData, reloadFromLocal } = useLocalData(isAuthenticated);
   const { visible: navVisible, scrollRef } = useScrollDirection();
   useThemeEffects(settings);
 
@@ -206,16 +203,16 @@ export default function App() {
     if (selectedAccountId) {
       const account = accounts.find(a => a.id === selectedAccountId);
       if (!account) return <div className="p-8 text-center text-muted">Account not found</div>;
-      return <Ledger account={account} onBack={() => setSelectedAccountId(null)} onUpdate={(id, amount) => { if (id != null && amount != null) applyAccountDelta(id, amount); fetchData(); }} lastUpdate={lastUpdate} currency={settings.currency} />;
+      return <Ledger account={account} onBack={() => setSelectedAccountId(null)} onWriteOperation={setWriteOperation} currency={settings.currency} />;
     }
 
     switch (activeTab) {
-      case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onOpenTransfer={() => setIsTransferModalOpen(true)} onOpenTransaction={() => setIsTransactionModalOpen(true)} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} dataLoading={dataLoading} />;
+      case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onWriteOperation={setWriteOperation} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} dataLoading={dataLoading} />;
       case 'members': return <MemberManager members={members} accounts={accounts} onUpdate={fetchData} onSelectAccount={setSelectedAccountId} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
-      case 'investments': return <InvestmentTracker accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
-      case 'loans': return <LoanManager accounts={accounts} onUpdate={fetchData} currency={settings.currency} />;
+      case 'investments': return <InvestmentTracker accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} />;
+      case 'loans': return <LoanManager accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
       case 'recyclebin': return <RecycleBin />;
       case 'settings': return <Settings settings={settings} onUpdateSettings={(s: typeof settings) => { setSettings(s); localDb.setSettings(s as Record<string, unknown>); }} />;
@@ -295,14 +292,16 @@ export default function App() {
       </main>
 
       <ErrorBoundary>
-        {isTransferModalOpen && (
+        {writeOperation && (
           <Suspense fallback={null}>
-            <TransferModal accounts={accounts} onClose={() => setIsTransferModalOpen(false)} onUpdate={fetchData} currency={settings.currency} />
-          </Suspense>
-        )}
-        {isTransactionModalOpen && (
-          <Suspense fallback={null}>
-            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={(id, amount) => { if (id != null && amount != null) applyAccountDelta(id, amount); }} onTransactionSaved={checkSignupNudge} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
+            <WriteModal
+              operation={writeOperation}
+              accounts={accounts}
+              members={members}
+              currency={settings.currency}
+              onClose={() => setWriteOperation(null)}
+              onTransactionSaved={checkSignupNudge}
+            />
           </Suspense>
         )}
       </ErrorBoundary>
@@ -328,8 +327,8 @@ export default function App() {
               setSelectedAccountId(null);
             }
           }}
-          onNewTransaction={() => setIsTransactionModalOpen(true)}
-          onTransfer={() => setIsTransferModalOpen(true)}
+          onNewTransaction={() => setWriteOperation({ type: 'transaction' })}
+          onTransfer={() => setWriteOperation({ type: 'transfer' })}
           visible={navVisible}
         />
       </div>

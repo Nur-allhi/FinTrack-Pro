@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Account, Transaction } from '../types';
+import React, { useState } from 'react';
+import { Account, Transaction, WriteOperation } from '../types';
 import { 
   ArrowLeft, 
   Download, 
@@ -12,10 +12,8 @@ import AnimatedBalance from './AnimatedBalance';
 import { format } from 'date-fns';
 import { exportLedgerPDF } from '../utils/ledgerPdf';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
 import Select from './Select';
 
-import TransactionForm from './TransactionForm';
 import TransactionRow from './TransactionRow';
 import TransactionCard from './TransactionCard';
 import LedgerToolbar, { LedgerDesktopToolbar } from './LedgerToolbar';
@@ -24,27 +22,16 @@ import { useTransactions } from '../hooks/useTransactions';
 interface LedgerProps {
   account: Account;
   onBack: () => void;
-  onUpdate: (accountId?: number, amount?: number) => void;
-  lastUpdate?: number;
+  onWriteOperation: (op: WriteOperation) => void;
   currency: string;
 }
 
-export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency }: LedgerProps) {
+export default function Ledger({ account, onBack, onWriteOperation, currency }: LedgerProps) {
   const { toast } = useToast();
-  const { transactions, loading, isSyncing, addOrUpdateTransaction, deleteTransaction } = useTransactions(account, lastUpdate);
-  const [isAdding, setIsAdding] = useState(false);
-  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
-  const [newTx, setNewTx] = useState({
-    date: format(new Date(), 'yyyy-MM-dd'),
-    particulars: '',
-    amount: '',
-    isCredit: false,
-    category: ''
-  });
+  const { transactions, loading, addOrUpdateTransaction, deleteTransaction } = useTransactions(account);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [allCategories, setAllCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [dateView, setDateView] = useState<'all' | 'month' | 'date' | 'range'>('all');
   const [selectedMonth, setSelectedMonth] = useState(() => format(new Date(), 'yyyy-MM'));
@@ -52,32 +39,9 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
   const [dateRangeStart, setDateRangeStart] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [dateRangeEnd, setDateRangeEnd] = useState(() => format(new Date(), 'yyyy-MM-dd'));
 
-  useEffect(() => {
-    authService.apiFetch('/api/transactions/categories')
-      .then(res => res.ok ? res.json() : [])
-      .then(data => { if (Array.isArray(data)) setAllCategories(data); })
-      .catch(() => {});
-  }, []);
-
-  const handleAddOrUpdateTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await addOrUpdateTransaction(editingTx, newTx, allCategories);
-    if (result?.success) {
-      const newAmount = parseFloat(newTx.amount) * (newTx.isCredit ? 1 : -1);
-      const oldAmount = editingTx?.amount || 0;
-      const delta = editingTx ? newAmount - oldAmount : newAmount;
-      if (delta !== 0) onUpdate(account.id, delta);
-      setIsAdding(false);
-      setEditingTx(null);
-      setNewTx({ date: format(new Date(), 'yyyy-MM-dd'), particulars: '', amount: '', isCredit: false, category: '' });
-    }
-  };
-
   const handleDelete = async (id: number) => {
     setDeletingId(null);
-    const tx = transactions.find(t => t.id === id);
     await deleteTransaction(id);
-    if (tx) onUpdate(account.id, -tx.amount);
   };
 
   const txsWithBalance = [...transactions]
@@ -89,9 +53,11 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     }, [] as (Transaction & { runningBalance: number })[])
     .reverse();
 
-  const currentBalance = txsWithBalance.length > 0
-    ? txsWithBalance[0].runningBalance
-    : Number(account.initial_balance);
+  const currentBalance = account.current_balance != null
+    ? Number(account.current_balance)
+    : (txsWithBalance.length > 0
+        ? txsWithBalance[0].runningBalance
+        : Number(account.initial_balance));
 
   const categoryCounts = transactions.reduce<Record<string, number>>((acc, tx) => {
     const cat = tx.category || 'Uncategorized';
@@ -125,7 +91,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     availableCategories, categoryCounts,
     dateFilteredCount: dateFilteredTxs.length,
     showFilters, setShowFilters,
-    onAdd: () => setIsAdding(true),
+    onAdd: () => onWriteOperation({ type: 'transaction', prefillAccountId: account.id }),
   };
 
   return (
@@ -148,7 +114,6 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
             </div>
             <div className="text-right shrink-0">
               <div className="flex items-center gap-1 md:gap-2 justify-end mb-0.5 md:mb-1">
-                {isSyncing && <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 animate-spin text-primary" />}
                 <p className="hidden md:block text-[10px] md:text-xs font-bold text-muted uppercase tracking-[0.2em]">Balance</p>
               </div>
               <p className="text-xl md:text-3xl font-normal tracking-tighter">
@@ -167,7 +132,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
               <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
               Filters
             </button>
-            <button onClick={() => setIsAdding(true)} className="btn-primary text-[10px] px-3 py-1.5">
+            <button onClick={() => onWriteOperation({ type: 'transaction', prefillAccountId: account.id })} className="btn-primary text-[10px] px-3 py-1.5">
               <Plus className="w-3.5 h-3.5" />
               New
             </button>
@@ -177,22 +142,6 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
         <LedgerDesktopToolbar {...toolbarProps} />
 
         <LedgerToolbar {...toolbarProps} />
-
-        <AnimatePresence>
-          {isAdding && !editingTx && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-              style={{ willChange: 'transform, opacity' }}
-            >
-              <div className="p-4 md:p-5 bg-surface-soft/50 border-b border-hairline">
-                <TransactionForm onSubmit={handleAddOrUpdateTransaction} newTx={newTx} setNewTx={setNewTx} onCancel={() => { setIsAdding(false); setEditingTx(null); }} availableCategories={allCategories} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse app-stagger-grid">
@@ -212,11 +161,8 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
                   <TransactionRow 
                     key={tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
                     isExpanded={expandedId === tx.id} onToggleExpand={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
-                    currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete} onEdit={(t) => { setEditingTx(t); setNewTx({ date: t.date, particulars: t.particulars, amount: Math.abs(t.amount).toString(), isCredit: t.amount > 0, category: t.category || '' }); setIsAdding(true); }}
-                    editingTxId={editingTx?.id ?? null}
-                    renderEditForm={editingTx ? () => (
-                      <TransactionForm onSubmit={handleAddOrUpdateTransaction} newTx={newTx} setNewTx={setNewTx} onCancel={() => { setIsAdding(false); setEditingTx(null); }} availableCategories={allCategories} />
-                    ) : undefined}
+                    currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete}
+                    onEdit={(t) => onWriteOperation({ type: 'transaction', prefillAccountId: account.id, editTx: t })}
                   />
                 ))}
               </AnimatePresence>
@@ -230,11 +176,8 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
               <TransactionCard 
                 key={tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
                 isExpanded={expandedId === tx.id} onToggleExpand={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
-                currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete} onEdit={(t) => { setEditingTx(t); setNewTx({ date: t.date, particulars: t.particulars, amount: Math.abs(t.amount).toString(), isCredit: t.amount > 0, category: t.category || '' }); setIsAdding(true); }}
-                editingTxId={editingTx?.id ?? null}
-                renderEditForm={editingTx ? () => (
-                  <TransactionForm onSubmit={handleAddOrUpdateTransaction} newTx={newTx} setNewTx={setNewTx} onCancel={() => { setIsAdding(false); setEditingTx(null); }} availableCategories={allCategories} />
-                ) : undefined}
+                currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete}
+                onEdit={(t) => onWriteOperation({ type: 'transaction', prefillAccountId: account.id, editTx: t })}
               />
             ))}
           </AnimatePresence>
@@ -257,7 +200,7 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
             <p className="text-xs md:text-sm text-muted mb-4 md:mb-8">
               {categoryFilter ? 'Try a different category filter.' : dateView !== 'all' ? 'Try a different date range.' : 'Post your first ledger entry.'}
             </p>
-            <button onClick={() => setIsAdding(true)} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3 mx-auto">Add Transaction</button>
+            <button onClick={() => onWriteOperation({ type: 'transaction', prefillAccountId: account.id })} className="btn-secondary text-xs md:text-sm px-5 md:px-8 py-2 md:py-3 mx-auto">Add Transaction</button>
           </div>
         )}
       </div>

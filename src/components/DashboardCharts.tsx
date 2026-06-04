@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { TrendingUp, PieChart as PieChartIcon } from 'lucide-react';
-import { authService } from '../services/authService';
-import { Transaction, Account } from '../types';
+import { localDb } from '../services/localDb';
+import { Account } from '../types';
 
 interface DashboardChartsProps {
   accounts: Account[];
@@ -21,30 +21,35 @@ export default function DashboardCharts({ accounts, currency, showSpendingChart 
   const [trendData, setTrendData] = useState<{ date: string; balance: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!showSpendingChart && !showBalanceTrend) { setLoading(false); return; }
-    loadChartData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSpendingChart, showBalanceTrend]);
-
-  const loadChartData = async () => {
+  const loadChartData = useCallback(async () => {
     setLoading(true);
     try {
       const activeAccounts = accounts.filter(a => !a.archived && a.id);
       if (activeAccounts.length === 0) { setLoading(false); return; }
 
-      const allTransactions: Transaction[] = [];
-      for (const a of activeAccounts) {
-        const r = await authService.apiFetch(`/api/transactions/${a.id}`);
-        if (r.ok) {
-          const data = await r.json();
-          if (Array.isArray(data)) allTransactions.push(...data);
-        }
+      const localAccounts = await localDb.getAccounts();
+      const localIdByServerId = new Map<number, string>();
+      for (const la of localAccounts) {
+        if (la.server_id != null) localIdByServerId.set(la.server_id, la.id);
       }
+      const activeLocalIds = new Set<string>();
+      for (const a of activeAccounts) {
+        const lid = localIdByServerId.get(a.id);
+        if (lid) activeLocalIds.add(lid);
+      }
+
+      const allLocal = await localDb.getTransactions();
+      const transactions = allLocal
+        .filter(t => activeLocalIds.has(t.account_id))
+        .map(t => ({
+          date: t.date,
+          amount: t.amount,
+          category: t.category,
+        }));
 
       if (showSpendingChart) {
         const spending: Record<string, number> = {};
-        allTransactions
+        transactions
           .filter(t => t.amount < 0)
           .forEach(t => {
             const cat = t.category || 'Other';
@@ -59,7 +64,7 @@ export default function DashboardCharts({ accounts, currency, showSpendingChart 
 
       if (showBalanceTrend) {
         const dateBalances: Record<string, number> = {};
-        const sorted = [...allTransactions].sort((a, b) => a.date.localeCompare(b.date));
+        const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
         let running = activeAccounts.reduce((s, a) => s + (a.initial_balance || 0), 0);
         sorted.forEach(t => {
           running += t.amount;
@@ -70,9 +75,23 @@ export default function DashboardCharts({ accounts, currency, showSpendingChart 
           .slice(-30);
         setTrendData(trend);
       }
-    } catch { /* silent */ }
+    } catch (e) {
+      console.error('DashboardCharts load failed:', e);
+    }
     setLoading(false);
-  };
+  }, [accounts, showSpendingChart, showBalanceTrend]);
+
+  useEffect(() => {
+    if (!showSpendingChart && !showBalanceTrend) { setLoading(false); return; }
+    loadChartData();
+  }, [loadChartData, showSpendingChart, showBalanceTrend]);
+
+  useEffect(() => {
+    const unsub = localDb.onChange('transactions', () => {
+      loadChartData();
+    });
+    return unsub;
+  }, [loadChartData]);
 
   const bothDisabled = !showSpendingChart && !showBalanceTrend;
   const noData = !loading && categoryData.length === 0 && trendData.length === 0;

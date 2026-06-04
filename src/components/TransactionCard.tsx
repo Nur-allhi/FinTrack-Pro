@@ -16,8 +16,6 @@ interface TransactionCardProps {
   setDeletingId: (id: number | null) => void;
   onDelete: (id: number) => void;
   onEdit: (tx: Transaction) => void;
-  editingTxId: number | null;
-  renderEditForm?: () => React.ReactNode;
 }
 
 export default React.memo(function TransactionCard({
@@ -29,9 +27,7 @@ export default React.memo(function TransactionCard({
   deletingId,
   setDeletingId,
   onDelete,
-  onEdit,
-  editingTxId,
-  renderEditForm
+  onEdit
 }: TransactionCardProps) {
   const isDebit = tx.amount < 0;
 
@@ -111,19 +107,6 @@ export default React.memo(function TransactionCard({
           </AnimatePresence>
         </div>
       </motion.div>
-      <AnimatePresence>
-        {editingTxId === tx.id && renderEditForm && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ type: 'tween', duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            style={{ willChange: 'transform, opacity' }}
-          >
-            {renderEditForm()}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 });

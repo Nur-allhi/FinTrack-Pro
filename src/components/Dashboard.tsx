@@ -22,8 +22,7 @@ interface DashboardProps {
   filterMemberId: number | 'all' | 'general';
   setFilterMemberId: (id: number | 'all' | 'general') => void;
   onSelectAccount: (id: number) => void;
-  onOpenTransfer: () => void;
-  onOpenTransaction: () => void;
+  onWriteOperation: (op: { type: 'transaction' | 'transfer' | 'loan_create' | 'investment_create' }) => void;
   onGenerateReport: () => void;
   settings: {
     showNetWorth: boolean;
@@ -42,7 +41,7 @@ interface DashboardProps {
 
 export default function Dashboard({ 
   accounts, members, filterMemberId, setFilterMemberId, onSelectAccount, 
-  onOpenTransfer, onOpenTransaction, onGenerateReport, settings, userName, dataLoading
+  onWriteOperation, onGenerateReport, settings, userName, dataLoading
 }: DashboardProps & { userName?: string }) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<'all' | 'bank' | 'cash' | 'mobile' | 'investment' | 'other'>('all');
@@ -126,11 +125,11 @@ export default function Dashboard({
             />
           </div>
           <div className="hidden md:flex items-center justify-center gap-2 flex-1 flex-wrap">
-            <button onClick={onOpenTransaction} className="btn-primary px-5 py-2.5 text-xs md:text-sm">
+            <button onClick={() => onWriteOperation({ type: 'transaction' })} className="btn-primary px-5 py-2.5 text-xs md:text-sm">
               <Plus className="w-4 h-4" />
               New Transaction
             </button>
-            <button onClick={onOpenTransfer} className="btn-pill bg-canvas text-ink border border-hairline px-5 py-2.5 text-xs md:text-sm hover:bg-surface-soft transition-colors">
+            <button onClick={() => onWriteOperation({ type: 'transfer' })} className="btn-pill bg-canvas text-ink border border-hairline px-5 py-2.5 text-xs md:text-sm hover:bg-surface-soft transition-colors">
               <ArrowLeftRight className="w-4 h-4" />
               Inter-Account Transfer
             </button>
