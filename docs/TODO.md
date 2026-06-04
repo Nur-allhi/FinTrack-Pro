@@ -332,6 +332,23 @@
 
 ---
 
+---
+
+## Phase 16 — Sync Improvements (Immediate Push + Progress Bar + Reconcile)
+
+> **Plan**: `📄 plans/SYNC_IMPROVEMENTS.md`
+> **Branch**: `feat/unified-write-modal`
+> **Status**: all completed ✅
+
+- [x] **T-186** Fix `syncState` to emit `'syncing'` state — `setSyncing()` now calls `syncState.setState({ state })`, plugging the gap where `syncNow()` never updated the UI observable (30m) — `📄 plans/SYNC_IMPROVEMENTS.md:§Part 1`
+- [x] **T-187** Add real progress tracking to `pushUnsynced()` and `pullChanges()` — emit `progress: { current, total }` via `syncState.setState` per table processed (1h) — `📄 plans/SYNC_IMPROVEMENTS.md:§Part 1`
+- [x] **T-188** Add `flushPending()` to `syncEngine.ts` — push-only sync (no pull), fire-and-forget (30m) — `📄 plans/SYNC_IMPROVEMENTS.md:§Part 2`
+- [x] **T-189** Wire `flushPending()` after every CRUD — `WriteModal.tsx` handleSubmit, `useTransactions.ts` add/delete, `LoanManager.tsx` delete (1h) — `📄 plans/SYNC_IMPROVEMENTS.md:§Part 2`
+- [x] **T-190** Update `OfflineIndicator.tsx` — replace fake `60%` with real progress from props, animate smoothly (30m) — `📄 plans/SYNC_IMPROVEMENTS.md:§Part 3`
+- [x] **T-191** Add 5-minute reconcile interval to `startSyncScheduler()` (15m) — `📄 plans/SYNC_IMPROVEMENTS.md:§Part 4`
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
