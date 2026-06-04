@@ -30,7 +30,7 @@ async function getSupabase(): Promise<SupabaseClient | null> {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
       _supabase.auth.onAuthStateChange((event) => {
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' && !_signedOut) {
           _onSessionExpired?.();
         }
       });
@@ -165,7 +165,9 @@ export const authService = {
       if (newToken) {
         return fetch(url, { ...options, headers });
       }
-      _onSessionExpired?.();
+      if (!_signedOut) {
+        _onSessionExpired?.();
+      }
     }
     return res;
   }

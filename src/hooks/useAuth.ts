@@ -27,7 +27,7 @@ export function useAuth() {
 
       initPendingCount();
       try {
-        const res = await authService.apiFetch('/api/auth/me');
+        const res = await fetch('/api/auth/me');
         if (res.ok) {
           setGuestMode(false);
           const d = await res.json();
@@ -58,14 +58,26 @@ export function useAuth() {
     sessionStorage.removeItem('guest_mode');
     setGuestMode(false);
     await authService.setSession(token);
-    const res = await authService.apiFetch('/api/auth/me');
-    if (res.ok) {
-      const d = await res.json();
-      if (d.user?.email) setUserEmail(d.user.email);
+
+    // Verify session was properly set before showing authenticated state
+    let sessionOk = false;
+    try {
+      const meRes = await fetch('/api/auth/me');
+      if (meRes.ok) {
+        const d = await meRes.json();
+        if (d.user?.email) setUserEmail(d.user.email);
+        sessionOk = true;
+      }
+    } catch {}
+
+    if (sessionOk) {
+      setAuthStatus('authenticated');
+      toast("Login successful.", 'success');
+    } else {
+      setAuthStatus('guest');
+      toast("Login failed. Please try again.", 'error');
     }
-    setAuthStatus('authenticated');
-    toast("Login successful.", 'success');
-  }, []);
+  }, [toast]);
 
   const handleContinueAsGuest = useCallback(() => {
     sessionStorage.setItem('guest_mode', 'true');
@@ -78,16 +90,12 @@ export function useAuth() {
     await localDb.setMeta('sync_timestamp', null);
     await authService.signOut();
 
-    // Clear all cached Supabase credentials from localStorage
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
+    // Clear all client-side storage to prevent stale auth data
+    localStorage.clear();
+    sessionStorage.clear();
 
-    // Full page reload to reset all React state, module-level variables
-    // (_signedOut, _guestMode, _supabase, etc.) and ensure clean init
-    window.location.reload();
+    setAuthStatus('guest');
+    setUserEmail('');
   }, []);
 
   return {
