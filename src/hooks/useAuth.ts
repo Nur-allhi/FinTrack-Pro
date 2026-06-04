@@ -76,22 +76,18 @@ export function useAuth() {
   const handleLogout = useCallback(async () => {
     await localDb.clearAll();
     await localDb.setMeta('sync_timestamp', null);
+    await authService.signOut();
 
-    // Clear cached credentials BEFORE setAuthStatus to prevent
-    // Login component's refreshToken() from finding stale tokens
+    // Clear all cached Supabase credentials from localStorage
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
         localStorage.removeItem(key);
       }
     });
 
-    await authService.signOut();
-    setGuestMode(true);
-    setAuthStatus('guest');
-    setUserEmail('');
-    sessionStorage.removeItem('guest_mode');
-    sessionStorage.removeItem('activeTab');
-    sessionStorage.removeItem('selectedAccountId');
+    // Full page reload to reset all React state, module-level variables
+    // (_signedOut, _guestMode, _supabase, etc.) and ensure clean init
+    window.location.reload();
   }, []);
 
   return {

@@ -4,6 +4,7 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-04: Fix logout not fully resetting state — was doing soft transition to login page leaving module-level variables stale; now does window.location.reload() after clearing IndexedDB, localStorage, and server session (completed).
 2026-06-04: Fix auto re-login after logout — localStorage cleanup ran after setAuthStatus('guest'), letting Login component's refreshToken() find stale Supabase tokens and auto-login as old account before manual login could happen (completed).
 2026-06-04: Fix stale old data showing after account switch — initial load effect re-ran on every auth change, racing with the login transition effect and setting stale IndexedDB state; now only runs on first auth (completed).
 2026-06-04: Fix member/data duplication after fresh login — pullChanges() matched by client_id (always undefined) instead of server_id, creating duplicate IndexedDB entries; fetchData() now purges orphaned server_id records (completed).
