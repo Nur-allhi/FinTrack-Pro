@@ -73,6 +73,32 @@ export function useTransactions(account: Account, lastUpdate?: number) {
         }
       }
 
+      try {
+        const localTxns = await localDb.getUnsyncedTransactions();
+        if (expectedIdRef.current !== snapshotId) return;
+        for (const lt of localTxns) {
+          if (Number(lt.account_id) !== snapshotId) continue;
+          const alreadyInData = data.some(t =>
+            t.date === lt.date && t.particulars === lt.particulars && Math.abs(t.amount - lt.amount) < 0.01
+          );
+          if (!alreadyInData) {
+            data.unshift({
+              id: Date.now() + Math.random(),
+              account_id: snapshotId,
+              date: lt.date || '',
+              particulars: lt.particulars || '',
+              category: lt.category || 'Uncategorized',
+              amount: lt.amount || 0,
+              type: lt.type || 'normal',
+              summary: lt.summary || null,
+              linked_transaction_id: null,
+            } as Transaction);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to read localDb pending transactions:', e);
+      }
+
       setTransactions(data);
       setLoading(false);
       setIsSyncing(false);
@@ -92,12 +118,40 @@ export function useTransactions(account: Account, lastUpdate?: number) {
       const cached = await cacheService.getTransactions(currentId.toString());
       if (expectedIdRef.current !== currentId) return;
 
+      let displayData: Transaction[] = cached || [];
+
+      try {
+        const localTxns = await localDb.getUnsyncedTransactions();
+        if (expectedIdRef.current !== currentId) return;
+        for (const lt of localTxns) {
+          if (Number(lt.account_id) !== currentId) continue;
+          const alreadyExists = displayData.some(t =>
+            t.date === lt.date && t.particulars === lt.particulars && Math.abs(t.amount - lt.amount) < 0.01
+          );
+          if (!alreadyExists) {
+            displayData.unshift({
+              id: Date.now() + Math.random(),
+              account_id: currentId,
+              date: lt.date || '',
+              particulars: lt.particulars || '',
+              category: lt.category || 'Uncategorized',
+              amount: lt.amount || 0,
+              type: lt.type || 'normal',
+              summary: lt.summary || null,
+              linked_transaction_id: null,
+            } as Transaction);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to read localDb pending transactions:', e);
+      }
+
       if (cached) {
-        setTransactions(cached);
+        setTransactions(displayData);
         setLoading(false);
         fetchTransactions(false);
       } else {
-        setTransactions([]);
+        setTransactions(displayData);
         setLoading(true);
         fetchTransactions(true);
       }

@@ -206,7 +206,7 @@ export default function App() {
     if (selectedAccountId) {
       const account = accounts.find(a => a.id === selectedAccountId);
       if (!account) return <div className="p-8 text-center text-muted">Account not found</div>;
-      return <Ledger account={account} onBack={() => setSelectedAccountId(null)} onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
+      return <Ledger account={account} onBack={() => setSelectedAccountId(null)} onUpdate={(id, amount) => { if (id != null && amount != null) applyAccountDelta(id, amount); fetchData(); }} lastUpdate={lastUpdate} currency={settings.currency} />;
     }
 
     switch (activeTab) {

@@ -24,7 +24,7 @@ import { useTransactions } from '../hooks/useTransactions';
 interface LedgerProps {
   account: Account;
   onBack: () => void;
-  onUpdate: () => void;
+  onUpdate: (accountId?: number, amount?: number) => void;
   lastUpdate?: number;
   currency: string;
 }
@@ -63,6 +63,10 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
     e.preventDefault();
     const result = await addOrUpdateTransaction(editingTx, newTx, allCategories);
     if (result?.success) {
+      const newAmount = parseFloat(newTx.amount) * (newTx.isCredit ? 1 : -1);
+      const oldAmount = editingTx?.amount || 0;
+      const delta = editingTx ? newAmount - oldAmount : newAmount;
+      if (delta !== 0) onUpdate(account.id, delta);
       setIsAdding(false);
       setEditingTx(null);
       setNewTx({ date: format(new Date(), 'yyyy-MM-dd'), particulars: '', amount: '', isCredit: false, category: '' });
@@ -71,7 +75,9 @@ export default function Ledger({ account, onBack, onUpdate, lastUpdate, currency
 
   const handleDelete = async (id: number) => {
     setDeletingId(null);
+    const tx = transactions.find(t => t.id === id);
     await deleteTransaction(id);
+    if (tx) onUpdate(account.id, -tx.amount);
   };
 
   const txsWithBalance = [...transactions]
