@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trash2, RotateCcw, AlertTriangle, Wallet, Handshake, Receipt, Clock, type LucideIcon } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle, Wallet, Handshake, Receipt, User, Layers, Clock, type LucideIcon } from 'lucide-react';
 import { useToast } from './Toast';
 import { localDb } from '../services/localDb';
 import { motion, AnimatePresence } from 'motion/react';
@@ -17,6 +17,8 @@ const typeConfig: Record<string, { icon: LucideIcon; color: string }> = {
   transactions: { icon: Receipt, color: 'text-amber-500' },
   accounts: { icon: Wallet, color: 'text-emerald-500' },
   loans: { icon: Handshake, color: 'text-violet-500' },
+  members: { icon: User, color: 'text-blue-500' },
+  groups: { icon: Layers, color: 'text-rose-500' },
 };
 
 function timeAgo(dateStr: string): string {
@@ -122,7 +124,7 @@ export default function RecycleBin() {
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {['all', 'transactions', 'accounts', 'loans'].map((t) => (
+        {['all', 'transactions', 'accounts', 'loans', 'members', 'groups'].map((t) => (
           <button
             key={t}
             onClick={() => setFilter(t)}

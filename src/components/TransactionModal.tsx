@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Account } from '../types';
-import { X, CheckCircle2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { motion } from 'motion/react';
 import DatePicker from './DatePicker';
 import { format } from 'date-fns';
@@ -14,7 +14,7 @@ import Select from './Select';
 interface TransactionModalProps {
   accounts: Account[];
   onClose: () => void;
-  onUpdate: () => void;
+  onUpdate: (accountId?: number, amount?: number) => void;
   onTransactionSaved?: () => void;
   initialAccountId?: number;
   currency: string;
@@ -22,7 +22,6 @@ interface TransactionModalProps {
 
 export default function TransactionModal({ accounts, onClose, onUpdate, onTransactionSaved, initialAccountId, currency }: TransactionModalProps) {
   const { toast } = useToast();
-  const [success, setSuccess] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -90,11 +89,19 @@ export default function TransactionModal({ accounts, onClose, onUpdate, onTransa
       };
 
       await localDb.putTransaction(record);
-      setSuccess(true);
+
       toast("Transaction saved.", 'success');
-      onUpdate();
+      onUpdate(Number(accountId), amount);
       onTransactionSaved?.();
-      setTimeout(handleClose, 1200);
+      handleClose();
+
+      localDb.getAccounts().then(allAccounts => {
+        const targetAccount = allAccounts.find(a => a.server_id === Number(accountId));
+        if (targetAccount) {
+          targetAccount.current_balance = (targetAccount.current_balance || 0) + amount;
+          return localDb.putAccount(targetAccount);
+        }
+      }).catch(err => console.error("Failed to persist balance:", err));
     } catch (error) {
       console.error("Save failed:", error);
       toast("Failed to save transaction.", 'error');
@@ -114,113 +121,101 @@ export default function TransactionModal({ accounts, onClose, onUpdate, onTransa
         </div>
 
         <div className="p-4 sm:p-6 md:p-10 lg:p-12">
-          {success ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-20 h-20 bg-semantic-up/10 rounded-full flex items-center justify-center text-semantic-up shadow-lg shadow-semantic-up/10">
-                <CheckCircle2 className="w-12 h-12" />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Target Account</label>
+                <Select
+                  value={tx.account_id}
+                  onChange={v => setTx({...tx, account_id: v})}
+                  placeholder="Select Account"
+                  options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} · ${a.member_name} (${currency}${a.current_balance.toLocaleString()})` : `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
+                />
               </div>
-              <div>
-                <h4 className="text-2xl font-normal text-ink mb-2">Post Successful</h4>
-                <p className="text-sm text-muted font-medium">The institutional ledger has been updated.</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
+                  <DatePicker
+                    value={tx.date}
+                    onChange={v => setTx({...tx, date: v})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Audit Type</label>
+                  <DebitCreditToggle isCredit={tx.isCredit} onChange={v => setTx({...tx, isCredit: v})} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Settlement Amount ({currency})</label>
+                <input 
+                  type="text"
+                  inputMode="decimal"
+                  required
+                  value={tx.amount}
+                  onChange={e => setTx({...tx, amount: e.target.value})}
+                  placeholder="0.00"
+                  className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm financial-number"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Category</label>
+                <div className="flex flex-col gap-2">
+                  <Select
+                    value={isCustomCategory ? '__new__' : (categories.includes(tx.category) ? tx.category : '')}
+                    onChange={(v) => {
+                      if (v === '__new__') { setIsCustomCategory(true); setTx({...tx, category: ''}); }
+                      else { setIsCustomCategory(false); setTx({...tx, category: v}); }
+                    }}
+                    placeholder={tx.category && !categories.includes(tx.category) ? tx.category : 'Select category'}
+                    options={[
+                      ...categories.map(c => ({ value: c, label: c })),
+                      { value: '__new__', label: 'New category...' }
+                    ]}
+                  />
+                  {isCustomCategory && (
+                    <input
+                      type="text"
+                      placeholder="Type new category name"
+                      value={tx.category}
+                      onChange={e => setTx({...tx, category: e.target.value})}
+                      className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Transaction Description</label>
+                <input 
+                  type="text" 
+                  required
+                  value={tx.particulars}
+                  onChange={e => setTx({...tx, particulars: e.target.value})}
+                  placeholder="Institutional memo"
+                  className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
+                />
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Target Account</label>
-                  <Select
-                    value={tx.account_id}
-                    onChange={v => setTx({...tx, account_id: v})}
-                    placeholder="Select Account"
-                    options={accounts.filter(a => !a.archived).map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} · ${a.member_name} (${currency}${a.current_balance.toLocaleString()})` : `${a.name} (${currency}${a.current_balance.toLocaleString()})` }))}
-                  />
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Value Date</label>
-                    <DatePicker
-                      value={tx.date}
-                      onChange={v => setTx({...tx, date: v})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Audit Type</label>
-                    <DebitCreditToggle isCredit={tx.isCredit} onChange={v => setTx({...tx, isCredit: v})} />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Settlement Amount ({currency})</label>
-                  <input 
-                    type="text"
-                    inputMode="decimal"
-                    required
-                    value={tx.amount}
-                    onChange={e => setTx({...tx, amount: e.target.value})}
-                    placeholder="0.00"
-                    className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm financial-number"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Category</label>
-                  <div className="flex flex-col gap-2">
-                    <Select
-                      value={isCustomCategory ? '__new__' : (categories.includes(tx.category) ? tx.category : '')}
-                      onChange={(v) => {
-                        if (v === '__new__') { setIsCustomCategory(true); setTx({...tx, category: ''}); }
-                        else { setIsCustomCategory(false); setTx({...tx, category: v}); }
-                      }}
-                      placeholder={tx.category && !categories.includes(tx.category) ? tx.category : 'Select category'}
-                      options={[
-                        ...categories.map(c => ({ value: c, label: c })),
-                        { value: '__new__', label: 'New category...' }
-                      ]}
-                    />
-                    {isCustomCategory && (
-                      <input
-                        type="text"
-                        placeholder="Type new category name"
-                        value={tx.category}
-                        onChange={e => setTx({...tx, category: e.target.value})}
-                        className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted uppercase tracking-[0.2em] ml-1">Transaction Description</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={tx.particulars}
-                    onChange={e => setTx({...tx, particulars: e.target.value})}
-                    placeholder="Institutional memo"
-                    className="w-full px-4 py-3 bg-canvas border border-hairline text-ink rounded-md focus:border-primary transition-all outline-none text-sm font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button" 
-                  onClick={handleClose}
-                  className="btn-secondary flex-1 h-11"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="btn-primary flex-[2] h-11 text-sm"
-                >
-                  Post Entry
-                </button>
-              </div>
-            </form>
-          )}
+            <div className="flex gap-3 pt-4">
+              <button 
+                type="button" 
+                onClick={handleClose}
+                className="btn-secondary flex-1 h-11"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="btn-primary flex-[2] h-11 text-sm"
+              >
+                Post Entry
+              </button>
+            </div>
+          </form>
         </div>
       </motion.div>
     </motion.div>,

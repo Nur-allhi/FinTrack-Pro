@@ -3,6 +3,7 @@ import { Account, Transaction } from '../types';
 import { cacheService } from '../services/cacheService';
 import { authService } from '../services/authService';
 import { offlineService } from '../services/offlineService';
+import { localDb } from '../services/localDb';
 import { useToast } from '../components/Toast';
 import { format } from 'date-fns';
 
@@ -202,8 +203,21 @@ export function useTransactions(account: Account, lastUpdate?: number) {
 
     const queueDelete = () => offlineService.queueAction({ type: 'delete', endpoint: `/api/transactions/${id}`, body: { account_id: account.id, amount: tx?.amount || 0 } });
 
+    const softDeleteLocal = async () => {
+      try {
+        const allTxns = await localDb.getTransactions();
+        const localTxn = allTxns.find(t => t.server_id === id);
+        if (localTxn) {
+          await localDb.putTransaction({ ...localTxn, _deleted: true, sync_status: 'synced', updated_at: new Date().toISOString() });
+        }
+      } catch (e) {
+        console.error('Failed to soft-delete local transaction:', e);
+      }
+    };
+
     if (!navigator.onLine) {
       await queueDelete();
+      await softDeleteLocal();
       const cached = await cacheService.getTransactions(account.id.toString());
       if (cached) {
         await cacheService.setTransactions(account.id.toString(), cached.filter((t: Transaction) => t.id !== id));
@@ -215,11 +229,13 @@ export function useTransactions(account: Account, lastUpdate?: number) {
     try {
       const res = await authService.apiFetch(`/api/transactions/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Delete failed");
+      await softDeleteLocal();
       fetchTransactions(false);
     } catch (error) {
       console.error(error);
       if (error instanceof TypeError) {
         await queueDelete();
+        await softDeleteLocal();
         const cached = await cacheService.getTransactions(account.id.toString());
         if (cached) {
           await cacheService.setTransactions(account.id.toString(), cached.filter((t: Transaction) => t.id !== id));

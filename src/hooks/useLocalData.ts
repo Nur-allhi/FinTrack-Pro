@@ -44,6 +44,14 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     setAccounts(localAccounts);
   }, []);
 
+  const applyAccountDelta = useCallback((accountServerId: number, amount: number) => {
+    setAccounts(prev => prev.map(a =>
+      a.server_id === accountServerId
+        ? { ...a, current_balance: (a.current_balance || 0) + amount }
+        : a
+    ));
+  }, []);
+
   const fetchData = useCallback(async (showToast = false) => {
     if (!authRef.current) {
       if (showToast) toast("Sign in to sync data.", 'error');
@@ -150,6 +158,23 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         // Filter out groups — they belong in the groups store
         const nonGroupRecords = toUpsert.filter(r => r.type !== 'group');
         await localDb.putAccounts(nonGroupRecords);
+        // Re-apply pending local transaction adjustments to account balances
+        const pendingTxns = await localDb.getUnsyncedTransactions();
+        const pendingAdjustment = new Map<string | number, number>();
+        for (const t of pendingTxns) {
+          const key = t.account_id;
+          pendingAdjustment.set(key, (pendingAdjustment.get(key) || 0) + (t.amount || 0));
+        }
+        if (pendingAdjustment.size > 0) {
+          const adjustedAccounts = await localDb.getAccounts();
+          for (const acc of adjustedAccounts) {
+            const adj = pendingAdjustment.get(String(acc.server_id));
+            if (adj) {
+              acc.current_balance = (acc.current_balance || 0) + adj;
+            }
+          }
+          await localDb.putAccounts(adjustedAccounts);
+        }
         // Purge records not in server response (deleted server-side, or sync engine duplicates)
         const serverAccountIds = new Set(data.map((a: { id: number }) => a.id));
         const allLocalAccounts = await localDb.getAccounts();
@@ -316,5 +341,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     dataLoading,
     lastUpdate,
     fetchData,
+    reloadFromLocal: loadFromLocal,
+    applyAccountDelta,
   };
 }

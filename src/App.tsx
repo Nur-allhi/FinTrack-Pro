@@ -86,7 +86,7 @@ export default function App() {
   const [settings, setSettings] = useState(defaultSettings);
   const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
 
-  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData } = useLocalData(isAuthenticated);
+  const { isOnline, lastSync, pendingCount, isSyncing, members, accounts, dataLoading, lastUpdate, fetchData, reloadFromLocal, applyAccountDelta } = useLocalData(isAuthenticated);
   const { visible: navVisible, scrollRef } = useScrollDirection();
   useThemeEffects(settings);
 
@@ -287,7 +287,7 @@ export default function App() {
         <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} />
         <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto">
           <AnimatePresence mode="wait">
-            <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }} className="contain-layout-style" style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 300px', willChange: 'transform, opacity' }}>
+            <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}>
               <Suspense fallback={<LoadingScreen />}>{renderContent()}</Suspense>
             </motion.div>
           </AnimatePresence>
@@ -302,7 +302,7 @@ export default function App() {
         )}
         {isTransactionModalOpen && (
           <Suspense fallback={null}>
-            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={fetchData} onTransactionSaved={checkSignupNudge} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
+            <TransactionModal accounts={accounts} onClose={() => setIsTransactionModalOpen(false)} onUpdate={(id, amount) => { if (id != null && amount != null) applyAccountDelta(id, amount); }} onTransactionSaved={checkSignupNudge} initialAccountId={selectedAccountId || undefined} currency={settings.currency} />
           </Suspense>
         )}
       </ErrorBoundary>

@@ -183,7 +183,7 @@ function now(): string {
   return new Date().toISOString();
 }
 
-export type EntityName = 'members' | 'accounts' | 'transactions' | 'loans'
+export type EntityName = 'members' | 'accounts' | 'transactions' | 'loans' | 'groups'
   | 'loan_settlements' | 'investments' | 'investment_returns'
   | 'groups' | 'budgets' | 'recurring_transactions';
 
@@ -345,6 +345,8 @@ export const localDb = {
         { name: 'transactions' as EntityName, label: 'Transaction' },
         { name: 'accounts' as EntityName, label: 'Account' },
         { name: 'loans' as EntityName, label: 'Loan' },
+        { name: 'members' as EntityName, label: 'Member' },
+        { name: 'groups' as EntityName, label: 'Group' },
       ];
       for (const { name, label } of stores) {
         const all = await db.getAll(name);
@@ -387,7 +389,7 @@ export const localDb = {
     await withDB(async (db) => {
       const stores: EntityName[] = entityType
         ? [entityType as EntityName]
-        : ['transactions', 'accounts', 'loans'];
+        : ['transactions', 'accounts', 'loans', 'members', 'groups'];
       for (const s of stores) {
         const all = await db.getAll(s);
         for (const r of all) {
