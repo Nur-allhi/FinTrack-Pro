@@ -17,12 +17,6 @@ export function useAuth() {
 
   useEffect(() => {
     const init = async () => {
-      if (sessionStorage.getItem('pending_logout') === 'true') {
-        sessionStorage.clear();
-        setAuthStatus('guest');
-        return;
-      }
-
       if (sessionStorage.getItem('guest_mode') === 'true') {
         initPendingCount();
         setGuestMode(true);
@@ -80,7 +74,7 @@ export function useAuth() {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    sessionStorage.setItem('pending_logout', 'true');
+    await localDb.clearAll();
     await authService.signOut();
     setGuestMode(true);
     setAuthStatus('guest');
@@ -90,7 +84,9 @@ export function useAuth() {
         localStorage.removeItem(key);
       }
     });
-    sessionStorage.clear();
+    sessionStorage.removeItem('guest_mode');
+    sessionStorage.removeItem('activeTab');
+    sessionStorage.removeItem('selectedAccountId');
   }, []);
 
   return {

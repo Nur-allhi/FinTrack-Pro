@@ -22,8 +22,9 @@ export default function DashboardCharts({ accounts, currency, showSpendingChart 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!showSpendingChart && !showBalanceTrend) { setLoading(false); return; }
     loadChartData();
-  }, [accounts]);
+  }, [accounts, showSpendingChart, showBalanceTrend]);
 
   const loadChartData = async () => {
     setLoading(true);
@@ -32,35 +33,42 @@ export default function DashboardCharts({ accounts, currency, showSpendingChart 
       if (activeAccounts.length === 0) { setLoading(false); return; }
 
       const allTransactions: Transaction[] = [];
-      const results = await Promise.all(
-        activeAccounts.map(a => authService.apiFetch(`/api/transactions/${a.id}`).then(r => r.json()))
-      );
-      results.forEach(r => { if (Array.isArray(r)) allTransactions.push(...r); });
+      for (const a of activeAccounts) {
+        const r = await authService.apiFetch(`/api/transactions/${a.id}`);
+        if (r.ok) {
+          const data = await r.json();
+          if (Array.isArray(data)) allTransactions.push(...data);
+        }
+      }
 
-      const spending: Record<string, number> = {};
-      allTransactions
-        .filter(t => t.amount < 0)
-        .forEach(t => {
-          const cat = t.category || 'Other';
-          spending[cat] = (spending[cat] || 0) + Math.abs(t.amount);
+      if (showSpendingChart) {
+        const spending: Record<string, number> = {};
+        allTransactions
+          .filter(t => t.amount < 0)
+          .forEach(t => {
+            const cat = t.category || 'Other';
+            spending[cat] = (spending[cat] || 0) + Math.abs(t.amount);
+          });
+        const pieData = Object.entries(spending)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 8);
+        setCategoryData(pieData);
+      }
+
+      if (showBalanceTrend) {
+        const dateBalances: Record<string, number> = {};
+        const sorted = [...allTransactions].sort((a, b) => a.date.localeCompare(b.date));
+        let running = activeAccounts.reduce((s, a) => s + (a.initial_balance || 0), 0);
+        sorted.forEach(t => {
+          running += t.amount;
+          dateBalances[t.date] = running;
         });
-      const pieData = Object.entries(spending)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 8);
-      setCategoryData(pieData);
-
-      const dateBalances: Record<string, number> = {};
-      const sorted = [...allTransactions].sort((a, b) => a.date.localeCompare(b.date));
-      let running = activeAccounts.reduce((s, a) => s + (a.initial_balance || 0), 0);
-      sorted.forEach(t => {
-        running += t.amount;
-        dateBalances[t.date] = running;
-      });
-      const trend = Object.entries(dateBalances)
-        .map(([date, balance]) => ({ date, balance }))
-        .slice(-30);
-      setTrendData(trend);
+        const trend = Object.entries(dateBalances)
+          .map(([date, balance]) => ({ date, balance }))
+          .slice(-30);
+        setTrendData(trend);
+      }
     } catch { /* silent */ }
     setLoading(false);
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, ShieldCheck, KeyRound, Database, Upload, RefreshCw, Loader2, CheckCircle2, Eye, EyeOff, Calendar, Info, FileSpreadsheet } from 'lucide-react';
+import { User, Mail, ShieldCheck, KeyRound, Database, Upload, RefreshCw, Loader2, CheckCircle2, Eye, EyeOff, Calendar, Info, FileSpreadsheet, LogOut } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useToast } from './Toast';
 import { useProfileData } from '../hooks/useProfileData';
@@ -11,11 +11,12 @@ interface UserProfileProps {
   onRefreshData: () => Promise<void>;
   onExportData: () => void;
   onClearCache: () => void;
+  onLogout: () => void;
   currency?: string;
   accounts?: { id: number; name: string }[];
 }
 
-export default function UserProfile({ userEmail, onRefreshData, onExportData, onClearCache, currency = '৳', accounts = [] }: UserProfileProps) {
+export default function UserProfile({ userEmail, onRefreshData, onExportData, onClearCache, onLogout, currency = '৳', accounts = [] }: UserProfileProps) {
   const { toast } = useToast();
   const { fileInputRef, csvFileInputRef, handleExport, handleImport, handleCsvImport, handleClearAll } = useProfileData({
     currency,
@@ -252,6 +253,16 @@ export default function UserProfile({ userEmail, onRefreshData, onExportData, on
           <p className="text-xs text-muted break-all font-mono">User ID: {userId}</p>
         </div>
       )}
+
+      {/* Sign Out */}
+      <button
+        onClick={onLogout}
+        className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl bg-canvas border border-hairline text-muted hover:text-semantic-down hover:border-semantic-down/20 hover:bg-semantic-down/5 transition-all font-semibold text-xs md:hidden"
+      >
+        <LogOut className="w-4 h-4" />
+        <span>Sign Out</span>
+      </button>
+
       <ImportModal
         open={importModalOpen}
         data={importData}

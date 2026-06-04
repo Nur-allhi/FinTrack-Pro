@@ -201,7 +201,7 @@ export default function App() {
 
   const renderContent = () => {
     if (showProfile) {
-      return <UserProfile userEmail={userEmail} onRefreshData={() => fetchData(true)} onExportData={handleExportData} onClearCache={handleClearCache} currency={settings.currency} accounts={accounts} />;
+      return <UserProfile userEmail={userEmail} onRefreshData={() => fetchData(true)} onExportData={handleExportData} onClearCache={handleClearCache} onLogout={handleLogout} currency={settings.currency} accounts={accounts} />;
     }
     if (selectedAccountId) {
       const account = accounts.find(a => a.id === selectedAccountId);
@@ -244,6 +244,10 @@ export default function App() {
         />
       </Suspense>
     );
+  }
+
+  if (dataLoading && members.length === 0 && accounts.length === 0) {
+    return <LoadingScreen fullScreen />;
   }
 
   return (

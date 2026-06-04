@@ -29,6 +29,8 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   const [dataLoading, setDataLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const loadedRef = useRef(false);
+  const fetchingRef = useRef(false);
+  const prevAuthRef = useRef(isAuthenticated);
 
   const loadFromLocal = useCallback(async () => {
     const [localMembers, localAccounts] = await Promise.all([
@@ -48,6 +50,8 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       if (showToast) toast("Cannot refresh while offline.", 'error');
       return;
     }
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     setDataLoading(true);
     try {
       const [membersRes, accountsRes] = await Promise.all([
@@ -187,11 +191,12 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       console.error("Fetch failed:", error);
       if (showToast) toast("Failed to refresh data.", 'error');
     } finally {
+      fetchingRef.current = false;
       setDataLoading(false);
     }
   }, [isAuthenticated, toast]);
 
-  // Initial load: read local first, then background fetch
+  // Initial load: read local first, then background fetch (runs once)
   useEffect(() => {
     if (loadedRef.current) return;
     loadedRef.current = true;
@@ -203,6 +208,22 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       }
     });
   }, [isAuthenticated, loadFromLocal, fetchData, onInitialLoad]);
+
+  // On login transition: clear stale state and fetch fresh data directly
+  useEffect(() => {
+    if (isAuthenticated && !prevAuthRef.current) {
+      loadedRef.current = false;
+      setMembers([]);
+      setAccounts([]);
+      if (offlineService.isOnline()) fetchData();
+    }
+    if (!isAuthenticated && prevAuthRef.current) {
+      loadedRef.current = false;
+      setMembers([]);
+      setAccounts([]);
+    }
+    prevAuthRef.current = isAuthenticated;
+  }, [isAuthenticated, fetchData]);
 
   // Polling every 30s
   useEffect(() => {

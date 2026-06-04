@@ -4,6 +4,13 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-04: Fix critical account data leak on switch — clear IndexedDB on logout, reset loadedRef, skip stale local data on login transition (completed).
+2026-06-04: Skip DashboardCharts data fetch when charts are disabled — no API calls if showSpendingChart and showBalanceTrend are off (completed).
+2026-06-04: Fix 429 rate limit errors on refresh — increase API limit to 300/min, change DashboardCharts to sequential fetches (completed).
+2026-06-04: Fix duplicate accounts on re-login — add fetchingRef guard, clear state on auth transition, restore loadedRef (completed).
+2026-06-04: Add full-screen loading indicator on first login — show LoadingScreen while data loads from server (completed).
+2026-06-04: Fix stale data after account switch — Clear IndexedDB on logout and reset data load on re-login (completed).
+2026-06-04: Add sign out button to UserProfile for phone screens at src/components/UserProfile.tsx — Mobile-only Sign Out button at bottom of profile page (completed).
 2026-06-04: Add AnimatedBalance component at src/components/AnimatedBalance.tsx — Color-flash animation (green/red) when balance value changes in Ledger header and transaction rows (completed).
 2026-06-04: Enhance OfflineIndicator at src/components/OfflineIndicator.tsx — Add status dot and cloud icons for clearer sync state visualization (completed).
 
