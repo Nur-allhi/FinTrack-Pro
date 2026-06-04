@@ -6,17 +6,9 @@ import { flushPending } from '../services/syncEngine';
 import { useToast } from '../components/Toast';
 import { generateId } from '../utils/ids';
 
-function uuidToNumber(uuid: string): number {
-  let h = 0;
-  for (let i = 0; i < uuid.length; i++) {
-    h = ((h << 5) - h + uuid.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h) || 1;
-}
-
 function toUiTransaction(local: LocalTransaction, accountServerId: number): Transaction {
   return {
-    id: local.server_id && typeof local.server_id === 'number' ? local.server_id : uuidToNumber(local.id),
+    id: local.server_id && typeof local.server_id === 'number' ? local.server_id : 0,
     account_id: accountServerId,
     date: local.date,
     particulars: local.particulars,
@@ -24,7 +16,7 @@ function toUiTransaction(local: LocalTransaction, accountServerId: number): Tran
     amount: local.amount,
     type: local.type,
     summary: local.summary,
-    linked_transaction_id: local.linked_transaction_id ? (Number(local.linked_transaction_id) || null) : null,
+    linked_transaction_id: null,
   };
 }
 
@@ -104,7 +96,9 @@ export function useTransactions(account: Account) {
       return { success: false };
     }
 
-    const localId = editingTx ? (editingTx.id.toString().includes('-') ? editingTx.id.toString() : generateId()) : generateId();
+    const localId = editingTx
+      ? (editingTx.id.toString().includes('-') ? editingTx.id.toString() : generateId())
+      : generateId();
 
     const record: LocalTransaction = {
       id: localId,
@@ -115,7 +109,7 @@ export function useTransactions(account: Account) {
       category: newTx.category || 'Uncategorized',
       amount,
       type: 'normal',
-      linked_transaction_id: editingTx?.linked_transaction_id?.toString() || null,
+      linked_transaction_id: null,
       summary,
       updated_at: new Date().toISOString(),
       sync_status: 'pending',

@@ -12,7 +12,15 @@ interface SupabaseAccountRow {
 function accountRowToAccount(row: SupabaseAccountRow, txSum: number): Account {
   const memberName = Array.isArray(row.members) ? row.members[0]?.name : (row.members as { name?: string })?.name;
   return {
-    ...row,
+    id: row.id,
+    name: row.name,
+    type: row.type as Account['type'],
+    member_id: row.member_id ?? null,
+    parent_id: row.parent_id ?? null,
+    color: row.color ?? '',
+    archived: row.archived ?? 0,
+    initial_balance: row.initial_balance ?? 0,
+    user_id: row.user_id,
     member_name: memberName,
     parent_name: (row.parents as { name?: string })?.name,
     current_balance: Number(row.initial_balance || 0) + txSum,

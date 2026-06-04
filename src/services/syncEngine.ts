@@ -1,5 +1,6 @@
 import { localDb, LocalRecord, EntityName } from './localDb';
 import { authService } from './authService';
+import { isLocalOnly } from '../../shared/schema';
 
 const SYNC_TABLES = [
   'members', 'transactions', 'loans',
@@ -13,6 +14,35 @@ export interface SyncResult {
   pushed: number;
   pulled: number;
   conflicts: number;
+}
+
+/** Local-only fields that must never be sent to server */
+const LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as const;
+
+/** Strip local-only fields and map _deleted → deleted_at */
+function sanitizeForPush(record: LocalRecord): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (LOCAL_ONLY_FIELDS.includes(key as typeof LOCAL_ONLY_FIELDS[number])) continue;
+    out[key] = value;
+  }
+  // Map id → client_id
+  out.client_id = record.id;
+  // Map _deleted boolean → deleted_at timestamp
+  if (record._deleted === true) {
+    out.deleted_at = new Date().toISOString();
+  }
+  return out;
+}
+
+/** Convert server deleted_at → local _deleted */
+function sanitizeForPull(record: Record<string, unknown>): Record<string, unknown> {
+  const out = { ...record };
+  if (out.deleted_at != null) {
+    out._deleted = true;
+    delete out.deleted_at;
+  }
+  return out;
 }
 
 let _isSyncing = false;
@@ -35,14 +65,62 @@ export function isSyncing() {
 
 async function getUnsyncedForTable(table: SyncTable): Promise<LocalRecord[]> {
   const getter = {
-    members: () => localDb.getUnsyncedMembers(),
-    transactions: () => localDb.getUnsyncedTransactions(),
-    loans: () => localDb.getUnsyncedLoans(),
-    loan_settlements: async () => { const db = await import('./localDb'); return db.localDb.getLoanSettlements(); },
-    investments: async () => { const db = await import('./localDb'); return db.localDb.getInvestments(); },
-    investment_returns: async () => { const db = await import('./localDb'); return db.localDb.getInvestmentReturns(); },
-    budgets: async () => { const db = await import('./localDb'); return db.localDb.getBudgets(); },
-    recurring_transactions: async () => { const db = await import('./localDb'); return db.localDb.getRecurringTransactions(); },
+    members: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getUnsyncedMembers(),
+        localDb.getAllRecords('members').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    transactions: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getUnsyncedTransactions(),
+        localDb.getAllRecords('transactions').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    loans: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getUnsyncedLoans(),
+        localDb.getAllRecords('loans').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    loan_settlements: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getLoanSettlements().then(r => r.filter(x => x.sync_status === 'pending')),
+        localDb.getAllRecords('loan_settlements').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    investments: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getInvestments().then(r => r.filter(x => x.sync_status === 'pending')),
+        localDb.getAllRecords('investments').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    investment_returns: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getInvestmentReturns().then(r => r.filter(x => x.sync_status === 'pending')),
+        localDb.getAllRecords('investment_returns').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    budgets: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getBudgets().then(r => r.filter(x => x.sync_status === 'pending')),
+        localDb.getAllRecords('budgets').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
+    recurring_transactions: async () => {
+      const [pending, deleted] = await Promise.all([
+        localDb.getRecurringTransactions().then(r => r.filter(x => x.sync_status === 'pending')),
+        localDb.getAllRecords('recurring_transactions').then(r => r.filter(x => x._deleted)),
+      ]);
+      return [...pending, ...deleted];
+    },
   }[table];
   return getter();
 }
@@ -93,16 +171,16 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
 
   if (totalUnsynced === 0) return { pushed: 0, conflicts: 0 };
 
-  // Server expects client_id, not id — map before sending
-  const recordsWithClientId: Record<string, Record<string, unknown>[]> = {};
+  // Sanitize: strip local-only fields, map id→client_id, _deleted→deleted_at
+  const sanitized: Record<string, Record<string, unknown>[]> = {};
   for (const [table, recs] of Object.entries(records)) {
-    recordsWithClientId[table] = recs.map(r => ({ ...r, client_id: r.id }));
+    sanitized[table] = recs.map(sanitizeForPush);
   }
 
   const res = await authService.apiFetch('/api/sync/push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ records: recordsWithClientId }),
+    body: JSON.stringify({ records: sanitized }),
   });
 
   if (!res.ok) return { pushed: 0, conflicts: 0 };
@@ -160,25 +238,26 @@ async function pullChanges(): Promise<number> {
     const changes = data.changes?.[table];
     if (!Array.isArray(changes) || changes.length === 0) continue;
 
-    // Translate server numeric account refs to local UUIDs before storage
+    // Translate server numeric account refs to local UUIDs, and map deleted_at → _deleted
     const translated = changes.map((r: Record<string, unknown>) => {
-      if (table === 'transactions' && r.account_id != null) {
-        const localId = accountIdMap.get(Number(r.account_id));
-        if (localId) return { ...r, account_id: localId };
+      const sanitized = sanitizeForPull(r);
+      if (table === 'transactions' && sanitized.account_id != null) {
+        const localId = accountIdMap.get(Number(sanitized.account_id));
+        if (localId) return { ...sanitized, account_id: localId };
       }
       if (table === 'loans') {
-        let updated = r;
-        if (r.lender_account_id != null) {
-          const localId = accountIdMap.get(Number(r.lender_account_id));
+        let updated = sanitized;
+        if (sanitized.lender_account_id != null) {
+          const localId = accountIdMap.get(Number(sanitized.lender_account_id));
           if (localId) updated = { ...updated, lender_account_id: localId };
         }
-        if (r.borrower_account_id != null) {
-          const localId = accountIdMap.get(Number(r.borrower_account_id));
+        if (sanitized.borrower_account_id != null) {
+          const localId = accountIdMap.get(Number(sanitized.borrower_account_id));
           if (localId) updated = { ...updated, borrower_account_id: localId };
         }
         return updated;
       }
-      return r;
+      return sanitized;
     });
 
     // Get local records for LWW comparison — key by server_id
@@ -207,7 +286,7 @@ async function pullChanges(): Promise<number> {
         server_id: r.id,
         updated_at: (r.updated_at as string) || new Date().toISOString(),
         sync_status: 'synced' as const,
-        _deleted: false,
+        _deleted: r._deleted === true,
       };
     });
 
@@ -273,14 +352,17 @@ export async function initialSync(): Promise<boolean> {
       const rows = data.data?.[table];
       if (!Array.isArray(rows) || rows.length === 0) continue;
 
-      const localRecords = rows.map((r: Record<string, unknown>) => ({
-        ...r,
-        id: crypto.randomUUID(),
-        server_id: r.id,
-        updated_at: (r.updated_at as string) || new Date().toISOString(),
-        sync_status: 'synced' as const,
-        _deleted: false,
-      }));
+      const localRecords = rows.map((r: Record<string, unknown>) => {
+        const sanitized = sanitizeForPull(r);
+        return {
+          ...sanitized,
+          id: crypto.randomUUID(),
+          server_id: r.id,
+          updated_at: (r.updated_at as string) || new Date().toISOString(),
+          sync_status: 'synced' as const,
+          _deleted: sanitized._deleted === true,
+        };
+      });
 
       await upsertFromServer(table as SyncTable, localRecords);
     }

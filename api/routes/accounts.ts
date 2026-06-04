@@ -36,7 +36,7 @@ router.patch("/:id", async (req, res) => {
   try {
     const parsed = validate(accountUpdateSchema, req.body);
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
-    await updateAccount(req.user!.id, Number(req.params.id), parsed.data);
+    await updateAccount(req.user!.id, Number(req.params.id), parsed.data as Record<string, unknown>);
     res.json({ success: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

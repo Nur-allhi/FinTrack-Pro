@@ -112,16 +112,32 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         // Build map of existing local records by server_id to avoid duplicates
         const localAccounts = await localDb.getAccounts();
         const localByServerId = new Map(localAccounts.map(a => [a.server_id, a]));
+        
+        // Build server_id → local_id maps for FK conversion
+        const localMembers = await localDb.getMembers();
+        const memberServerIdToLocalId = new Map<number, string>();
+        for (const m of localMembers) {
+          if (m.server_id != null) memberServerIdToLocalId.set(m.server_id, m.id);
+        }
+        const accountServerIdToLocalId = new Map<number, string>();
+        for (const a of localAccounts) {
+          if (a.server_id != null) accountServerIdToLocalId.set(a.server_id, a.id);
+        }
 
         const toUpsert: LocalAccount[] = data.map((a: Record<string, unknown>) => {
+          const serverMemberId = a.member_id as number | null;
+          const serverParentId = a.parent_id as number | null;
+          const localMemberId = serverMemberId != null ? memberServerIdToLocalId.get(serverMemberId) ?? null : null;
+          const localParentId = serverParentId != null ? accountServerIdToLocalId.get(serverParentId) ?? null : null;
+
           const existing = localByServerId.get(a.id as number);
           if (existing) {
             return {
               ...existing,
               name: a.name as string,
               type: (a.type as string) || existing.type,
-              member_id: (a.member_id as string | null) ?? existing.member_id,
-              parent_id: (a.parent_id as string | null) ?? existing.parent_id,
+              member_id: localMemberId ?? existing.member_id,
+              parent_id: localParentId ?? existing.parent_id,
               color: (a.color as string) || existing.color,
               archived: (a.archived as number) || existing.archived,
               initial_balance: (a.initial_balance as number) ?? existing.initial_balance,
@@ -136,8 +152,8 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
             server_id: a.id as number,
             name: a.name as string,
             type: (a.type as string) || 'cash',
-            member_id: a.member_id as string | null,
-            parent_id: a.parent_id as string | null,
+            member_id: localMemberId,
+            parent_id: localParentId,
             color: (a.color as string) || '#A78BFA',
             archived: (a.archived as number) || 0,
             initial_balance: (a.initial_balance as number) || 0,
@@ -169,15 +185,25 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         const data = await groupsRes.json();
         const localGroups = await localDb.getGroups();
         const localByServerId = new Map(localGroups.map(g => [g.server_id, g]));
+        
+        // Build member server_id → local_id map for FK conversion
+        const localMembers = await localDb.getMembers();
+        const memberServerIdToLocalId = new Map<number, string>();
+        for (const m of localMembers) {
+          if (m.server_id != null) memberServerIdToLocalId.set(m.server_id, m.id);
+        }
 
         const toUpsert: LocalGroup[] = data.map((g: Record<string, unknown>) => {
+          const serverMemberId = g.member_id as number | null;
+          const localMemberId = serverMemberId != null ? memberServerIdToLocalId.get(serverMemberId) ?? null : null;
+          
           const existing = localByServerId.get(g.id as number);
           const children = (g.children as Array<{ id: number; name: string; type: string; current_balance: number }>) || [];
           if (existing) {
             return {
               ...existing,
               name: g.name as string,
-              member_id: g.member_id != null ? String(g.member_id) : null,
+              member_id: localMemberId ?? existing.member_id,
               color: (g.color as string) || existing.color,
               child_count: (g.child_count as number) ?? existing.child_count,
               accumulated_balance: (g.accumulated_balance as number) ?? existing.accumulated_balance,
@@ -191,7 +217,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
             server_id: g.id as number,
             name: g.name as string,
             type: (g.type as string) || 'group',
-            member_id: g.member_id != null ? String(g.member_id) : null,
+            member_id: localMemberId,
             color: (g.color as string) || '#A78BFA',
             child_count: (g.child_count as number) || 0,
             accumulated_balance: (g.accumulated_balance as number) || 0,

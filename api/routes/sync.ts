@@ -24,6 +24,18 @@ interface PushBody {
   records: Record<SyncTable, SyncRecord[]>;
 }
 
+// Local-only fields that clients might accidentally send
+const SERVER_LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as const;
+
+function sanitizeRecord(record: SyncRecord): SyncRecord {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (SERVER_LOCAL_ONLY_FIELDS.includes(key as typeof SERVER_LOCAL_ONLY_FIELDS[number])) continue;
+    out[key] = value;
+  }
+  return out as SyncRecord;
+}
+
 // POST /api/sync/push — Bulk upsert local changes to server
 router.post("/push", async (req, res) => {
   try {
@@ -47,43 +59,46 @@ router.post("/push", async (req, res) => {
       for (const record of tableRecords) {
         if (!record.client_id) continue;
 
+        // Defense in depth: strip local-only fields
+        const sanitized = sanitizeRecord(record);
+
         const { data: existing } = await client
           .from(table)
           .select('id, updated_at')
-          .eq('client_id', record.client_id)
+          .eq('client_id', sanitized.client_id)
           .eq('user_id', userId)
           .maybeSingle();
 
         if (existing) {
-          if (new Date(record.updated_at) < new Date(existing.updated_at)) {
+          if (new Date(sanitized.updated_at) < new Date(existing.updated_at)) {
             conflicts++;
             continue;
           }
-          const { id, client_id: _cid, updated_at: _ua, ...fields } = record;
+          const { id, client_id: _cid, updated_at: _ua, ...fields } = sanitized;
           const { error } = await client
             .from(table)
-            .update({ ...fields, client_id: record.client_id, updated_at: record.updated_at })
+            .update({ ...fields, client_id: sanitized.client_id, updated_at: sanitized.updated_at })
             .eq('id', existing.id)
             .eq('user_id', userId);
           if (error) {
-            logger.error({ requestId: req.requestId, error: error.message, table, client_id: record.client_id }, "sync push update");
+            logger.error({ requestId: req.requestId, error: error.message, table, client_id: sanitized.client_id }, "sync push update");
             continue;
           }
           pushed++;
-          ids.push({ client_id: record.client_id, server_id: existing.id });
+          ids.push({ client_id: sanitized.client_id, server_id: existing.id });
         } else {
-          const { id: _localId, ...fields } = record;
+          const { id: _localId, ...fields } = sanitized;
           const { data: inserted, error } = await client
             .from(table)
-            .insert({ ...fields, user_id: userId, client_id: record.client_id, updated_at: record.updated_at })
+            .insert({ ...fields, user_id: userId, client_id: sanitized.client_id, updated_at: sanitized.updated_at })
             .select('id')
             .single();
           if (error || !inserted) {
-            logger.error({ requestId: req.requestId, error: error?.message, table, client_id: record.client_id }, "sync push insert");
+            logger.error({ requestId: req.requestId, error: error?.message, table, client_id: sanitized.client_id }, "sync push insert");
             continue;
           }
           pushed++;
-          ids.push({ client_id: record.client_id, server_id: inserted.id });
+          ids.push({ client_id: sanitized.client_id, server_id: inserted.id });
         }
       }
 

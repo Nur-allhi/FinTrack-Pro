@@ -1,7 +1,7 @@
 import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'fintrack_local';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export type SyncStatus = 'pending' | 'synced' | 'conflict';
 
@@ -21,13 +21,14 @@ export interface LocalMember extends LocalRecord {
 export interface LocalAccount extends LocalRecord {
   server_id?: number | null;
   name: string;
-  type: string;
-  member_id: string | null;
-  parent_id: string | null;
+  type: 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group';
+  member_id: number | string | null;
+  parent_id: number | string | null;
   color: string;
   archived: number;
   initial_balance: number;
   current_balance: number;
+  currency: string;
 }
 
 export interface LocalTransaction extends LocalRecord {
@@ -53,8 +54,10 @@ export interface LocalLoan extends LocalRecord {
   due_date: string | null;
   interest_rate: number | null;
   particulars: string;
-  status: string;
+  status: 'active' | 'settled' | 'defaulted';
   settled_date: string | null;
+  lender_name?: string;
+  borrower_account_name?: string;
 }
 
 export interface LocalLoanSettlement extends LocalRecord {
@@ -71,6 +74,7 @@ export interface LocalInvestment extends LocalRecord {
   account_id: string;
   principal: number;
   date: string;
+  account_name?: string;
 }
 
 export interface LocalInvestmentReturn extends LocalRecord {
@@ -92,11 +96,12 @@ export interface LocalGroup extends LocalRecord {
   server_id?: number | null;
   name: string;
   type: string;
-  member_id: string | null;
+  member_id: number | string | null;
   color: string;
   child_count: number;
   accumulated_balance: number;
   children: LocalGroupChild[];
+  member_name?: string;
 }
 
 export interface LocalBudget extends LocalRecord {
@@ -104,6 +109,7 @@ export interface LocalBudget extends LocalRecord {
   category: string;
   month: string;
   amount: number;
+  created_at: string;
 }
 
 export interface LocalRecurringTransaction extends LocalRecord {
@@ -112,9 +118,10 @@ export interface LocalRecurringTransaction extends LocalRecord {
   amount: number;
   particulars: string;
   category: string;
-  frequency: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
   next_date: string;
   active: boolean;
+  created_at: string;
 }
 
 interface LocalDB {
@@ -136,7 +143,7 @@ let dbPromise: Promise<IDBPDatabase<LocalDB>> | null = null;
 function getDB(): Promise<IDBPDatabase<LocalDB>> {
   if (!dbPromise) {
     dbPromise = openDB<LocalDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, oldVersion) {
         const stores = [
           'members', 'accounts', 'transactions', 'loans',
           'loan_settlements', 'investments', 'investment_returns',
@@ -152,12 +159,43 @@ function getDB(): Promise<IDBPDatabase<LocalDB>> {
               store.createIndex('_deleted', '_deleted');
               if (name === 'accounts') {
                 store.createIndex('member_id', 'member_id');
+                store.createIndex('parent_id', 'parent_id');
+                store.createIndex('type', 'type');
               }
               if (name === 'transactions') {
                 store.createIndex('account_id', 'account_id');
+                store.createIndex('date', 'date');
+                store.createIndex('category', 'category');
+              }
+              if (name === 'loans') {
+                store.createIndex('lender_account_id', 'lender_account_id');
+                store.createIndex('borrower_account_id', 'borrower_account_id');
+                store.createIndex('status', 'status');
+              }
+              if (name === 'loan_settlements') {
+                store.createIndex('loan_id', 'loan_id');
+              }
+              if (name === 'investments') {
+                store.createIndex('account_id', 'account_id');
+              }
+              if (name === 'budgets') {
+                store.createIndex('month', 'month');
+                store.createIndex('category', 'category');
+              }
+              if (name === 'recurring_transactions') {
+                store.createIndex('account_id', 'account_id');
+                store.createIndex('next_date', 'next_date');
+                store.createIndex('active', 'active');
+              }
+              if (name === 'groups') {
+                store.createIndex('member_id', 'member_id');
               }
             }
           }
+        }
+        // Migration from v1 to v2: no data migration needed for new fields
+        if (oldVersion < 2) {
+          console.log('[localDb] Upgraded to v2 — new fields: currency, created_at, display fields');
         }
       },
     });
@@ -183,7 +221,8 @@ function now(): string {
   return new Date().toISOString();
 }
 
-export type EntityName = 'members' | 'accounts' | 'transactions' | 'loans' | 'groups'
+export type EntityName =
+  | 'members' | 'accounts' | 'transactions' | 'loans'
   | 'loan_settlements' | 'investments' | 'investment_returns'
   | 'groups' | 'budgets' | 'recurring_transactions';
 

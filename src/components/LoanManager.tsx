@@ -44,7 +44,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
     if (showLoading) setLoading(true);
     try {
       const local = await localDb.getLoans();
-      setLoans(local.filter(l => l.status !== 'removed').map(toApiLoan));
+      setLoans(local.map(toApiLoan));
     }
     finally { if (showLoading) setLoading(false); }
   };
