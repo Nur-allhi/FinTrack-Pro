@@ -4,6 +4,8 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-04: Fix recycle bin not showing deleted transactions — soft-delete in localDb from useTransactions.deleteTransaction at src/hooks/useTransactions.ts (completed).
+2026-06-04: Fix dashboard balance delay — applyAccountDelta for synchronous React state update, fire-and-forget IndexedDB persist, removed content-visibility:auto at src/hooks/useLocalData.ts, src/components/TransactionModal.tsx, src/App.tsx (partial).
 2026-06-04: Fix stale data after login — 5-part fix: (1) remove window.location.reload() on logout (causes flicker + race), (2) clear IndexedDB + localStorage + sessionStorage on logout, (3) clear IndexedDB again on login transition before fetchData, (4) fix handleLogin to verify session setup before setting authenticated, (5) fix _onSessionExpired to not fire on voluntary logout (completed).
 2026-06-04: Fix logout not fully resetting state — was doing soft transition to login page leaving module-level variables stale; now does window.location.reload() after clearing IndexedDB, localStorage, and server session (completed).
 2026-06-04: Fix auto re-login after logout — localStorage cleanup ran after setAuthStatus('guest'), letting Login component's refreshToken() find stale Supabase tokens and auto-login as old account before manual login could happen (completed).

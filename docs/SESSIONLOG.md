@@ -7,11 +7,11 @@
 
 ## Quick Reference — Last Session
 
-> **Session 23** — 4 June 2026 (Deferred Google Drive Tasks)
+> **Session 24** — 4 June 2026 (Dashboard Balance Fix + Recycle Bin)
 > **Branch**: `feat/local-first`
-> **Tasks**: T-153, T-154, T-155
-> **Status**: deferred
-> **Summary**: Deferred Google Drive backup tasks — requires manual Google Cloud Console setup. Local JSON export/import already provides backup functionality.
+> **Tasks**: Recycle bin deleted transactions, Dashboard instant balance
+> **Status**: partial
+> **Summary**: Fixed recycle bin not showing deleted transactions (soft-delete in localDb). Fixed dashboard balance delay (applyAccountDelta + fire-and-forget IndexedDB write + removed content-visibility:auto). Debug logs confirm applyAccountDelta works (found:true, balance updates correctly) but visual delay persists — likely chart rendering issue (recharts width/height -1 error seen).
 
 ---
 
@@ -45,6 +45,49 @@ Brief description of what was accomplished.
 ---
 
 ## Session History
+
+## Session 24 — 4 June 2026 (Dashboard Balance Fix + Recycle Bin)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: Recycle bin deleted transactions, Dashboard instant balance
+> **Status**: partial
+
+### Summary
+
+Fixed two issues: (1) Recycle bin not showing deleted transactions because `deleteTransaction` in `useTransactions.ts` never soft-deleted in localDb. (2) Dashboard balance taking ~10s to update after posting a transaction from TransactionModal.
+
+### Changes
+
+**Recycle Bin:**
+- `useTransactions.ts:deleteTransaction()` — added `softDeleteLocal()` that finds the localDb transaction by `server_id` and sets `_deleted: true`, `sync_status: 'synced'`. Called on all deletion paths (online, offline, network error).
+- Uses `localDb.getTransactions()` (unfiltered scan) instead of indexed lookup to avoid IndexedDB type-mismatch between string/number `account_id`.
+
+**Dashboard Balance:**
+- `useLocalData.ts` — added `applyAccountDelta(accountServerId, amount)` that updates `current_balance` in React state synchronously via `setAccounts(prev => prev.map(...))`.
+- `TransactionModal.tsx` — changed `onUpdate` signature from `() => void` to `(accountId?: number, amount?: number) => void`. Moved `onUpdate` call before the IndexedDB `getAccounts`/`putAccount` (now fire-and-forget).
+- `App.tsx` — wired `applyAccountDelta` to TransactionModal's `onUpdate`.
+- Removed `content-visibility: auto` from main motion.div wrapper (can delay browser paint after overlay removal).
+
+### Debug Results
+
+Console logs confirmed:
+```
+[TransactionModal] calling onUpdate {accountId: 32, amount: -100}
+[applyAccountDelta] called {accountServerId: 32, amount: -100, prevCount: 13, found: true, balances: Array(13)}
+```
+
+`applyAccountDelta` works correctly — finds the matching account and updates balance. But visual delay persists. Chart recharts error (width/height -1) observed during re-render. Likely the chart component error is delaying/suspending the render pipeline.
+
+### Files Changed
+- `src/hooks/useTransactions.ts` — softDeleteLocal helper
+- `src/hooks/useLocalData.ts` — applyAccountDelta function
+- `src/components/TransactionModal.tsx` — onUpdate signature + fire-and-forget persist
+- `src/App.tsx` — wired applyAccountDelta, removed content-visibility:auto
+
+### Next Steps
+- Investigate why Dashboard visual update still lags despite confirmed React state update (recharts chart component error suspected)
+
+---
 
 ## Session 23 — 4 June 2026 (Deferred Google Drive Tasks)
 
