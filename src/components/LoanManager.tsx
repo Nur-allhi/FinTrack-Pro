@@ -26,6 +26,10 @@ function hashStr(s: string): number {
   return Math.abs(h) || 1;
 }
 
+function accountDisplayId(a: { server_id?: number | null; id: string }): number {
+  return a.server_id ?? -(Math.abs(hashStr(a.id)) || 1);
+}
+
 export function findLocalLoan(localLoans: { server_id?: number | null; id: string }[], id: number): { server_id?: number | null; id: string } | undefined {
   if (id > 0) {
     const byServerId = localLoans.find(l => l.server_id === id);
@@ -53,9 +57,9 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
       setLoans(local.map(r => {
         const localLender = accountMap.get(r.lender_account_id);
         const localBorrower = r.borrower_account_id ? accountMap.get(r.borrower_account_id) : undefined;
-        const lid = localLender?.server_id ?? Number(r.lender_account_id);
+        const lid = localLender ? accountDisplayId(localLender) : Number(r.lender_account_id);
         const bid = r.borrower_account_id
-          ? (localBorrower?.server_id ?? Number(r.borrower_account_id))
+          ? (localBorrower ? accountDisplayId(localBorrower) : Number(r.borrower_account_id))
           : null;
         const lender = accounts.find(a => a.id === lid);
         const borrower = bid !== null ? accounts.find(a => a.id === bid) : undefined;
@@ -104,7 +108,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
   const groupedLoans = useMemo((): LoanGroup[] => {
     const groupMap = new Map<string, Loan[]>();
     for (const loan of filteredLoans) {
-      const borrowerId = loan.borrower_account_id ?? loan.borrower_name ?? 'Unknown';
+      const borrowerId = loan.borrower_account_id ?? loan.borrower_account_name ?? loan.borrower_name ?? 'Unknown';
       const key = groupingMode === 'pair' ? `${loan.lender_account_id}:${borrowerId}` : `${borrowerId}`;
       if (!groupMap.has(key)) groupMap.set(key, []);
       groupMap.get(key)!.push(loan);
