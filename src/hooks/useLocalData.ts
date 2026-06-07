@@ -155,6 +155,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
               archived: (a.archived as number) || existing.archived,
               initial_balance: (a.initial_balance as number) ?? existing.initial_balance,
               current_balance: existing.current_balance,
+              currency: (a.currency as string) || existing.currency,
               updated_at: (a.updated_at as string) || existing.updated_at,
               sync_status: existing.sync_status === 'pending' ? 'pending' as const : 'synced' as const,
             };
@@ -171,6 +172,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
             archived: (a.archived as number) || 0,
             initial_balance: (a.initial_balance as number) || 0,
             current_balance: (a.current_balance as number) || 0,
+            currency: (a.currency as string) || 'USD',
             updated_at: (a.updated_at as string) || new Date().toISOString(),
             sync_status: 'synced' as const,
             _deleted: false,

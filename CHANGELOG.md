@@ -4,6 +4,18 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-08: Fix loan grouping — By Pair groups by lender account only (one card per lender); By Borrower groups by borrower; card subtitle lists counterparties in pair mode (completed).
+2026-06-08: Add currency column to Account type and all putAccount/sync paths — resolves TS errors and persists per-account currency (completed).
+2026-06-08: Add counterparty column (Borrower/Lender) to LoanTable after Date column; replace Due column with Paid (amount - remaining); center-align all column headers (completed).
+2026-06-08: Make loan card full clickable — clicking anywhere on card header toggles expand/collapse; Description body left-aligned (completed).
+
+2026-06-08: Fix ledger particulars missing account names — loan/repayment entries now always include sender and receiver account names in format "Type: From → To - user text" (completed).
+2026-06-08: Fix "General" tag on all account cards — toApiAccount now populates member_name and parent_name; added _localId to Account type (completed).
+2026-06-08: Fix archive button not updating UI — added onUpdate() in catch path so local saves refresh the view; added _localId fallback for unsynced accounts (completed).
+2026-06-08: Fix white screen on account edit — destructured missing currentBalance prop in AccountForm (completed).
+2026-06-08: Fix deleted loans reappearing after sign-out — handleDelete now calls DELETE /api/loans/:id directly when online, hard-deletes locally on success, with offline soft-delete fallback (completed).
+2026-06-08: Fix sync push error for borrower_account_name/lender_name — added COMPUTED_FIELDS exclusion list in sanitizeForPush (completed).
+
 2026-06-04: Fix three-layer schema alignment (17 mismatches) — Phase 0: added deleted_at to 5 tables, user_id to investment_returns/loan_settlements via Management API; assigned client_id UUIDs to 261 orphaned records. Phase 1: created shared/schema.ts canonical field definitions; regenerated shared/types.ts, src/types.ts, localDb types with proper unions (account type, loan status, transaction type), added missing fields (currency, created_at, lender_name, borrower_account_name, transaction_id). Phase 2: sync engine push now strips local-only fields (id, server_id, sync_status, _deleted) before sending; maps _deleted→deleted_at on push, deleted_at→_deleted on pull; includes deleted records in unsynced collection; server-side defense-in-depth stripping added. Phase 3: fixed member_id/parent_id type coercion via server_id→local_id maps in useLocalData fetchData and groups fetch. Phase 4: IndexedDB v2 with new indexes on all FK fields, date, category, status. Build passes, tsc clean (completed).
 
 ---

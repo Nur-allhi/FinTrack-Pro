@@ -33,9 +33,12 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | number>('all');
-  const [newAcc, setNewAcc] = useState({
+  const [newAcc, setNewAcc] = useState<{
+    name: string; type: Account['type']; member_id: string | number;
+    parent_id: string; color: string; initial_balance: string; currency?: string;
+  }>({
     name: '', type: 'cash' as Account['type'], member_id: '' as string | number,
-    parent_id: '' as string, color: colors[0], initial_balance: ''
+    parent_id: '' as string, color: colors[0], initial_balance: '', currency: currency
   });
 
   useEffect(() => {
@@ -98,13 +101,14 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
             archived: 0,
             initial_balance: initialBal,
             current_balance: initialBal,
+            currency: newAcc.currency || currency,
             updated_at: now,
             sync_status: 'synced',
             _deleted: false,
           });
         }
         setIsAdding(false); setEditingAccount(null);
-        setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '' });
+        setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '', currency: currency });
         onUpdate();
       } else {
         const errBody = await res.json().catch(() => ({}));
@@ -141,13 +145,14 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
           archived: 0,
           initial_balance: initialBal,
           current_balance: initialBal,
+          currency: newAcc.currency || currency,
           updated_at: now,
           sync_status: 'pending',
           _deleted: false,
         });
       }
       setIsAdding(false); setEditingAccount(null);
-      setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '' });
+      setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '', currency: currency });
       toast("Saved locally. Will sync when online.", 'success');
       onUpdate();
       console.error(error);
@@ -156,7 +161,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
 
   const startEdit = (acc: Account) => {
     setEditingAccount(acc);
-    setNewAcc({ name: acc.name, type: acc.type, member_id: acc.member_id ? String(acc.member_id) : '', parent_id: acc.parent_id?.toString() || '', color: acc.color, initial_balance: acc.initial_balance.toString() });
+    setNewAcc({ name: acc.name, type: acc.type, member_id: acc.member_id ? String(acc.member_id) : '', parent_id: acc.parent_id?.toString() || '', color: acc.color, initial_balance: acc.initial_balance.toString(), currency: acc.currency || currency });
     setIsAdding(true);
   };
 

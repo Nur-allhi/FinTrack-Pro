@@ -139,8 +139,9 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
   const groupedLoans = useMemo((): LoanGroup[] => {
     const groupMap = new Map<string, Loan[]>();
     for (const loan of filteredLoans) {
-      const borrowerId = loan.borrower_account_id ?? loan.borrower_account_name ?? loan.borrower_name ?? 'Unknown';
-      const key = groupingMode === 'pair' ? `${loan.lender_account_id}:${borrowerId}` : `${borrowerId}`;
+      const key = groupingMode === 'pair'
+        ? `${loan.lender_account_id}`
+        : `${loan.borrower_account_id ?? loan.borrower_account_name ?? loan.borrower_name ?? 'Unknown'}`;
       if (!groupMap.has(key)) groupMap.set(key, []);
       groupMap.get(key)!.push(loan);
     }
@@ -148,9 +149,13 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
       .map(([key, loans]) => {
         const sorted = [...loans].sort((a, b) => new Date(b.date_given).getTime() - new Date(a.date_given).getTime());
         const first = sorted[0];
-        return { key, loans: sorted, borrowerName: first.borrower_name || first.borrower_account_name || (first.borrower_account_id ? `Account #${first.borrower_account_id}` : 'Unknown'), lenderName: first.lender_name || (first.lender_account_id ? `Account #${first.lender_account_id}` : 'Unknown'), totalAmount: loans.reduce((s, l) => s + l.amount, 0), totalRemaining: loans.reduce((s, l) => s + l.remaining, 0), activeCount: loans.filter(l => l.status === 'active').length, latestDate: sorted[0].date_given } as LoanGroup;
+        const isPair = groupingMode === 'pair';
+        const groupName = isPair
+          ? (first.lender_name || `Account #${first.lender_account_id}`)
+          : (first.borrower_name || first.borrower_account_name || (first.borrower_account_id ? `Account #${first.borrower_account_id}` : 'Unknown'));
+        return { key, loans: sorted, groupName, lenderName: isPair ? undefined : first.lender_name, totalAmount: loans.reduce((s, l) => s + l.amount, 0), totalRemaining: loans.reduce((s, l) => s + l.remaining, 0), activeCount: loans.filter(l => l.status === 'active').length, latestDate: sorted[0].date_given } as LoanGroup;
       })
-      .sort((a, b) => a.borrowerName.localeCompare(b.borrowerName));
+      .sort((a, b) => a.groupName.localeCompare(b.groupName));
   }, [filteredLoans, groupingMode]);
 
   return (

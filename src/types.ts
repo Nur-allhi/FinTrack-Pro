@@ -29,6 +29,7 @@ export interface Account {
   archived: number;
   initial_balance: number;
   current_balance: number;
+  currency?: string;
 }
 
 // ─── Transaction ───────────────────────────

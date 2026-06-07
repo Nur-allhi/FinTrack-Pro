@@ -7,6 +7,26 @@
 
 ## Quick Reference — Last Session
 
+> **Session 31** — 8 June 2026 (Loan Grouping, Currency Fix, Counterparty Column)
+> **Branch**: `feat/local-first`
+> **Tasks**: Loan filters, currency column, LoanTable redesign
+> **Status**: completed
+> **Summary**: Changed By Pair grouping to one card per lender (not per lender-borrower pair). Added counterparty name column (Borrower/Lender) to LoanTable after Date. Replaced Due column with Paid (amount - remaining). Center-aligned all column headers, left-aligned Description body. Made loan card fully clickable to expand/collapse. Added `currency` field to Account type and all putAccount/sync paths to fix TS errors. Commits 46eb886.
+
+---
+
+## Quick Reference — Last Session
+
+> **Session 30** — 8 June 2026 (Account Names in Ledger, Archive Fix, Deleted Loans Fix)
+> **Branch**: `feat/local-first`
+> **Tasks**: Various UI and sync fixes
+> **Status**: completed
+> **Summary**: Fixed ledger particulars to always include account names (Loan Given/Received/Repayment). Fixed "General" tag on account cards by populating member_name/parent_name in toApiAccount. Fixed archive button not calling onUpdate() on local fallback. Fixed white screen on account edit (missing currentBalance destructure). Fixed deleted loans reappearing after sign-out (direct API DELETE call). Fixed sync push error for computed loan fields (borrower_account_name/lender_name stripped). Commit 362cbe9.
+
+---
+
+## Quick Reference — Last Session
+
 > **Session 29** — 4 June 2026 (Three-Layer Schema Alignment)
 > **Branch**: `feat/unified-write-modal`
 > **Tasks**: T-200, T-201, T-202, T-203, T-204, T-205, T-206, T-207, T-208, T-209, T-210, T-211, T-212, T-213, T-214, T-215, T-216, T-217, T-218, T-219
