@@ -206,74 +206,86 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     if (m.server_id != null) memberLocalIdToServerId.set(m.id, m.server_id);
   }
 
+  // Reset any accounts incorrectly marked as pending before building FK maps
+  await resetStaleAccountPending();
+
   // Sanitize: strip local-only fields, map id→client_id, _deleted→deleted_at, translate FKs
+  // Records with untranslatable REQUIRED FKs are skipped (stay pending for next cycle).
   const sanitized: Record<string, Record<string, unknown>[]> = {};
   for (const [table, recs] of Object.entries(records)) {
-    sanitized[table] = recs.map(r => {
+    const pushable: Record<string, unknown>[] = [];
+    for (const r of recs) {
       const base = sanitizeForPush(r);
-      // Translate FK fields: local UUID → server_id (BIGINT)
+      let skip = false;
+
       if (table === 'transactions') {
         if (base.account_id != null) {
           const serverId = accountLocalIdToServerId.get(base.account_id as string);
           if (serverId != null) base.account_id = serverId;
+          else skip = true; // required FK
         }
         if (base.linked_transaction_id != null) {
           const serverId = transactionLocalIdToServerId.get(base.linked_transaction_id as string);
-          if (serverId != null) {
-            base.linked_transaction_id = serverId;
-          } else {
-            // UUID can't be translated (linked txn hasn't synced yet).
-            // Omit to avoid sending invalid BIGINT — records still push.
-            delete base.linked_transaction_id;
-          }
+          if (serverId != null) base.linked_transaction_id = serverId;
+          else delete base.linked_transaction_id; // optional FK
         }
       }
       if (table === 'loans') {
         if (base.lender_account_id != null) {
           const serverId = accountLocalIdToServerId.get(base.lender_account_id as string);
           if (serverId != null) base.lender_account_id = serverId;
+          else skip = true; // required FK
         }
         if (base.borrower_account_id != null) {
           const serverId = accountLocalIdToServerId.get(base.borrower_account_id as string);
           if (serverId != null) base.borrower_account_id = serverId;
+          else delete base.borrower_account_id; // optional FK
         }
       }
       if (table === 'loan_settlements') {
         if (base.loan_id != null) {
           const serverId = loanLocalIdToServerId.get(base.loan_id as string);
           if (serverId != null) base.loan_id = serverId;
+          else skip = true; // required FK
         }
         if (base.transaction_id != null) {
           const serverId = transactionLocalIdToServerId.get(base.transaction_id as string);
           if (serverId != null) base.transaction_id = serverId;
+          else delete base.transaction_id; // optional FK (can be null)
         }
       }
       if (table === 'investments') {
         if (base.account_id != null) {
           const serverId = accountLocalIdToServerId.get(base.account_id as string);
           if (serverId != null) base.account_id = serverId;
+          else skip = true; // required FK
         }
       }
       if (table === 'investment_returns') {
         if (base.investment_id != null) {
           const serverId = investmentLocalIdToServerId.get(base.investment_id as string);
           if (serverId != null) base.investment_id = serverId;
+          else skip = true; // required FK
         }
       }
       if (table === 'recurring_transactions') {
         if (base.account_id != null) {
           const serverId = accountLocalIdToServerId.get(base.account_id as string);
           if (serverId != null) base.account_id = serverId;
+          else skip = true; // required FK
         }
       }
       if (table === 'groups') {
         if (base.member_id != null) {
           const serverId = memberLocalIdToServerId.get(base.member_id as string);
           if (serverId != null) base.member_id = serverId;
+          else skip = true; // required FK
         }
       }
-      return base;
-    });
+
+      if (!skip) pushable.push(base);
+    }
+    sanitized[table] = pushable;
   }
 
   const res = await authService.apiFetch('/api/sync/push', {
