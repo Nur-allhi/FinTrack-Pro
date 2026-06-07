@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Account, Transaction } from '../types';
 
 import { localDb, LocalTransaction } from '../services/localDb';
-import { flushPending } from '../services/syncEngine';
+import { flushPending, syncState } from '../services/syncEngine';
 import { useToast } from '../components/Toast';
 import { generateId } from '../utils/ids';
 
@@ -31,6 +31,15 @@ export function useTransactions(account: Account) {
   const accountIdRef = useRef(account?.id);
   accountIdRef.current = account?.id;
 
+  const syncCompletedRef = useRef(false);
+
+  useEffect(() => {
+    const unsub = syncState.subscribe(s => {
+      if (s.state === 'idle') syncCompletedRef.current = true;
+    });
+    return unsub;
+  }, []);
+
   const readFromLocal = useCallback(async (accountLocalId: string) => {
     if (accountIdRef.current !== account?.id) return;
     const accounts = await localDb.getAccounts();
@@ -51,6 +60,7 @@ export function useTransactions(account: Account) {
       .map(lt => toUiTransaction(lt, account.id))
       .sort((a, b) => b.date.localeCompare(a.date) || (b.updated_at || '').localeCompare(a.updated_at || ''));
     setTransactions(uiTxns);
+    if (uiTxns.length === 0 && !syncCompletedRef.current) return; // keep loading, wait for initial sync
     setLoading(false);
   }, [account?.id]);
 
@@ -79,6 +89,16 @@ export function useTransactions(account: Account) {
       readFromLocal(localAccountId);
     });
     return unsub;
+  }, [localAccountId, readFromLocal]);
+
+  // Fallback: stop loading after 10s even if no data
+  useEffect(() => {
+    if (!localAccountId) return;
+    const timer = setTimeout(() => {
+      syncCompletedRef.current = true;
+      readFromLocal(localAccountId);
+    }, 10000);
+    return () => clearTimeout(timer);
   }, [localAccountId, readFromLocal]);
 
   const addOrUpdateTransaction = async (
