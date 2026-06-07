@@ -58,6 +58,9 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
         setIsAdding(false); setEditingAccount(null);
         setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '' });
         onUpdate();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        toast(body?.error || `Server error (${res.status})`, 'error');
       }
     } catch (error) {
       toast("Failed to save account.", 'error');
