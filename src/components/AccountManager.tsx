@@ -67,7 +67,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
 
   const startEdit = (acc: Account) => {
     setEditingAccount(acc);
-    setNewAcc({ name: acc.name, type: acc.type, member_id: acc.member_id || '', parent_id: acc.parent_id?.toString() || '', color: acc.color, initial_balance: acc.initial_balance.toString() });
+    setNewAcc({ name: acc.name, type: acc.type, member_id: acc.member_id ? String(acc.member_id) : '', parent_id: acc.parent_id?.toString() || '', color: acc.color, initial_balance: acc.initial_balance.toString() });
     setIsAdding(true);
   };
 

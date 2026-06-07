@@ -57,7 +57,7 @@ export default function AccountForm({ title, newAcc, setNewAcc, members, groups,
         <div className="space-y-1">
           <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Member</label>
           <Select value={newAcc.member_id} onChange={v => setNewAcc({...newAcc, member_id: v})}
-            options={[{ value: '', label: 'None' }, ...members.map(m => ({ value: m.id, label: m.name }))]} />
+            options={[{ value: '', label: 'None' }, ...members.map(m => ({ value: String(m.id), label: m.name }))]} />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Group</label>
