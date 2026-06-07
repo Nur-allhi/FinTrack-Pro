@@ -17,6 +17,8 @@ function toUiTransaction(local: LocalTransaction, accountServerId: number): Tran
     type: local.type,
     summary: local.summary,
     linked_transaction_id: null,
+    updated_at: local.updated_at,
+    sync_status: local.sync_status,
   };
 }
 
@@ -47,7 +49,7 @@ export function useTransactions(account: Account) {
     if (accountIdRef.current !== account?.id) return;
     const uiTxns = localTxns
       .map(lt => toUiTransaction(lt, account.id))
-      .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+      .sort((a, b) => b.date.localeCompare(a.date) || (b.updated_at || '').localeCompare(a.updated_at || ''));
     setTransactions(uiTxns);
     setLoading(false);
   }, [account?.id]);

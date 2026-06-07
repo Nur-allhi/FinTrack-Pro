@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Transaction } from '../types';
@@ -81,7 +81,9 @@ export default React.memo(function TransactionCard({
                 className="overflow-hidden"
               >
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-hairline">
-                  <span className="text-xs font-bold text-muted uppercase tracking-wider">
+                  <span className="text-xs font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                    {tx.sync_status === 'pending' && <RefreshCw className="w-3 h-3 text-amber-500" aria-label="Pending sync" />}
+                    {tx.sync_status === 'synced' && <CheckCircle2 className="w-3 h-3 text-semantic-up" aria-label="Synced" />}
                     Balance: <AnimatedBalance value={tx.runningBalance} currency={currency} className="font-mono font-bold text-xs" />
                   </span>
                   <div className="flex items-center gap-1">

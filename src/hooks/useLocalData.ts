@@ -9,10 +9,13 @@ function toApiMember(r: LocalMember) {
   return { id: r.server_id ?? 0, name: r.name, relationship: r.relationship };
 }
 
-function toApiAccount(r: LocalAccount) {
+function toApiAccount(r: LocalAccount, memberLocalIdToServerId: Map<string, number>) {
+  const memberId = r.member_id != null
+    ? memberLocalIdToServerId.get(String(r.member_id)) ?? r.member_id
+    : null;
   return {
     id: r.server_id ?? 0, name: r.name, type: r.type as 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group',
-    member_id: r.member_id, parent_id: r.parent_id,
+    member_id: memberId, parent_id: r.parent_id,
     color: r.color, archived: r.archived,
     initial_balance: r.initial_balance || 0, current_balance: r.current_balance || 0,
   };
@@ -343,7 +346,14 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   }, [isAuthenticated]);
 
   const apiMembers = useMemo(() => members.map(toApiMember), [members]);
-  const apiAccounts = useMemo(() => accounts.map(toApiAccount), [accounts]);
+  const memberLocalIdToServerId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of members) {
+      if (m.server_id != null) map.set(m.id, m.server_id);
+    }
+    return map;
+  }, [members]);
+  const apiAccounts = useMemo(() => accounts.map(a => toApiAccount(a, memberLocalIdToServerId)), [accounts, memberLocalIdToServerId]);
 
   return {
     isOnline: isOnlineState,

@@ -397,6 +397,18 @@
 
 ---
 
+## Phase 18 — Sync Toast & Ledger Sync Indicators
+
+> **Branch**: `feat/local-first`
+> **Status**: completed
+
+- [x] **T-220** Create `SyncToast` component — slides down from header during sync with real progress, shows tick mark + item count on completion (1h)
+- [x] **T-221** Replace `OfflineIndicator` syncing animation with `SyncToast` in `App.tsx` (30m)
+- [x] **T-222** Add `sync_status` to `Transaction` type + `toUiTransaction` mapping (15m)
+- [x] **T-223** Add sync status icons (pending/synced) beside balance column in `TransactionRow` and `TransactionCard` (30m)
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`

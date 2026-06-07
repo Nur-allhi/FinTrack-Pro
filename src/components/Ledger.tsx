@@ -45,7 +45,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
   };
 
   const txsWithBalance = [...transactions]
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || (a.updated_at || '').localeCompare(b.updated_at || ''))
     .reduce((acc, tx) => {
       const prevBal = acc.length > 0 ? acc[acc.length - 1].runningBalance : Number(account.initial_balance);
       acc.push({ ...tx, runningBalance: prevBal + Number(tx.amount) });

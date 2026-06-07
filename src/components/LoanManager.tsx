@@ -21,24 +21,28 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const toApiLoan = (r: LocalLoan): Loan => ({
-    id: r.server_id ?? 0,
-    lender_account_id: Number(r.lender_account_id),
-    borrower_account_id: r.borrower_account_id ? Number(r.borrower_account_id) : null,
-    borrower_name: r.borrower_name,
-    amount: r.amount,
-    remaining: r.remaining,
-    date_given: r.date_given,
-    due_date: r.due_date,
-    interest_rate: r.interest_rate,
-    particulars: r.particulars,
-    status: r.status as 'active' | 'settled' | 'defaulted',
-    settled_date: r.settled_date,
-    lender_name: accounts.find(a => a.id === Number(r.lender_account_id))?.name,
-    borrower_account_name: r.borrower_account_id
-      ? accounts.find(a => a.id === Number(r.borrower_account_id))?.name
-      : undefined,
-  });
+  const toApiLoan = (r: LocalLoan): Loan => {
+    const lid = Number(r.lender_account_id);
+    const bid = r.borrower_account_id ? Number(r.borrower_account_id) : null;
+    const lender = accounts.find(a => a.id === lid);
+    const borrower = bid != null ? accounts.find(a => a.id === bid) : undefined;
+    return {
+      id: r.server_id ?? 0,
+      lender_account_id: lid || lender?.id || 0,
+      borrower_account_id: bid || borrower?.id || null,
+      borrower_name: r.borrower_name,
+      amount: r.amount,
+      remaining: r.remaining,
+      date_given: r.date_given,
+      due_date: r.due_date,
+      interest_rate: r.interest_rate,
+      particulars: r.particulars,
+      status: r.status as 'active' | 'settled' | 'defaulted',
+      settled_date: r.settled_date,
+      lender_name: r.lender_name || lender?.name,
+      borrower_account_name: r.borrower_account_name || borrower?.name,
+    };
+  };
 
   const fetchLoans = async (showLoading = false) => {
     if (showLoading) setLoading(true);
@@ -80,7 +84,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
       .map(([key, loans]) => {
         const sorted = [...loans].sort((a, b) => new Date(b.date_given).getTime() - new Date(a.date_given).getTime());
         const first = sorted[0];
-        return { key, loans: sorted, borrowerName: first.borrower_name || first.borrower_account_name || `Account #${first.borrower_account_id}`, lenderName: first.lender_name || `Account #${first.lender_account_id}`, totalAmount: loans.reduce((s, l) => s + l.amount, 0), totalRemaining: loans.reduce((s, l) => s + l.remaining, 0), activeCount: loans.filter(l => l.status === 'active').length, latestDate: sorted[0].date_given } as LoanGroup;
+        return { key, loans: sorted, borrowerName: first.borrower_name || first.borrower_account_name || (first.borrower_account_id ? `Account #${first.borrower_account_id}` : 'Unknown'), lenderName: first.lender_name || (first.lender_account_id ? `Account #${first.lender_account_id}` : 'Unknown'), totalAmount: loans.reduce((s, l) => s + l.amount, 0), totalRemaining: loans.reduce((s, l) => s + l.remaining, 0), activeCount: loans.filter(l => l.status === 'active').length, latestDate: sorted[0].date_given } as LoanGroup;
       })
       .sort((a, b) => a.borrowerName.localeCompare(b.borrowerName));
   }, [filteredLoans, groupingMode]);

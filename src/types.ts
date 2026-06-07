@@ -42,6 +42,8 @@ export interface Transaction {
   type: 'normal' | 'transfer';
   linked_transaction_id: number | null;
   summary: string | null;
+  updated_at?: string;
+  sync_status?: 'pending' | 'synced' | 'conflict';
 }
 
 // ─── Loan ──────────────────────────────────

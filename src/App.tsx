@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
-import OfflineIndicator from './components/OfflineIndicator';
+import SyncToast from './components/SyncToast';
 import UserProfile from './components/UserProfile';
 import BottomNav from './components/layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -55,12 +55,12 @@ const defaultTypeColors: Record<string, string> = {
 };
 
 const defaultSettings = {
-  showNetWorth: true,
-  showCurrentAssets: true,
-  showLiabilities: true,
-  showTodos: true,
-  showSpendingChart: true,
-  showBalanceTrend: true,
+  showNetWorth: false,
+  showCurrentAssets: false,
+  showLiabilities: false,
+  showTodos: false,
+  showSpendingChart: false,
+  showBalanceTrend: false,
   enableNotifications: true,
   darkMode: false,
   darkModeStyle: 'dark' as 'dark' | 'dark-dim' | 'dark-night',
@@ -281,7 +281,7 @@ export default function App() {
           onOpenProfile={openProfile}
         />
 
-        <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} lastSyncAt={lastSync} progress={syncProgress} />
+        <SyncToast isOnline={isOnline} pendingCount={pendingCount} />
         <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}>

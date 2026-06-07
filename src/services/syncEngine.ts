@@ -1,4 +1,4 @@
-import { localDb, LocalRecord, EntityName } from './localDb';
+import { localDb, LocalRecord, EntityName, LocalTransaction, LocalLoan, LocalInvestment, LocalMember } from './localDb';
 import { authService } from './authService';
 import { isLocalOnly } from '../../shared/schema';
 
@@ -19,11 +19,15 @@ export interface SyncResult {
 /** Local-only fields that must never be sent to server */
 const LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as const;
 
+/** Server-generated columns that must never be sent to server (e.g., generated tsvector columns) */
+const SERVER_GENERATED_FIELDS = ['fts'] as const;
+
 /** Strip local-only fields and map _deleted → deleted_at */
 function sanitizeForPush(record: LocalRecord): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     if (LOCAL_ONLY_FIELDS.includes(key as typeof LOCAL_ONLY_FIELDS[number])) continue;
+    if (SERVER_GENERATED_FIELDS.includes(key as typeof SERVER_GENERATED_FIELDS[number])) continue;
     out[key] = value;
   }
   // Map id → client_id
@@ -166,15 +170,104 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     }
   }
 
+  if (totalUnsynced === 0) return { pushed: 0, conflicts: 0 };
+
   _syncProgress = { current: 0, total: SYNC_TABLES.length };
   syncState.setState({ progress: _syncProgress });
 
-  if (totalUnsynced === 0) return { pushed: 0, conflicts: 0 };
+  // Build local_id → server_id maps for FK translation (push direction)
+  const localAccounts = await localDb.getAccounts();
+  const accountLocalIdToServerId = new Map<string, number>();
+  for (const a of localAccounts) {
+    if (a.server_id != null) accountLocalIdToServerId.set(a.id, a.server_id);
+  }
 
-  // Sanitize: strip local-only fields, map id→client_id, _deleted→deleted_at
+  const localTransactions = await localDb.getAllRecords('transactions') as Array<LocalTransaction & { server_id?: number | null }>;
+  const transactionLocalIdToServerId = new Map<string, number>();
+  for (const t of localTransactions) {
+    if (t.server_id != null) transactionLocalIdToServerId.set(t.id, t.server_id);
+  }
+
+  const localLoans = await localDb.getAllRecords('loans') as Array<LocalLoan & { server_id?: number | null }>;
+  const loanLocalIdToServerId = new Map<string, number>();
+  for (const l of localLoans) {
+    if (l.server_id != null) loanLocalIdToServerId.set(l.id, l.server_id);
+  }
+
+  const localInvestments = await localDb.getAllRecords('investments') as Array<LocalInvestment & { server_id?: number | null }>;
+  const investmentLocalIdToServerId = new Map<string, number>();
+  for (const inv of localInvestments) {
+    if (inv.server_id != null) investmentLocalIdToServerId.set(inv.id, inv.server_id);
+  }
+
+  const localMembers = await localDb.getAllRecords('members') as Array<LocalMember & { server_id?: number | null }>;
+  const memberLocalIdToServerId = new Map<string, number>();
+  for (const m of localMembers) {
+    if (m.server_id != null) memberLocalIdToServerId.set(m.id, m.server_id);
+  }
+
+  // Sanitize: strip local-only fields, map id→client_id, _deleted→deleted_at, translate FKs
   const sanitized: Record<string, Record<string, unknown>[]> = {};
   for (const [table, recs] of Object.entries(records)) {
-    sanitized[table] = recs.map(sanitizeForPush);
+    sanitized[table] = recs.map(r => {
+      const base = sanitizeForPush(r);
+      // Translate FK fields: local UUID → server_id (BIGINT)
+      if (table === 'transactions') {
+        if (base.account_id != null) {
+          const serverId = accountLocalIdToServerId.get(base.account_id as string);
+          if (serverId != null) base.account_id = serverId;
+        }
+        if (base.linked_transaction_id != null) {
+          const serverId = transactionLocalIdToServerId.get(base.linked_transaction_id as string);
+          if (serverId != null) base.linked_transaction_id = serverId;
+        }
+      }
+      if (table === 'loans') {
+        if (base.lender_account_id != null) {
+          const serverId = accountLocalIdToServerId.get(base.lender_account_id as string);
+          if (serverId != null) base.lender_account_id = serverId;
+        }
+        if (base.borrower_account_id != null) {
+          const serverId = accountLocalIdToServerId.get(base.borrower_account_id as string);
+          if (serverId != null) base.borrower_account_id = serverId;
+        }
+      }
+      if (table === 'loan_settlements') {
+        if (base.loan_id != null) {
+          const serverId = loanLocalIdToServerId.get(base.loan_id as string);
+          if (serverId != null) base.loan_id = serverId;
+        }
+        if (base.transaction_id != null) {
+          const serverId = transactionLocalIdToServerId.get(base.transaction_id as string);
+          if (serverId != null) base.transaction_id = serverId;
+        }
+      }
+      if (table === 'investments') {
+        if (base.account_id != null) {
+          const serverId = accountLocalIdToServerId.get(base.account_id as string);
+          if (serverId != null) base.account_id = serverId;
+        }
+      }
+      if (table === 'investment_returns') {
+        if (base.investment_id != null) {
+          const serverId = investmentLocalIdToServerId.get(base.investment_id as string);
+          if (serverId != null) base.investment_id = serverId;
+        }
+      }
+      if (table === 'recurring_transactions') {
+        if (base.account_id != null) {
+          const serverId = accountLocalIdToServerId.get(base.account_id as string);
+          if (serverId != null) base.account_id = serverId;
+        }
+      }
+      if (table === 'groups') {
+        if (base.member_id != null) {
+          const serverId = memberLocalIdToServerId.get(base.member_id as string);
+          if (serverId != null) base.member_id = serverId;
+        }
+      }
+      return base;
+    });
   }
 
   const res = await authService.apiFetch('/api/sync/push', {
@@ -308,6 +401,18 @@ export async function syncNow(): Promise<SyncResult> {
   if (_isSyncing) return { pushed: 0, pulled: 0, conflicts: 0 };
   if (!navigator.onLine) return { pushed: 0, pulled: 0, conflicts: 0 };
 
+  let hasPending = false;
+  for (const table of SYNC_TABLES) {
+    const unsynced = await getUnsyncedForTable(table);
+    if (unsynced.length > 0) { hasPending = true; break; }
+  }
+
+  if (!hasPending) {
+    const pulled = await pullChanges();
+    await refreshPendingCount();
+    return { pushed: 0, pulled, conflicts: 0 };
+  }
+
   setSyncing(true);
   try {
     const pushResult = await pushUnsynced();
@@ -326,6 +431,14 @@ export async function syncNow(): Promise<SyncResult> {
 export async function flushPending(): Promise<void> {
   if (_isSyncing) return;
   if (!navigator.onLine) return;
+
+  let hasPending = false;
+  for (const table of SYNC_TABLES) {
+    const unsynced = await getUnsyncedForTable(table);
+    if (unsynced.length > 0) { hasPending = true; break; }
+  }
+
+  if (!hasPending) return;
 
   setSyncing(true);
   try {

@@ -165,6 +165,14 @@ export default function Login({ onLogin, onGoToSignup, onGoToForgotPassword, onC
               Continue as Guest
             </button>
 
+            <button
+              type="button"
+              onClick={() => { setEmail('admin@fintrackpro.com'); setPassword('admin12'); }}
+              className="w-full h-12 text-sm font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-all"
+            >
+              Demo Login
+            </button>
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-hairline" />

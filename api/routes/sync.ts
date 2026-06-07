@@ -27,10 +27,14 @@ interface PushBody {
 // Local-only fields that clients might accidentally send
 const SERVER_LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as const;
 
+/** Server-generated columns that must never be sent to server (e.g., generated tsvector columns) */
+const SERVER_GENERATED_FIELDS = ['fts'] as const;
+
 function sanitizeRecord(record: SyncRecord): SyncRecord {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     if (SERVER_LOCAL_ONLY_FIELDS.includes(key as typeof SERVER_LOCAL_ONLY_FIELDS[number])) continue;
+    if (SERVER_GENERATED_FIELDS.includes(key as typeof SERVER_GENERATED_FIELDS[number])) continue;
     out[key] = value;
   }
   return out as SyncRecord;
