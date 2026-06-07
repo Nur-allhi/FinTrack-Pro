@@ -3,6 +3,7 @@ import { Loan, Account, WriteOperation } from '../types';
 import { Plus, Loader2 } from 'lucide-react';
 import { useToast } from './Toast';
 import { localDb, LocalLoan } from '../services/localDb';
+import { authService } from '../services/authService';
 import { flushPending } from '../services/syncEngine';
 import LoanGroupCard, { LoanGroup } from './LoanGroupCard';
 import LoanFilters from './LoanFilters';
@@ -93,10 +94,40 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
     try {
       const localLoans = await localDb.getLoans();
       const local = findLocalLoan(localLoans, id) as LocalLoan | undefined;
-      if (local) {
-        await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
-        flushPending();
+      if (!local) { toast("Loan not found.", 'error'); return; }
+
+      const serverId = local.server_id;
+
+      if (serverId != null && navigator.onLine) {
+        try {
+          const res = await authService.apiFetch(`/api/loans/${serverId}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            await localDb.deleteLoan(local.id);
+            toast("Loan deleted.", 'success');
+            fetchLoans();
+            return;
+          }
+          const isServerError = res.status >= 400 && res.status < 500;
+          if (isServerError) {
+            const body = await res.json().catch(() => ({}));
+            toast(body?.error || "Server rejected deletion.", 'error');
+            fetchLoans();
+            return;
+          }
+        } catch {
+          // Network error — fall through to soft-delete
+        }
+      }
+
+      if (serverId == null) {
+        await localDb.deleteLoan(local.id);
         toast("Loan deleted.", 'success');
+      } else {
+        await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+        toast("Loan deleted (will sync when online).", 'info');
+        flushPending();
       }
       fetchLoans();
     }

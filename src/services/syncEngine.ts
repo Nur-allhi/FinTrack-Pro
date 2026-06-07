@@ -22,12 +22,16 @@ const LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as cons
 /** Server-generated columns that must never be sent to server (e.g., generated tsvector columns) */
 const SERVER_GENERATED_FIELDS = ['fts'] as const;
 
+/** Computed/joined fields that exist on API response types but not on actual DB columns */
+const COMPUTED_FIELDS = ['lender_name', 'borrower_account_name', 'account_name'] as const;
+
 /** Strip local-only fields and map _deleted → deleted_at */
 function sanitizeForPush(record: LocalRecord): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     if (LOCAL_ONLY_FIELDS.includes(key as typeof LOCAL_ONLY_FIELDS[number])) continue;
     if (SERVER_GENERATED_FIELDS.includes(key as typeof SERVER_GENERATED_FIELDS[number])) continue;
+    if (COMPUTED_FIELDS.includes(key as typeof COMPUTED_FIELDS[number])) continue;
     out[key] = value;
   }
   // Map id → client_id

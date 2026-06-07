@@ -31,7 +31,7 @@ interface AccountFormProps {
   currentBalance?: number;
 }
 
-export default function AccountForm({ title, newAcc, setNewAcc, members, groups, saving, onSubmit, onCancel, defaultCurrency = 'USD' }: AccountFormProps) {
+export default function AccountForm({ title, newAcc, setNewAcc, members, groups, saving, onSubmit, onCancel, defaultCurrency = 'USD', currentBalance }: AccountFormProps) {
   return (
     <>
       <div className="flex items-center justify-between mb-4">

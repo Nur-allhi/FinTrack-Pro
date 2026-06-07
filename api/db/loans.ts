@@ -96,7 +96,7 @@ export async function createLoan(userId: string, data: {
 
   const { data: debit, error: dErr } = await db().from("transactions").insert([{
     account_id: data.lender_account_id, date: data.date_given,
-    particulars: `Loan to: ${counterpartyName}${detail}`,
+    particulars: `Loan: ${lenderName} → ${counterpartyName}${detail}`,
     category: 'Loan', amount: -data.amount, type: 'loan',
     user_id: userId
   }]).select().single();
@@ -105,7 +105,7 @@ export async function createLoan(userId: string, data: {
   if (isInterAccount) {
     const { data: credit, error: cErr } = await db().from("transactions").insert([{
       account_id: data.borrower_account_id, date: data.date_given,
-      particulars: `Loan from: ${lenderName}${detail}`,
+      particulars: `Loan: ${lenderName} → ${(data.borrower_account_id ? counterpartyName : data.borrower_name)}${detail}`,
       category: 'Loan', amount: data.amount, type: 'loan',
       linked_transaction_id: debit.id,
       user_id: userId
@@ -169,7 +169,7 @@ async function settlePersonLoan(loan: LoanRow, amount: number, userId: string) {
 
   const { data: tx, error: txErr } = await db().from("transactions").insert([{
     account_id: loan.lender_account_id, date: today,
-    particulars: `Loan settlement from: ${loan.borrower_name}`,
+    particulars: `Settlement: ${loan.borrower_name} → ${lenderName}`,
     category: 'Loan Settlement', amount: amount, type: 'loan_settle',
     user_id: userId
   }]).select().single();
@@ -203,7 +203,7 @@ async function settleInterAccountLoan(loan: LoanRow, amount: number, userId: str
 
   const { data: debit, error: dErr } = await db().from("transactions").insert([{
     account_id: loan.borrower_account_id, date: today,
-    particulars: `Loan settlement to: ${lenderName}`,
+    particulars: `Settlement: ${borrowerName} → ${lenderName}`,
     category: 'Loan Settlement', amount: -amount, type: 'loan_settle',
     user_id: userId
   }]).select().single();
@@ -211,7 +211,7 @@ async function settleInterAccountLoan(loan: LoanRow, amount: number, userId: str
 
   const { data: credit, error: cErr } = await db().from("transactions").insert([{
     account_id: loan.lender_account_id, date: today,
-    particulars: `Loan settlement from: ${borrowerName}`,
+    particulars: `Settlement: ${borrowerName} → ${lenderName}`,
     category: 'Loan Settlement', amount: amount, type: 'loan_settle',
     linked_transaction_id: debit.id,
     user_id: userId

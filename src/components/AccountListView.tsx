@@ -14,7 +14,7 @@ interface AccountListViewProps {
   currency: string;
   typeColors?: Record<string, string>;
   onEdit: (acc: Account) => void;
-  onToggleArchive: (id: number, current: number) => void;
+  onToggleArchive: (id: number, current: number, localId?: string) => void;
 }
 
 export default function AccountListView({ accounts, currency, typeColors, onEdit, onToggleArchive }: AccountListViewProps) {
@@ -56,7 +56,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                   <td className="px-3 py-2.5 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => onEdit(acc)} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => onToggleArchive(acc.id, acc.archived)} className="p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => onToggleArchive(acc.id, acc.archived, acc._localId)} className="p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-3.5 h-3.5" /></button>
                     </div>
                   </td>
                 </tr>
@@ -92,7 +92,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                 </div>
                 <div className="flex gap-2 mt-1.5">
                   <button onClick={() => onEdit(acc)} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>
-                  <button onClick={() => onToggleArchive(acc.id, acc.archived)} className="text-[10px] font-bold text-muted hover:text-amber-600 uppercase tracking-wider">{acc.archived ? 'Activate' : 'Archive'}</button>
+                  <button onClick={() => onToggleArchive(acc.id, acc.archived, acc._localId)} className="text-[10px] font-bold text-muted hover:text-amber-600 uppercase tracking-wider">{acc.archived ? 'Activate' : 'Archive'}</button>
                 </div>
               </div>
             </div>

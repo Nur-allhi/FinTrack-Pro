@@ -18,6 +18,7 @@ export interface Member {
 
 export interface Account {
   id: number;
+  _localId?: string;
   name: string;
   type: 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group';
   member_id: number | string | null;

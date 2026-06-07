@@ -9,13 +9,23 @@ function toApiMember(r: LocalMember) {
   return { id: r.server_id ?? 0, name: r.name, relationship: r.relationship };
 }
 
-function toApiAccount(r: LocalAccount, memberLocalIdToServerId: Map<string, number>) {
+function toApiAccount(
+  r: LocalAccount,
+  memberLocalIdToServerId: Map<string, number>,
+  memberNameById: Map<string | number, string>,
+  accountNameById: Map<string | number, string>,
+) {
   const memberId = r.member_id != null
     ? memberLocalIdToServerId.get(String(r.member_id)) ?? r.member_id
     : null;
+  const memberName = r.member_id != null ? memberNameById.get(r.member_id) : undefined;
+  const parentName = r.parent_id != null ? accountNameById.get(r.parent_id) : undefined;
   return {
-    id: r.server_id ?? 0, name: r.name, type: r.type as 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group',
-    member_id: memberId, parent_id: r.parent_id,
+    id: r.server_id ?? 0,
+    _localId: r.id,
+    name: r.name, type: r.type as 'cash' | 'bank' | 'mobile' | 'investment' | 'purpose' | 'home_exp' | 'group',
+    member_id: memberId, member_name: memberName,
+    parent_id: r.parent_id, parent_name: parentName,
     color: r.color, archived: r.archived,
     initial_balance: r.initial_balance || 0, current_balance: r.current_balance || 0,
   };
@@ -353,7 +363,28 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     }
     return map;
   }, [members]);
-  const apiAccounts = useMemo(() => accounts.map(a => toApiAccount(a, memberLocalIdToServerId)), [accounts, memberLocalIdToServerId]);
+  const memberNameById = useMemo(() => {
+    const map = new Map<string | number, string>();
+    for (const m of members) {
+      map.set(m.id, m.name);
+      if (m.server_id != null) map.set(m.server_id, m.name);
+    }
+    return map;
+  }, [members]);
+
+  const accountNameById = useMemo(() => {
+    const map = new Map<string | number, string>();
+    for (const a of accounts) {
+      map.set(a.id, a.name);
+      if (a.server_id != null) map.set(a.server_id, a.name);
+    }
+    return map;
+  }, [accounts]);
+
+  const apiAccounts = useMemo(
+    () => accounts.map(a => toApiAccount(a, memberLocalIdToServerId, memberNameById, accountNameById)),
+    [accounts, memberLocalIdToServerId, memberNameById, accountNameById],
+  );
 
   return {
     isOnline: isOnlineState,

@@ -332,7 +332,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       borrower_account_id: borrower?.id || null,
       borrower_name: loanState.loanType === 'person' ? (loanState.borrower_name || loanState.particulars) : null,
       lender_name: lender.name,
-      borrower_account_name: borrower?.name || null,
+      borrower_account_name: borrower?.name,
       amount, remaining: amount,
       date_given: loanState.date_given,
       due_date: loanState.due_date || null,
@@ -347,7 +347,9 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     const borrowerName = loanState.loanType === 'person' ? loanState.borrower_name : (borrower?.name || null);
     const lenderTx: LocalTransaction = {
       id: generateId(), account_id: lender.id, date: loanState.date_given,
-      particulars: loanState.particulars || (borrowerName ? `Loan Given to ${borrowerName}` : 'Loan Given'),
+      particulars: borrowerName
+        ? `Loan Given: ${lender.name} → ${borrowerName}${loanState.particulars ? ` - ${loanState.particulars}` : ''}`
+        : `Loan Given: ${lender.name}${loanState.particulars ? ` - ${loanState.particulars}` : ''}`,
       category: 'Loan Given',
       amount: -amount, type: 'normal', linked_transaction_id: null,
       summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
@@ -358,7 +360,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     if (borrower) {
       const borrowerTx: LocalTransaction = {
         id: generateId(), account_id: borrower.id, date: loanState.date_given,
-        particulars: loanState.particulars || `Loan Received from ${lender.name}`,
+        particulars: `Loan Received: ${lender.name} → ${borrower.name}${loanState.particulars ? ` - ${loanState.particulars}` : ''}`,
         category: 'Loan Received',
         amount: +amount, type: 'normal', linked_transaction_id: null,
         summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
@@ -421,7 +423,9 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     if (lender) {
       const repayTx: LocalTransaction = {
         id: generateId(), account_id: lender.id, date: settleState.date,
-        particulars: counterparty ? `Loan Repayment from ${counterparty}` : 'Loan Repayment',
+        particulars: counterparty
+          ? `Loan Repayment: ${counterparty} → ${lender.name}`
+          : `Loan Repayment: ${lender.name}`,
         category: 'Loan Repayment',
         amount: +settleAmount, type: 'normal', linked_transaction_id: null,
         summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
@@ -434,9 +438,10 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       ? localAccounts.find(a => a.id === local.borrower_account_id)
       : null;
     if (borrower) {
+      const lenderName = local.lender_name || lender?.name || 'Lender';
       const borrowerTx: LocalTransaction = {
         id: generateId(), account_id: borrower.id, date: settleState.date,
-        particulars: `Loan Repayment to ${local.lender_name || lender?.name || 'Lender'}`,
+        particulars: `Loan Repayment: ${borrower.name} → ${lenderName}`,
         category: 'Loan Repayment',
         amount: -settleAmount, type: 'normal', linked_transaction_id: null,
         summary: null, updated_at: now, sync_status: 'pending', _deleted: false,

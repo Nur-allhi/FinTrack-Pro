@@ -160,17 +160,20 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
     setIsAdding(true);
   };
 
-  const toggleArchive = async (id: number, current: number) => {
+  const toggleArchive = async (id: number, current: number, localId?: string) => {
     try {
       const res = await authService.apiFetch(`/api/accounts/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: current ? 0 : 1 }) });
       if (!res.ok) throw new Error('API error');
       onUpdate();
     } catch (error) {
       const allAccounts = await localDb.getAccounts();
-      const local = allAccounts.find(a => a.server_id === id);
+      const local = localId
+        ? allAccounts.find(a => a.id === localId)
+        : allAccounts.find(a => a.server_id === id);
       if (local) {
         await localDb.putAccount({ ...local, archived: current ? 0 : 1, updated_at: new Date().toISOString(), sync_status: 'pending' });
         toast("Saved locally. Will sync when online.", 'success');
+        onUpdate();
       } else {
         toast("Failed to update account.", 'error');
       }
@@ -243,7 +246,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   );
 }
 
-function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive }: { acc: Account; currency: string; typeColors?: Record<string, string>; onEdit: (a: Account) => void; onToggleArchive: (id: number, current: number) => void }) {
+function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive }: { acc: Account; currency: string; typeColors?: Record<string, string>; onEdit: (a: Account) => void; onToggleArchive: (id: number, current: number, localId?: string) => void }) {
   const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = { cash: Wallet, bank: Building2, mobile: Smartphone, investment: TrendingUp, purpose: Target, home_exp: Home };
   const Icon = typeIcons[acc.type] || Wallet;
   return (
@@ -272,7 +275,7 @@ function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive }:
           </div>
           <div className="flex gap-1">
             <button onClick={() => onEdit(acc)} className="p-2 md:p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
-            <button onClick={() => onToggleArchive(acc.id, acc.archived)} className="p-2 md:p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
+            <button onClick={() => onToggleArchive(acc.id, acc.archived, acc._localId)} className="p-2 md:p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
           </div>
         </div>
       </div>
