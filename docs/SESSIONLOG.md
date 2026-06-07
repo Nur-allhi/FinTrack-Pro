@@ -787,3 +787,41 @@ Analyzed the Dashboard-Ledger balance desync. Identified that `useTransactions.t
 
 ### Files Changed
 - `docs/LOCAL_FIRST_READ_PATH_FIX.md` — new implementation plan
+
+---
+
+## Session 7 — 07 Jun 2026 (Modal, Sync Fixes, Balance Display)
+
+> **Branch**: `feat/local-first`
+> **Status**: completed
+
+### Summary
+Unified Modal component, offline fallback for account/group operations, group sync to server, current_balance in all account dropdowns.
+
+### Changes
+- Created reusable `Modal` component (portal + backdrop + animation)
+- Converted inline collapsible forms → Modal in AccountManager, MemberManager, GroupManager
+- Fixed AccountManager groups source (localDb instead of API)
+- Added offline local-fallback to AccountManager create/update/archive
+- Added API sync calls to GroupManager (create/update/delete)
+- Fixed GroupManager error handling (server errors vs network errors)
+- Removed y-offset page animations in App.tsx (layout shift fix)
+- Added current_balance display in LoanCreateForm, InvestmentCreateForm, AccountForm (edit), RecurringManager, ReportGenerator
+
+### Files Changed
+- `src/components/Modal.tsx` — new reusable modal
+- `src/components/AccountManager.tsx` — Modal, localDb groups, offline fallback
+- `src/components/GroupManager.tsx` — Modal, API sync, error handling
+- `src/components/MemberManager.tsx` — Modal conversion
+- `src/components/AccountListView.tsx` — removed inline edit sections
+- `src/components/GroupForm.tsx` — removed outer wrapper (handled by Modal)
+- `src/App.tsx` — removed y-offset page animations
+- `src/components/AccountForm.tsx` — currentBalance display
+- `src/components/WriteModalForms.tsx` — currentBalance in Loan/Investment forms
+- `src/components/WriteModal.tsx` — pass currency to forms
+- `src/components/RecurringManager.tsx` — currentBalance in dropdown
+- `src/components/ReportGenerator.tsx` — currentBalance in filter
+
+### Verification
+- `npm run build` passes
+- gitnexus skipped (CLI not found)

@@ -462,4 +462,12 @@ Earlier work includes:
 - Data export/import
 - Session 1-4 foundational features
 
+2026-06-07: Add reusable Modal component at src/components/Modal.tsx - Portal-based modal with backdrop and animation (completed).
+2026-06-07: Convert inline forms in AccountManager, MemberManager, GroupManager to Modal at src/components/ - Unifies form UX (completed).
+2026-06-07: Fix layout shift on account page at src/App.tsx - Removed y-offset page animations causing slide-up on mount (completed).
+2026-06-07: Fix AccountManager groups loading at src/components/AccountManager.tsx - Switch from API to localDb (completed).
+2026-06-07: Add offline fallback to AccountManager at src/components/AccountManager.tsx - Local save on API failure (completed).
+2026-06-07: Sync groups to server at src/components/GroupManager.tsx - Add API calls with local-first fallback (completed).
+2026-06-07: Show current_balance in all forms at WriteModalForms, AccountForm, RecurringManager, ReportGenerator - Displays running balance in account dropdowns and edit form (completed).
+
 See git log or HANDOFF.md for full historical details.
