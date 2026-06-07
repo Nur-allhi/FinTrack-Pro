@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LoadingScreen from './components/LoadingScreen';
-import SyncToast from './components/SyncToast';
 import UserProfile from './components/UserProfile';
 import BottomNav from './components/layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -287,7 +286,6 @@ export default function App() {
           onOpenProfile={openProfile}
         />
 
-        <SyncToast isOnline={isOnline} pendingCount={pendingCount} />
         <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}>
