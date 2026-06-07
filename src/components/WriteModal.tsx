@@ -379,6 +379,20 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       await localDb.adjustAccountBalance(lender.id, +settleAmount);
     }
 
+    const borrower = local.borrower_account_id
+      ? localAccounts.find(a => a.id === local.borrower_account_id)
+      : null;
+    if (borrower) {
+      const borrowerTx: LocalTransaction = {
+        id: generateId(), account_id: borrower.id, date: settleState.date,
+        particulars: 'Loan Repayment', category: 'Loan Repayment',
+        amount: -settleAmount, type: 'normal', linked_transaction_id: null,
+        summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+      };
+      await localDb.putTransaction(borrowerTx);
+      await localDb.adjustAccountBalance(borrower.id, -settleAmount);
+    }
+
     return true;
   };
 
