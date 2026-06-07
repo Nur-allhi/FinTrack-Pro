@@ -11,6 +11,7 @@ interface LoanManagerProps {
   accounts: Account[];
   onWriteOperation: (op: WriteOperation) => void;
   currency: string;
+  refreshCounter?: number;
 }
 
 export function loanDisplayId(r: { server_id?: number | null; id: string }): number {
@@ -33,7 +34,7 @@ export function findLocalLoan(localLoans: { server_id?: number | null; id: strin
   return localLoans.find(l => l.server_id == null && loanDisplayId(l) === id);
 }
 
-export default function LoanManager({ accounts, onWriteOperation, currency }: LoanManagerProps) {
+export default function LoanManager({ accounts, onWriteOperation, currency, refreshCounter }: LoanManagerProps) {
   const { toast } = useToast();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled'>('all');
@@ -80,7 +81,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
     finally { if (showLoading) setLoading(false); }
   };
 
-  useEffect(() => { fetchLoans(true); }, []);
+  useEffect(() => { fetchLoans(true); }, [refreshCounter]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this loan record?")) return;

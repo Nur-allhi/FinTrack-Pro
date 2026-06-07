@@ -78,6 +78,7 @@ export default function App() {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [writeOperation, setWriteOperation] = useState<WriteOperation | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const [showSignupNudge, setShowSignupNudge] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
@@ -172,6 +173,11 @@ export default function App() {
     if (count >= 5) setShowSignupNudge(true);
   }, [isAuthenticated]);
 
+  const handleDataSaved = useCallback(() => {
+    void checkSignupNudge();
+    setRefreshCounter(c => c + 1);
+  }, [checkSignupNudge]);
+
   const handleExportData = async () => {
     const blob = new Blob([JSON.stringify({ members, accounts, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -211,7 +217,7 @@ export default function App() {
       case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
       case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
       case 'investments': return <InvestmentTracker accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} />;
-      case 'loans': return <LoanManager accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} />;
+      case 'loans': return <LoanManager accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} refreshCounter={refreshCounter} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
       case 'recyclebin': return <RecycleBin />;
       case 'settings': return <Settings settings={settings} onUpdateSettings={(s: typeof settings) => { setSettings(s); localDb.setSettings(s as Record<string, unknown>); }} />;
@@ -299,7 +305,7 @@ export default function App() {
               members={members}
               currency={settings.currency}
               onClose={() => setWriteOperation(null)}
-              onTransactionSaved={checkSignupNudge}
+               onTransactionSaved={handleDataSaved}
             />
           </Suspense>
         )}
