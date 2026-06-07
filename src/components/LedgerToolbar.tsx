@@ -41,7 +41,7 @@ export default function LedgerToolbar({
   const modes = ['all', 'month', 'date', 'range'] as const;
 
   return (
-    <div className={className}>
+    <div className={`md:hidden ${className}`}>
       {/* Mobile toggle */}
       <AnimatePresence>
         {showFilters && (

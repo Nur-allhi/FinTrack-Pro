@@ -143,6 +143,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
 
         <LedgerToolbar {...toolbarProps} />
 
+        {filteredTxs.length > 0 && (
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse app-stagger-grid">
             <thead>
@@ -169,7 +170,9 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
             </tbody>
           </table>
         </div>
+        )}
 
+        {filteredTxs.length > 0 && (
         <div className="md:hidden divide-y divide-hairline app-stagger-grid">
           <AnimatePresence initial={false}>
             {filteredTxs.map((tx, idx) => (
@@ -182,6 +185,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
             ))}
           </AnimatePresence>
         </div>
+        )}
         {loading ? (
           <div className="px-6 md:px-12 py-16 md:py-32 text-center bg-canvas">
             <div className="w-12 md:w-20 h-12 md:h-20 bg-surface-soft rounded-full flex items-center justify-center mx-auto mb-4 md:mb-8 border border-hairline">
