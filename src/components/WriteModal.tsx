@@ -344,9 +344,11 @@ export default function WriteModal({ operation, accounts, members, currency, onC
 
     await localDb.putLoan(record);
 
+    const borrowerName = loanState.loanType === 'person' ? loanState.borrower_name : (borrower?.name || null);
     const lenderTx: LocalTransaction = {
       id: generateId(), account_id: lender.id, date: loanState.date_given,
-      particulars: loanState.particulars || 'Loan Given', category: 'Loan Given',
+      particulars: loanState.particulars || (borrowerName ? `Loan Given to ${borrowerName}` : 'Loan Given'),
+      category: 'Loan Given',
       amount: -amount, type: 'normal', linked_transaction_id: null,
       summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
     };
@@ -356,7 +358,8 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     if (borrower) {
       const borrowerTx: LocalTransaction = {
         id: generateId(), account_id: borrower.id, date: loanState.date_given,
-        particulars: loanState.particulars || 'Loan Received', category: 'Loan Received',
+        particulars: loanState.particulars || `Loan Received from ${lender.name}`,
+        category: 'Loan Received',
         amount: +amount, type: 'normal', linked_transaction_id: null,
         summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
       };
@@ -414,10 +417,12 @@ export default function WriteModal({ operation, accounts, members, currency, onC
 
     const localAccounts = await localDb.getAccounts();
     const lender = localAccounts.find(a => a.id === local.lender_account_id);
+    const counterparty = local.borrower_name || local.borrower_account_name || null;
     if (lender) {
       const repayTx: LocalTransaction = {
         id: generateId(), account_id: lender.id, date: settleState.date,
-        particulars: 'Loan Repayment', category: 'Loan Repayment',
+        particulars: counterparty ? `Loan Repayment from ${counterparty}` : 'Loan Repayment',
+        category: 'Loan Repayment',
         amount: +settleAmount, type: 'normal', linked_transaction_id: null,
         summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
       };
@@ -431,7 +436,8 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     if (borrower) {
       const borrowerTx: LocalTransaction = {
         id: generateId(), account_id: borrower.id, date: settleState.date,
-        particulars: 'Loan Repayment', category: 'Loan Repayment',
+        particulars: `Loan Repayment to ${local.lender_name || lender?.name || 'Lender'}`,
+        category: 'Loan Repayment',
         amount: -settleAmount, type: 'normal', linked_transaction_id: null,
         summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
       };
