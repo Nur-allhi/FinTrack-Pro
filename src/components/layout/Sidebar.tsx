@@ -121,7 +121,7 @@ export default function Sidebar({
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden group",
                       active
-                        ? "text-white shadow-md shadow-primary/20"
+                        ? "text-white bg-primary shadow-md shadow-primary/20"
                         : "text-muted hover:bg-surface-soft hover:text-ink border border-transparent hover:border-hairline"
                     )}
                   >

@@ -13,6 +13,26 @@ interface LoanManagerProps {
   currency: string;
 }
 
+export function loanDisplayId(r: { server_id?: number | null; id: string }): number {
+  return r.server_id ?? -(Math.abs(hashStr(r.id)) || 1);
+}
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) || 1;
+}
+
+export function findLocalLoan(localLoans: { server_id?: number | null; id: string }[], id: number): { server_id?: number | null; id: string } | undefined {
+  if (id > 0) {
+    const byServerId = localLoans.find(l => l.server_id === id);
+    if (byServerId) return byServerId;
+  }
+  return localLoans.find(l => l.server_id == null && loanDisplayId(l) === id);
+}
+
 export default function LoanManager({ accounts, onWriteOperation, currency }: LoanManagerProps) {
   const { toast } = useToast();
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -21,34 +41,41 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const toApiLoan = (r: LocalLoan): Loan => {
-    const lid = Number(r.lender_account_id);
-    const bid = r.borrower_account_id ? Number(r.borrower_account_id) : null;
-    const lender = accounts.find(a => a.id === lid);
-    const borrower = bid != null ? accounts.find(a => a.id === bid) : undefined;
-    return {
-      id: r.server_id ?? 0,
-      lender_account_id: lid || lender?.id || 0,
-      borrower_account_id: bid || borrower?.id || null,
-      borrower_name: r.borrower_name,
-      amount: r.amount,
-      remaining: r.remaining,
-      date_given: r.date_given,
-      due_date: r.due_date,
-      interest_rate: r.interest_rate,
-      particulars: r.particulars,
-      status: r.status as 'active' | 'settled' | 'defaulted',
-      settled_date: r.settled_date,
-      lender_name: r.lender_name || lender?.name,
-      borrower_account_name: r.borrower_account_name || borrower?.name,
-    };
-  };
-
   const fetchLoans = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
-      const local = await localDb.getLoans();
-      setLoans(local.map(toApiLoan));
+      const [local, localAccounts] = await Promise.all([
+        localDb.getLoans(),
+        localDb.getAccounts(),
+      ]);
+      const accountMap = new Map(localAccounts.map(a => [a.id, a]));
+      setLoans(local.map(r => {
+        const localLender = accountMap.get(r.lender_account_id);
+        const localBorrower = r.borrower_account_id ? accountMap.get(r.borrower_account_id) : undefined;
+        const lid = localLender?.server_id ?? Number(r.lender_account_id);
+        const bid = r.borrower_account_id
+          ? (localBorrower?.server_id ?? Number(r.borrower_account_id))
+          : null;
+        const lender = accounts.find(a => a.id === lid);
+        const borrower = bid !== null ? accounts.find(a => a.id === bid) : undefined;
+        return {
+          id: loanDisplayId(r),
+          _localId: r.id,
+          lender_account_id: lid || lender?.id || 0,
+          borrower_account_id: bid || borrower?.id || null,
+          borrower_name: r.borrower_name,
+          amount: r.amount,
+          remaining: r.remaining,
+          date_given: r.date_given,
+          due_date: r.due_date,
+          interest_rate: r.interest_rate,
+          particulars: r.particulars,
+          status: r.status as 'active' | 'settled' | 'defaulted',
+          settled_date: r.settled_date,
+          lender_name: r.lender_name || localLender?.name || lender?.name,
+          borrower_account_name: r.borrower_account_name || localBorrower?.name || borrower?.name,
+        };
+      }));
     }
     finally { if (showLoading) setLoading(false); }
   };
@@ -60,12 +87,13 @@ export default function LoanManager({ accounts, onWriteOperation, currency }: Lo
     setDeletingId(id);
     try {
       const localLoans = await localDb.getLoans();
-      const local = localLoans.find(l => l.server_id === id);
+      const local = findLocalLoan(localLoans, id) as LocalLoan | undefined;
       if (local) {
         await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+        flushPending();
+        toast("Loan deleted.", 'success');
       }
-      flushPending();
-      toast("Loan deleted.", 'success'); fetchLoans();
+      fetchLoans();
     }
     catch { toast("Failed to delete loan.", 'error'); } finally { setDeletingId(null); }
   };

@@ -20,7 +20,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 import { localDb } from './services/localDb';
 import { authService } from './services/authService';
-import { syncNow, startSyncScheduler, stopSyncScheduler } from './services/syncEngine';
+import { startSyncScheduler, stopSyncScheduler } from './services/syncEngine';
 import { useToast } from './components/Toast';
 import { Agentation } from 'agentation';
 import type { WriteOperation } from './types';
@@ -162,7 +162,6 @@ export default function App() {
       return;
     }
     startSyncScheduler();
-    syncNow();
   }, [isAuthenticated]);
 
   const checkSignupNudge = useCallback(async () => {

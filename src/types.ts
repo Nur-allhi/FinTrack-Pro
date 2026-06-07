@@ -50,6 +50,7 @@ export interface Transaction {
 
 export interface Loan {
   id: number;
+  _localId?: string;
   lender_account_id: number;
   borrower_account_id: number | null;
   lender_name?: string;

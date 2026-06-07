@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
 import { Account, Transaction, Loan, Investment, Member, WriteOperation } from '../types';
 import { localDb, LocalTransaction, LocalLoan, LocalInvestment, LocalInvestmentReturn } from '../services/localDb';
+import { findLocalLoan, loanDisplayId } from './LoanManager';
 import { flushPending } from '../services/syncEngine';
 import { generateId } from '../utils/ids';
 import { format } from 'date-fns';
@@ -164,8 +165,8 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     }).catch(() => {});
     localDb.getLoans().then(loans => {
       setLoans(loans.map(l => ({
-        id: l.server_id ?? 0,
-        label: l.borrower_name || `Loan #${l.server_id ?? l.id}`,
+        id: loanDisplayId(l),
+        label: l.borrower_name || l.lender_name || `Loan (${l.id.slice(0, 8)})`,
         remaining: l.remaining,
         currency,
       })));
@@ -275,13 +276,17 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     const lender = localAccounts.find(a => a.server_id === Number(loanState.lender_account_id));
     if (!lender) { toast("Lender account not found.", 'error'); return false; }
 
+    const borrower = loanState.loanType === 'inter_account' && loanState.borrower_account_id
+      ? localAccounts.find(a => a.server_id === Number(loanState.borrower_account_id)) : null;
+
     const now = new Date().toISOString();
     const record: LocalLoan = {
       id: generateId(),
       lender_account_id: lender.id,
-      borrower_account_id: loanState.loanType === 'inter_account'
-        ? (localAccounts.find(a => a.server_id === Number(loanState.borrower_account_id))?.id || null) : null,
+      borrower_account_id: borrower?.id || null,
       borrower_name: loanState.loanType === 'person' ? (loanState.borrower_name || loanState.particulars) : null,
+      lender_name: lender.name,
+      borrower_account_name: borrower?.name || null,
       amount, remaining: amount,
       date_given: loanState.date_given,
       due_date: loanState.due_date || null,
@@ -302,18 +307,15 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     await localDb.putTransaction(lenderTx);
     await localDb.adjustAccountBalance(lender.id, -amount);
 
-    if (loanState.loanType === 'inter_account' && loanState.borrower_account_id) {
-      const borrower = localAccounts.find(a => a.server_id === Number(loanState.borrower_account_id));
-      if (borrower) {
-        const borrowerTx: LocalTransaction = {
-          id: generateId(), account_id: borrower.id, date: loanState.date_given,
-          particulars: loanState.particulars || 'Loan Received', category: 'Loan Received',
-          amount: +amount, type: 'normal', linked_transaction_id: null,
-          summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
-        };
-        await localDb.putTransaction(borrowerTx);
-        await localDb.adjustAccountBalance(borrower.id, +amount);
-      }
+    if (borrower) {
+      const borrowerTx: LocalTransaction = {
+        id: generateId(), account_id: borrower.id, date: loanState.date_given,
+        particulars: loanState.particulars || 'Loan Received', category: 'Loan Received',
+        amount: +amount, type: 'normal', linked_transaction_id: null,
+        summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+      };
+      await localDb.putTransaction(borrowerTx);
+      await localDb.adjustAccountBalance(borrower.id, +amount);
     }
     return true;
   };
@@ -321,15 +323,20 @@ export default function WriteModal({ operation, accounts, members, currency, onC
   const handleLoanEditSubmit = async () => {
     if (operation.type !== 'loan_edit') return false;
     const localLoans = await localDb.getLoans();
-    const local = localLoans.find(l => l.server_id === operation.loan.id);
+    const lookupId = operation.loan._localId || operation.loan.id;
+    const local = typeof lookupId === 'string'
+      ? localLoans.find(l => l.id === lookupId)
+      : (findLocalLoan(localLoans, lookupId) as LocalLoan | undefined);
     if (!local) { toast("Loan not found locally.", 'error'); return false; }
 
+    const localAccounts = await localDb.getAccounts();
     await localDb.putLoan({
       ...local,
       borrower_name: loanState.loanType === 'person' ? (loanState.borrower_name || null) : local.borrower_name,
       due_date: loanState.due_date || null,
       interest_rate: loanState.interest_rate ? parseFloat(loanState.interest_rate) : null,
       particulars: loanState.particulars,
+      lender_name: localAccounts.find(a => a.id === local.lender_account_id)?.name,
       updated_at: new Date().toISOString(),
       sync_status: 'pending',
     });
@@ -342,7 +349,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
 
     const loanId = Number(settleState.loanId);
     const localLoans = await localDb.getLoans();
-    const local = localLoans.find(l => l.server_id === loanId);
+    const local = findLocalLoan(localLoans, loanId) as LocalLoan | undefined;
     if (!local) { toast("Loan not found locally.", 'error'); return false; }
     if (settleAmount > local.remaining) { toast("Amount exceeds remaining balance.", 'error'); return false; }
 
