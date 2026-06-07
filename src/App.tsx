@@ -175,8 +175,9 @@ export default function App() {
 
   const handleDataSaved = useCallback(() => {
     void checkSignupNudge();
+    void reloadFromLocal();
     setRefreshCounter(c => c + 1);
-  }, [checkSignupNudge]);
+  }, [checkSignupNudge, reloadFromLocal]);
 
   const handleExportData = async () => {
     const blob = new Blob([JSON.stringify({ members, accounts, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
