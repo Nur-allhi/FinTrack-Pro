@@ -45,14 +45,22 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
     try {
       const method = editingAccount ? 'PATCH' : 'POST';
       const url = editingAccount ? `/api/accounts/${editingAccount.id}` : '/api/accounts';
+      const body: Record<string, unknown> = {
+        name: newAcc.name,
+        type: newAcc.type,
+        color: newAcc.color || undefined,
+        initial_balance: parseFloat(newAcc.initial_balance || '0'),
+      };
+      if (editingAccount) {
+        body.member_id = newAcc.member_id === '' ? null : Number(newAcc.member_id);
+        body.parent_id = newAcc.parent_id === '' ? null : Number(newAcc.parent_id);
+      } else {
+        if (newAcc.member_id !== '') body.member_id = Number(newAcc.member_id);
+        if (newAcc.parent_id !== '') body.parent_id = Number(newAcc.parent_id);
+      }
       const res = await authService.apiFetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newAcc,
-          member_id: newAcc.member_id === '' ? null : Number(newAcc.member_id),
-          parent_id: newAcc.parent_id === '' ? null : Number(newAcc.parent_id),
-          initial_balance: parseFloat(newAcc.initial_balance || '0')
-        })
+        body: JSON.stringify(body)
       });
       if (res.ok) {
         setIsAdding(false); setEditingAccount(null);
