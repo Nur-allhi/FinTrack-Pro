@@ -219,7 +219,13 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
         }
         if (base.linked_transaction_id != null) {
           const serverId = transactionLocalIdToServerId.get(base.linked_transaction_id as string);
-          if (serverId != null) base.linked_transaction_id = serverId;
+          if (serverId != null) {
+            base.linked_transaction_id = serverId;
+          } else {
+            // UUID can't be translated (linked txn hasn't synced yet).
+            // Omit to avoid sending invalid BIGINT — records still push.
+            delete base.linked_transaction_id;
+          }
         }
       }
       if (table === 'loans') {

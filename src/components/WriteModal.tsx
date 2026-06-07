@@ -6,6 +6,7 @@ import { Account, Transaction, Loan, Investment, Member, WriteOperation } from '
 import { localDb, LocalTransaction, LocalLoan, LocalInvestment, LocalInvestmentReturn } from '../services/localDb';
 import { findLocalLoan, loanDisplayId } from './LoanManager';
 import { flushPending } from '../services/syncEngine';
+import { authService } from '../services/authService';
 import { generateId } from '../utils/ids';
 import { format } from 'date-fns';
 import { useToast } from './Toast';
@@ -249,6 +250,51 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     const creditId = generateId();
     const debitId = generateId();
 
+    // Try direct API call when online — atomically creates both sides with proper linking
+    if (navigator.onLine) {
+      try {
+        const res = await authService.apiFetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from_account_id: fromServerId,
+            to_account_id: toServerId,
+            date: transferState.date,
+            amount,
+            particulars: transferState.particulars || undefined,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const debitTx: LocalTransaction = {
+            id: debitId, server_id: data.debitId, account_id: source.id, date: transferState.date,
+            particulars: transferState.particulars || 'Transfer', category: 'Transfer',
+            amount: -amount, type: 'transfer', linked_transaction_id: String(data.creditId),
+            summary: null, updated_at: now, sync_status: 'synced', _deleted: false,
+          };
+          const creditTx: LocalTransaction = {
+            id: creditId, server_id: data.creditId, account_id: dest.id, date: transferState.date,
+            particulars: transferState.particulars || 'Transfer', category: 'Transfer',
+            amount, type: 'transfer', linked_transaction_id: String(data.debitId),
+            summary: null, updated_at: now, sync_status: 'synced', _deleted: false,
+          };
+          await Promise.all([localDb.putTransaction(debitTx), localDb.putTransaction(creditTx)]);
+          await Promise.all([
+            localDb.adjustAccountBalance(source.id, -amount),
+            localDb.adjustAccountBalance(dest.id, amount),
+          ]);
+          return true;
+        }
+        // Server validation error — don't save locally
+        const errData = await res.json().catch(() => ({}));
+        toast(errData.error || 'Transfer rejected by server.', 'error');
+        return false;
+      } catch {
+        // Network error — fall through to local-only fallback
+      }
+    }
+
+    // Local-only fallback (offline or network error)
     const debitTx: LocalTransaction = {
       id: debitId, account_id: source.id, date: transferState.date,
       particulars: transferState.particulars || 'Transfer', category: 'Transfer',
