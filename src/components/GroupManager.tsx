@@ -4,9 +4,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { localDb } from '../services/localDb';
+import { authService } from '../services/authService';
 import { generateId } from '../utils/ids';
 import GroupForm from './GroupForm';
 import GroupGridView, { type Group } from './GroupGridView';
+import Modal from './Modal';
 
 const colors = ['#A78BFA', '#05b169', '#cf202f', '#f59e0b', '#7c828a', '#13111C', '#14B8A6', '#EC4899', '#64748B', '#F97316'];
 
@@ -53,34 +55,67 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const now = new Date().toISOString();
+      const memberId = newGroup.member_id === '' ? null : newGroup.member_id;
+
       if (editingGroup) {
         const localGroups = await localDb.getGroups();
         const local = localGroups.find(g => g.server_id === editingGroup.id);
         if (local) {
-          await localDb.putGroup({
+          const updated = {
             ...local,
             name: newGroup.name,
-            member_id: newGroup.member_id === '' ? null : newGroup.member_id,
+            member_id: memberId,
             color: newGroup.color,
-            updated_at: new Date().toISOString(),
-            sync_status: 'pending',
+            updated_at: now,
+            sync_status: 'synced' as const,
+          };
+          await localDb.putGroup(updated);
+          const body: Record<string, unknown> = { name: newGroup.name, color: newGroup.color };
+          if (memberId !== null) body.member_id = Number(memberId);
+          else body.member_id = null;
+          const res = await authService.apiFetch(`/api/groups/${editingGroup.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
           });
+          if (!res.ok) {
+            await localDb.putGroup({ ...local, name: newGroup.name, member_id: memberId, color: newGroup.color, updated_at: now, sync_status: 'pending' });
+            toast("Saved locally. Will sync when online.", 'success');
+          }
         }
       } else {
-        const record = {
-          id: generateId(),
-          name: newGroup.name,
-          type: 'group',
-          member_id: newGroup.member_id === '' ? null : newGroup.member_id,
-          color: newGroup.color,
-          child_count: 0,
-          accumulated_balance: 0,
-          children: [],
-          updated_at: new Date().toISOString(),
-          sync_status: 'pending' as const,
-          _deleted: false,
-        };
-        await localDb.putGroup(record);
+        const body: Record<string, unknown> = { name: newGroup.name, color: newGroup.color };
+        if (memberId !== null) body.member_id = Number(memberId);
+        const res = await authService.apiFetch('/api/groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          await localDb.putGroup({
+            id: generateId(),
+            server_id: data.id,
+            name: newGroup.name,
+            type: 'group',
+            member_id: memberId,
+            color: newGroup.color,
+            child_count: 0,
+            accumulated_balance: 0,
+            children: [],
+            updated_at: now,
+            sync_status: 'synced' as const,
+            _deleted: false,
+          });
+        } else {
+          const errBody = await res.json().catch(() => ({}));
+          toast(errBody?.error || `Server error (${res.status})`, 'error');
+          setIsAdding(false);
+          setEditingGroup(null);
+          setNewGroup({ name: '', member_id: '', color: colors[0] });
+          return;
+        }
       }
       setIsAdding(false);
       setEditingGroup(null);
@@ -88,7 +123,36 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
       fetchGroups();
       onUpdate();
     } catch (err) {
-      toast("Failed to save group.", 'error');
+      const now = new Date().toISOString();
+      const memberId = newGroup.member_id === '' ? null : newGroup.member_id;
+      if (editingGroup) {
+        const localGroups = await localDb.getGroups();
+        const local = localGroups.find(g => g.server_id === editingGroup.id);
+        if (local) {
+          await localDb.putGroup({ ...local, name: newGroup.name, member_id: memberId, color: newGroup.color, updated_at: now, sync_status: 'pending' });
+        }
+      } else {
+        await localDb.putGroup({
+          id: generateId(),
+          name: newGroup.name,
+          type: 'group',
+          member_id: memberId,
+          color: newGroup.color,
+          child_count: 0,
+          accumulated_balance: 0,
+          children: [],
+          updated_at: now,
+          sync_status: 'pending' as const,
+          _deleted: false,
+        });
+      }
+      setIsAdding(false);
+      setEditingGroup(null);
+      setNewGroup({ name: '', member_id: '', color: colors[0] });
+      fetchGroups();
+      onUpdate();
+      toast("Saved locally. Will sync when online.", 'success');
+      console.error(err);
     }
   };
 
@@ -102,16 +166,31 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
     if (!confirm(`Delete group "${name}"? Child accounts will be unlinked but not deleted.`)) return;
     setDeletingId(id);
     try {
-      const localGroups = await localDb.getGroups();
-      const local = localGroups.find(g => g.server_id === id);
-      if (local) {
-        await localDb.putGroup({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+      const now = new Date().toISOString();
+      const res = await authService.apiFetch(`/api/groups/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        const localGroups = await localDb.getGroups();
+        const local = localGroups.find(g => g.server_id === id);
+        if (local) {
+          await localDb.putGroup({ ...local, _deleted: true, sync_status: 'synced', updated_at: now });
+        }
+        toast("Group deleted.", 'success');
+      } else {
+        const errBody = await res.json().catch(() => ({}));
+        toast(errBody?.error || `Server error (${res.status})`, 'error');
       }
-      toast("Group deleted.", 'success');
       fetchGroups();
       onUpdate();
     } catch (err) {
-      toast("Failed to delete group.", 'error');
+      const localGroups = await localDb.getGroups();
+      const local = localGroups.find(g => g.server_id === id);
+      if (local) {
+        await localDb.putGroup({ ...local, _deleted: true, sync_status: 'pending', updated_at: now });
+      }
+      fetchGroups();
+      onUpdate();
+      toast("Deleted locally. Will sync when online.", 'success');
+      console.error(err);
     } finally {
       setDeletingId(null);
     }
@@ -140,28 +219,17 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
         <span className="text-xs font-bold text-muted uppercase tracking-wider">Total: <span className="text-ink font-mono">{currency || '৳'}{totalAccumulated.toLocaleString()}</span></span>
       </div>
 
-      <AnimatePresence>
-        {isAdding && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            style={{ willChange: 'transform, opacity' }}
-            className="overflow-hidden"
-          >
-            <GroupForm
-              editingGroup={!!editingGroup}
-              newGroup={newGroup}
-              setNewGroup={setNewGroup}
-              members={members}
-              saving={false}
-              onSubmit={handleCreateOrUpdate}
-              onCancel={() => { setIsAdding(false); setEditingGroup(null); }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Modal open={isAdding} onClose={() => { setIsAdding(false); setEditingGroup(null); }} title={editingGroup ? 'Edit Group' : 'New Group'}>
+        <GroupForm
+          editingGroup={!!editingGroup}
+          newGroup={newGroup}
+          setNewGroup={setNewGroup}
+          members={members}
+          saving={false}
+          onSubmit={handleCreateOrUpdate}
+          onCancel={() => { setIsAdding(false); setEditingGroup(null); }}
+        />
+      </Modal>
 
       {viewMode === 'grid' ? (
         <GroupGridView

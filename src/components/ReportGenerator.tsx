@@ -88,7 +88,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
               onChange={v => setFilters({...filters, accountId: v})}
               options={[
                 { value: '', label: 'All Accounts' },
-                ...accounts.map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} (${a.member_name})` : a.name }))
+                ...accounts.map(a => ({ value: String(a.id), label: a.member_name ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})` : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})` }))
               ]}
             />
           </div>

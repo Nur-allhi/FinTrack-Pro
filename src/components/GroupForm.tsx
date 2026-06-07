@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import Select from './Select';
 
@@ -17,14 +17,7 @@ interface GroupFormProps {
 
 export default function GroupForm({ editingGroup, newGroup, setNewGroup, members, saving, onSubmit, onCancel }: GroupFormProps) {
   return (
-    <div className="card-xl border-primary/20 bg-primary/5">
-      <div className="flex items-center justify-between mb-5">
-        <h4 className="text-base font-normal text-ink">{editingGroup ? 'Edit Group' : 'New Group'}</h4>
-        <button onClick={onCancel} className="p-1 text-muted hover:text-ink">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-1">
           <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Group Name</label>
           <input type="text" required value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})}
@@ -59,6 +52,5 @@ export default function GroupForm({ editingGroup, newGroup, setNewGroup, members
           </button>
         </div>
       </form>
-    </div>
   );
 }

@@ -216,13 +216,16 @@ interface LoanCreateFormProps {
   onChange: (s: LoanFormState) => void;
   accounts: Account[];
   editMode?: boolean;
+  currency?: string;
 }
 
-export function LoanCreateForm({ state, onChange, accounts, editMode }: LoanCreateFormProps) {
+export function LoanCreateForm({ state, onChange, accounts, editMode, currency }: LoanCreateFormProps) {
   const activeAccounts = accounts.filter(a => !a.archived);
   const accountOptions = activeAccounts.map(a => ({
     value: String(a.id),
-    label: a.member_name ? `${a.name} · ${a.member_name}` : a.name
+    label: a.member_name
+      ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+      : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
   }));
 
   const set = (field: Partial<LoanFormState>) => onChange({ ...state, ...field });
@@ -378,9 +381,10 @@ interface InvestmentFormProps {
   state: InvestmentFormState;
   onChange: (s: InvestmentFormState) => void;
   accounts: Account[];
+  currency?: string;
 }
 
-export function InvestmentCreateForm({ state, onChange, accounts }: InvestmentFormProps) {
+export function InvestmentCreateForm({ state, onChange, accounts, currency }: InvestmentFormProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -391,7 +395,9 @@ export function InvestmentCreateForm({ state, onChange, accounts }: InvestmentFo
           placeholder="Select Investment Account"
           options={accounts.filter(a => a.type === 'investment').map(a => ({
             value: String(a.id),
-            label: a.name
+            label: a.member_name
+              ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+              : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
           }))}
         />
       </div>

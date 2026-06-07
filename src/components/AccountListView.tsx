@@ -15,11 +15,9 @@ interface AccountListViewProps {
   typeColors?: Record<string, string>;
   onEdit: (acc: Account) => void;
   onToggleArchive: (id: number, current: number) => void;
-  editingAccount: Account | null;
-  renderForm: () => React.ReactNode;
 }
 
-export default function AccountListView({ accounts, currency, typeColors, onEdit, onToggleArchive, editingAccount, renderForm }: AccountListViewProps) {
+export default function AccountListView({ accounts, currency, typeColors, onEdit, onToggleArchive }: AccountListViewProps) {
   return (
     <>
       <div className="hidden md:block bg-canvas border border-hairline rounded-xl overflow-x-auto">
@@ -66,41 +64,9 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
             })}
           </tbody>
         </table>
-        <AnimatePresence>
-          {editingAccount && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              style={{ willChange: 'transform, opacity' }}
-              className="overflow-hidden"
-            >
-              <div className="p-4 border-t border-hairline bg-primary/5">
-                {renderForm()}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
       <div className="md:hidden space-y-2">
-        <AnimatePresence initial={false}>
-          {accounts.map(acc => {
-            const isEditing = editingAccount?.id === acc.id;
-            if (isEditing) {
-              return (
-                <motion.div
-                  key={acc.id}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="overflow-hidden"
-                >
-                  <div className="card-xl border-primary/20 bg-primary/5">{renderForm()}</div>
-                </motion.div>
-              );
-            }
+        {accounts.map(acc => {
           const Icon = typeIcons[acc.type] || Wallet;
           return (
             <div key={acc.id} className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
@@ -132,7 +98,6 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
             </div>
           );
         })}
-        </AnimatePresence>
       </div>
     </>
   );

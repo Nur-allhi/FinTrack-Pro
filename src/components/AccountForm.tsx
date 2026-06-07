@@ -28,6 +28,7 @@ interface AccountFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   defaultCurrency?: string;
+  currentBalance?: number;
 }
 
 export default function AccountForm({ title, newAcc, setNewAcc, members, groups, saving, onSubmit, onCancel, defaultCurrency = 'USD' }: AccountFormProps) {
@@ -74,6 +75,14 @@ export default function AccountForm({ title, newAcc, setNewAcc, members, groups,
           <input type="number" value={newAcc.initial_balance} onChange={e => setNewAcc({...newAcc, initial_balance: e.target.value})}
             placeholder="0.00" className="w-full px-3.5 py-2.5 bg-canvas border border-hairline text-ink rounded-md focus:border-primary outline-none text-sm financial-number" />
         </div>
+        {currentBalance !== undefined && (
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Current Balance</label>
+            <div className="w-full px-3.5 py-2.5 bg-surface-soft border border-hairline text-ink rounded-md text-sm financial-number font-semibold">
+              {defaultCurrency}{currentBalance.toLocaleString()}
+            </div>
+          </div>
+        )}
         <div className="space-y-1">
           <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Color</label>
           <div className="flex flex-wrap gap-2 pt-1">

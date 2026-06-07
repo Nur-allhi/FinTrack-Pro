@@ -485,11 +485,11 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       case 'transfer':
         return <TransferForm state={transferState} onChange={setTransferState} accounts={accounts} currency={currency} />;
       case 'loan':
-        return <LoanCreateForm state={loanState} onChange={setLoanState} accounts={accounts} editMode={isEdit} />;
+        return <LoanCreateForm state={loanState} onChange={setLoanState} accounts={accounts} editMode={isEdit} currency={currency} />;
       case 'loan_settle':
         return <LoanSettleForm state={settleState} onChange={setSettleState} loans={loans} currency={currency} loan={operation.type === 'loan_settle' ? operation.loan : undefined} />;
       case 'investment':
-        return <InvestmentCreateForm state={invState} onChange={setInvState} accounts={accounts} />;
+        return <InvestmentCreateForm state={invState} onChange={setInvState} accounts={accounts} currency={currency} />;
       case 'investment_return':
         return <InvestmentReturnForm state={returnState} onChange={setReturnState} investments={investments} currency={currency} investment={operation.type === 'investment_return' ? operation.investment : undefined} />;
     }

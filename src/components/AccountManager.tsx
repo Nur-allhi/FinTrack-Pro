@@ -5,9 +5,12 @@ import { Plus, Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
 import Select from './Select';
 import AccountForm from './AccountForm';
 import AccountListView from './AccountListView';
+import Modal from './Modal';
 
 interface AccountManagerProps {
   accounts: Account[];
@@ -36,8 +39,8 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   });
 
   useEffect(() => {
-    authService.apiFetch('/api/groups').then(r => r.ok && r.json()).then(d => setGroups(d || [])).catch(() => {});
-  }, []);
+    localDb.getGroups().then(all => setGroups(all.map(g => ({ id: g.server_id ?? 0, name: g.name })))).catch(() => {});
+  }, [isAdding]);
 
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,15 +66,90 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
         body: JSON.stringify(body)
       });
       if (res.ok) {
+        const data = await res.json();
+        const now = new Date().toISOString();
+        const initialBal = parseFloat(newAcc.initial_balance || '0');
+        if (editingAccount) {
+          const allAccounts = await localDb.getAccounts();
+          const local = allAccounts.find(a => a.server_id === editingAccount.id);
+          if (local) {
+            await localDb.putAccount({
+              ...local,
+              name: newAcc.name,
+              type: newAcc.type,
+              member_id: newAcc.member_id === '' ? null : Number(newAcc.member_id),
+              parent_id: newAcc.parent_id === '' ? null : Number(newAcc.parent_id),
+              color: newAcc.color,
+              initial_balance: initialBal,
+              current_balance: initialBal,
+              updated_at: now,
+              sync_status: 'synced',
+            });
+          }
+        } else {
+          await localDb.putAccount({
+            id: generateId(),
+            server_id: data.id,
+            name: newAcc.name,
+            type: newAcc.type,
+            member_id: newAcc.member_id === '' ? null : Number(newAcc.member_id),
+            parent_id: newAcc.parent_id === '' ? null : Number(newAcc.parent_id),
+            color: newAcc.color,
+            archived: 0,
+            initial_balance: initialBal,
+            current_balance: initialBal,
+            updated_at: now,
+            sync_status: 'synced',
+            _deleted: false,
+          });
+        }
         setIsAdding(false); setEditingAccount(null);
         setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '' });
         onUpdate();
       } else {
-        const body = await res.json().catch(() => ({}));
-        toast(body?.error || `Server error (${res.status})`, 'error');
+        const errBody = await res.json().catch(() => ({}));
+        toast(errBody?.error || `Server error (${res.status})`, 'error');
       }
     } catch (error) {
-      toast("Failed to save account.", 'error');
+      const now = new Date().toISOString();
+      const initialBal = parseFloat(newAcc.initial_balance || '0');
+      if (editingAccount) {
+        const allAccounts = await localDb.getAccounts();
+        const local = allAccounts.find(a => a.server_id === editingAccount.id);
+        if (local) {
+          await localDb.putAccount({
+            ...local,
+            name: newAcc.name,
+            type: newAcc.type,
+            member_id: newAcc.member_id === '' ? null : Number(newAcc.member_id),
+            parent_id: newAcc.parent_id === '' ? null : Number(newAcc.parent_id),
+            color: newAcc.color,
+            initial_balance: initialBal,
+            current_balance: initialBal,
+            updated_at: now,
+            sync_status: 'pending',
+          });
+        }
+      } else {
+        await localDb.putAccount({
+          id: generateId(),
+          name: newAcc.name,
+          type: newAcc.type,
+          member_id: newAcc.member_id === '' ? null : Number(newAcc.member_id),
+          parent_id: newAcc.parent_id === '' ? null : Number(newAcc.parent_id),
+          color: newAcc.color,
+          archived: 0,
+          initial_balance: initialBal,
+          current_balance: initialBal,
+          updated_at: now,
+          sync_status: 'pending',
+          _deleted: false,
+        });
+      }
+      setIsAdding(false); setEditingAccount(null);
+      setNewAcc({ name: '', type: 'cash', member_id: '', parent_id: '', color: colors[0], initial_balance: '' });
+      toast("Saved locally. Will sync when online.", 'success');
+      onUpdate();
       console.error(error);
     } finally { setSaving(false); }
   };
@@ -84,9 +162,20 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
 
   const toggleArchive = async (id: number, current: number) => {
     try {
-      await authService.apiFetch(`/api/accounts/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: current ? 0 : 1 }) });
+      const res = await authService.apiFetch(`/api/accounts/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: current ? 0 : 1 }) });
+      if (!res.ok) throw new Error('API error');
       onUpdate();
-    } catch (error) { toast("Failed to update account.", 'error'); console.error(error); }
+    } catch (error) {
+      const allAccounts = await localDb.getAccounts();
+      const local = allAccounts.find(a => a.server_id === id);
+      if (local) {
+        await localDb.putAccount({ ...local, archived: current ? 0 : 1, updated_at: new Date().toISOString(), sync_status: 'pending' });
+        toast("Saved locally. Will sync when online.", 'success');
+      } else {
+        toast("Failed to update account.", 'error');
+      }
+      console.error(error);
+    }
   };
 
   const filteredAccounts = accounts.filter(acc => {
@@ -96,11 +185,8 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   });
   const totalBalance = filteredAccounts.reduce((s, a) => s + (a.current_balance || 0), 0);
 
-  const renderForm = (title: string) => (
-    <AccountForm title={title} newAcc={newAcc} setNewAcc={setNewAcc} members={members} groups={groups} saving={saving} onSubmit={handleCreateOrUpdate} onCancel={() => { setIsAdding(false); setEditingAccount(null); }} />
-  );
-
   return (
+    <>
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -127,33 +213,18 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
         )}
       </div>
 
-      <AnimatePresence>
-        {isAdding && !editingAccount && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} style={{ willChange: 'transform, opacity' }} className="overflow-hidden">
-            <div className="card-xl border-primary/20 bg-primary/5 mb-3">{renderForm('Add Account')}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 app-stagger-grid">
           <AnimatePresence>
-            {filteredAccounts.map(acc => {
-              const isEditing = editingAccount?.id === acc.id;
-              return (
-                <motion.div key={acc.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }} style={{ willChange: 'transform, opacity' }}>
-                  {isEditing ? (
-                    <div className="card-xl border-primary/20 bg-primary/5">{renderForm('Edit Account')}</div>
-                  ) : (
-                    <AccountGridCard acc={acc} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} />
-                  )}
-                </motion.div>
-              );
-            })}
+            {filteredAccounts.map(acc => (
+              <motion.div key={acc.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}>
+                <AccountGridCard acc={acc} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} />
+              </motion.div>
+            ))}
           </AnimatePresence>
         </div>
       ) : (
-        <AccountListView accounts={filteredAccounts} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} editingAccount={editingAccount} renderForm={() => renderForm('Edit Account')} />
+        <AccountListView accounts={filteredAccounts} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} />
       )}
 
       {filteredAccounts.length === 0 && (
@@ -164,6 +235,11 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
         </div>
       )}
     </div>
+
+    <Modal open={isAdding} onClose={() => { setIsAdding(false); setEditingAccount(null); }} title={editingAccount ? 'Edit Account' : 'Add Account'}>
+      <AccountForm title={editingAccount ? 'Edit Account' : 'Add Account'} newAcc={newAcc} setNewAcc={setNewAcc} members={members} groups={groups} saving={saving} onSubmit={handleCreateOrUpdate} onCancel={() => { setIsAdding(false); setEditingAccount(null); }} defaultCurrency={currency} currentBalance={editingAccount?.current_balance} />
+    </Modal>
+  </>
   );
 }
 

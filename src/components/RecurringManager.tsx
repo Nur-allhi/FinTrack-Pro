@@ -74,7 +74,7 @@ export default function RecurringManager({ accounts, currency }: RecurringManage
         <select value={form.account_id} onChange={e => setForm({ ...form, account_id: e.target.value })}
           className="px-3 py-2 bg-surface-soft border border-hairline rounded-lg text-xs font-semibold text-ink outline-none focus:border-primary">
           <option value="">Account</option>
-          {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+          {accounts.map(a => <option key={a.id} value={a.id}>{a.member_name ? `${a.name} · ${a.member_name}` : a.name} — {currency}{(a.current_balance || 0).toLocaleString()}</option>)}
         </select>
         <input type="text" value={form.particulars} onChange={e => setForm({ ...form, particulars: e.target.value })}
           placeholder="Particulars" className="px-3 py-2 bg-surface-soft border border-hairline rounded-lg text-xs font-semibold text-ink outline-none focus:border-primary" />
