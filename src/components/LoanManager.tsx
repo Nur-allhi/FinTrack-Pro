@@ -42,7 +42,7 @@ export function findLocalLoan(localLoans: { server_id?: number | null; id: strin
 export default function LoanManager({ accounts, onWriteOperation, currency, refreshCounter }: LoanManagerProps) {
   const { toast } = useToast();
   const [loans, setLoans] = useState<Loan[]>([]);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled'>('active');
   const [groupingMode, setGroupingMode] = useState<'pair' | 'borrower'>('pair');
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);

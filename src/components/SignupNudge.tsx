@@ -62,7 +62,7 @@ export default function SignupNudge({ open, onSignUp, onDismiss, onNeverShow }: 
             onClick={e => e.stopPropagation()}
             className="bg-canvas w-full max-w-[28rem] rounded-xl border border-hairline shadow-2xl"
           >
-            <div className="p-6 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
+            <div className="p-6 border-b border-hairline flex items-center justify-between bg-surface-soft/30 rounded-t-xl">
               <h3 className="text-lg font-normal text-ink tracking-tight">Back up your data</h3>
               <button onClick={handleDismiss} className="p-1.5 text-muted hover:text-ink transition-colors">
                 <X className="w-5 h-5" />

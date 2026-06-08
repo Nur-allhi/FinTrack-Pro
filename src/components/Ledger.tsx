@@ -105,7 +105,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
         </button>
       </div>
 
-      <div className="rounded-xl border border-hairline" aria-label="Transaction Ledger">
+      <div className="rounded-xl border border-hairline overflow-hidden" aria-label="Transaction Ledger">
         <div className="p-4 md:p-5 bg-primary/5 rounded-t-xl">
           <div className="flex items-start justify-between">
             <div>

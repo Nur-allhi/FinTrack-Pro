@@ -620,7 +620,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
         className="bg-canvas w-full max-w-[28rem] md:max-w-[32rem] lg:max-w-[42rem] rounded-xl border border-hairline shadow-2xl"
       >
         {/* Header */}
-        <div className="p-4 sm:p-6 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
+        <div className="p-4 sm:p-6 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30 rounded-t-xl">
           <h3 className="text-lg sm:text-2xl font-normal text-ink tracking-tight">{title}</h3>
           <div className="flex items-center gap-2">
             {!isModeLocked && (

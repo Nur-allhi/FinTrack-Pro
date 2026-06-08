@@ -106,7 +106,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <div className="bg-canvas border border-hairline rounded-xl shadow-sm overflow-x-auto">
-              <div className="p-4 md:p-5 border-b border-hairline flex items-center justify-between bg-surface-soft/30">
+              <div className="p-4 md:p-5 border-b border-hairline flex items-center justify-between bg-surface-soft/30 rounded-t-xl">
                 <h4 className="text-xs md:text-sm font-normal text-ink tracking-tight">Transaction Ledger</h4>
                 <div className="flex items-center gap-2">
                   <button onClick={() => exportReportCSV(reportData, filters, currency)} className="btn-pill text-[10px] md:text-xs px-3 md:px-4 py-1.5 md:py-2">
