@@ -10,6 +10,7 @@ export interface LocalRecord {
   updated_at: string;
   sync_status: SyncStatus;
   _deleted: boolean;
+  created_at?: string;
 }
 
 export interface LocalMember extends LocalRecord {
@@ -109,7 +110,6 @@ export interface LocalBudget extends LocalRecord {
   category: string;
   month: string;
   amount: number;
-  created_at: string;
 }
 
 export interface LocalRecurringTransaction extends LocalRecord {

@@ -339,11 +339,18 @@ async function pullChanges(): Promise<number> {
   const data = await res.json();
   let totalPulled = 0;
 
-  // Build account server_id → local_id map (for translating transactions.loans account refs)
+  // Build account server_id → local_id map (for translating transactions/loans account refs)
   const localAccounts = await localDb.getAccounts();
   const accountIdMap = new Map<number, string>();
   for (const a of localAccounts) {
     if (a.server_id != null) accountIdMap.set(a.server_id, a.id);
+  }
+
+  // Build loan server_id → local_id map (for translating loan_settlements refs)
+  const localLoans = await localDb.getLoans();
+  const loanIdMap = new Map<number, string>();
+  for (const l of localLoans) {
+    if (l.server_id != null) loanIdMap.set(l.server_id, l.id);
   }
 
   for (const [i, table] of SYNC_TABLES.entries()) {
@@ -371,6 +378,10 @@ async function pullChanges(): Promise<number> {
           if (localId) updated = { ...updated, borrower_account_id: localId };
         }
         return updated;
+      }
+      if (table === 'loan_settlements' && sanitized.loan_id != null) {
+        const localLoanId = loanIdMap.get(Number(sanitized.loan_id));
+        if (localLoanId) return { ...sanitized, loan_id: localLoanId };
       }
       return sanitized;
     });

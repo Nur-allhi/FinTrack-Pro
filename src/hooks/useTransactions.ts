@@ -16,8 +16,9 @@ function toUiTransaction(local: LocalTransaction, accountServerId: number): Tran
     amount: local.amount,
     type: local.type,
     summary: local.summary,
-    linked_transaction_id: null,
+    linked_transaction_id: local.linked_transaction_id,
     updated_at: local.updated_at,
+    created_at: local.created_at || local.updated_at,
     sync_status: local.sync_status,
   };
 }
@@ -57,8 +58,19 @@ export function useTransactions(account: Account) {
     });
     if (accountIdRef.current !== account?.id) return;
     const uiTxns = localTxns
-      .map(lt => toUiTransaction(lt, account.id))
-      .sort((a, b) => b.date.localeCompare(a.date) || (b.updated_at || '').localeCompare(a.updated_at || ''));
+      .map(lt => {
+        const ui = toUiTransaction(lt, account.id);
+        if (ui.linked_transaction_id) {
+          const linkedId = String(ui.linked_transaction_id);
+          const linked = allTxns.find(t => t.id === linkedId || (t.server_id != null && String(t.server_id) === linkedId));
+          if (linked) {
+            const linkedAcc = accounts.find(a => a.id === linked.account_id);
+            if (linkedAcc) ui.linked_account_name = linkedAcc.name;
+          }
+        }
+        return ui;
+      })
+      .sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || ''));
     setTransactions(uiTxns);
     if (uiTxns.length === 0 && !syncCompletedRef.current) return; // keep loading, wait for initial sync
     setLoading(false);
@@ -122,6 +134,7 @@ export function useTransactions(account: Account) {
       ? (editingTx.id.toString().includes('-') ? editingTx.id.toString() : generateId())
       : generateId();
 
+    const now = new Date().toISOString();
     const record: LocalTransaction = {
       id: localId,
       server_id: editingTx && typeof editingTx.id === 'number' ? editingTx.id : null,
@@ -133,7 +146,8 @@ export function useTransactions(account: Account) {
       type: 'normal',
       linked_transaction_id: null,
       summary,
-      updated_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
       sync_status: 'pending',
       _deleted: false,
     };

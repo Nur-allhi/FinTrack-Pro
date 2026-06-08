@@ -42,9 +42,11 @@ export interface Transaction {
   category: string;
   amount: number;
   type: 'normal' | 'transfer';
-  linked_transaction_id: number | null;
+  linked_transaction_id: number | string | null;
+  linked_account_name?: string | null;
   summary: string | null;
   updated_at?: string;
+  created_at?: string;
   sync_status?: 'pending' | 'synced' | 'conflict';
 }
 

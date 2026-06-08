@@ -185,7 +185,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
       const localGroups = await localDb.getGroups();
       const local = localGroups.find(g => g.server_id === id);
       if (local) {
-        await localDb.putGroup({ ...local, _deleted: true, sync_status: 'pending', updated_at: now });
+        await localDb.putGroup({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
       }
       fetchGroups();
       onUpdate();

@@ -62,7 +62,7 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
   };
 
   if (selectedMember) {
-    const memberAccounts = accounts.filter(a => a.member_id === selectedMember.id && !a.archived);
+    const memberAccounts = accounts.filter(a => a.member_id == selectedMember.id && !a.archived);
     return (
       <div className="space-y-4 md:space-y-6">
         <button onClick={() => setSelectedMember(null)}

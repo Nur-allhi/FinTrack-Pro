@@ -334,9 +334,11 @@ interface LoanSettleFormProps {
   loans: { id: number; label: string; remaining: number; currency: string }[];
   currency: string;
   loan?: Loan;
+  settlements?: { date: string; amount: number; notes: string }[];
+  issueDate?: string;
 }
 
-export function LoanSettleForm({ state, onChange, loans, currency, loan }: LoanSettleFormProps) {
+export function LoanSettleForm({ state, onChange, loans, currency, loan, settlements, issueDate }: LoanSettleFormProps) {
   const selectedLoan = state.loanId
     ? loans.find(l => l.id === Number(state.loanId))
     : (loan ? { id: loan.id, label: loan.borrower_name || `Loan #${loan.id}`, remaining: loan.remaining, currency } : null);
@@ -362,7 +364,33 @@ export function LoanSettleForm({ state, onChange, loans, currency, loan }: LoanS
         <div className="bg-surface-soft rounded-xl p-4 space-y-2 border border-hairline">
           <p className="text-xs text-muted font-medium">{selectedLoan.label}</p>
           <p className="text-lg font-bold text-ink financial-number">{currency}{selectedLoan.remaining.toLocaleString()}</p>
+          {issueDate && (
+            <p className="text-[10px] text-muted flex items-center gap-1">
+              <span>Issued</span>
+              <span className="font-medium">{new Date(issueDate).toLocaleDateString()}</span>
+            </p>
+          )}
         </div>
+      )}
+
+      {settlements && settlements.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">
+            Repayments ({settlements.length})
+          </label>
+          <div className="divide-y divide-hairline border border-hairline rounded-xl overflow-hidden">
+            {settlements.map((s, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-surface-soft text-sm">
+                <span className="text-muted text-xs">{new Date(s.date).toLocaleDateString()}</span>
+                <span className="font-medium financial-number text-semantic-up">+{currency}{s.amount.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {settlements && settlements.length === 0 && (
+        <p className="text-xs text-muted text-center">No repayments yet.</p>
       )}
 
       <div className="space-y-2">

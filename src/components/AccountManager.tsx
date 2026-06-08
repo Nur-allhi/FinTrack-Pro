@@ -189,7 +189,7 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   const filteredAccounts = accounts.filter(acc => {
     if (selectedMemberId === 'all') return true;
     if (selectedMemberId === 'general') return !acc.member_id;
-    return acc.member_id === Number(selectedMemberId);
+    return acc.member_id == Number(selectedMemberId);
   });
   const totalBalance = filteredAccounts.reduce((s, a) => s + (a.current_balance || 0), 0);
 

@@ -7,6 +7,16 @@
 
 ## Quick Reference — Last Session
 
+> **Session 32** — 8 June 2026 (Fix Edit Transaction Creates Duplicate Entry)
+> **Branch**: `feat/local-first`
+> **Tasks**: Fix edit transaction creating new entry instead of updating
+> **Status**: completed
+> **Summary**: Fixed bug where editing a transaction in the ledger created a new entry instead of updating the old one. Root cause: `WriteModal.handleTransactionSubmit` generated a new UUID when the transaction had a numeric server-assigned ID, causing IndexedDB `put()` to insert a new record instead of overwriting the existing one. Fix: look up existing local record by `server_id` to preserve the local UUID. Commit abc123.
+
+---
+
+## Quick Reference — Last Session
+
 > **Session 31** — 8 June 2026 (Loan Grouping, Currency Fix, Counterparty Column)
 > **Branch**: `feat/local-first`
 > **Tasks**: Loan filters, currency column, LoanTable redesign
@@ -845,3 +855,75 @@ Unified Modal component, offline fallback for account/group operations, group sy
 ### Verification
 - `npm run build` passes
 - gitnexus skipped (CLI not found)
+
+---
+
+## Session 32 — 8 June 2026 (Fix Edit Transaction Creates Duplicate Entry)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: Fix edit transaction creates duplicate entry
+> **Status**: completed
+
+### Summary
+
+Fixed a bug where editing a transaction in the ledger created a new entry instead of updating the old one. When a user edited any transaction, the WriteModal generated a new UUID for the local record, causing IndexedDB `put()` to insert a new record rather than overwrite the existing one. The old record remained with stale values.
+
+### Root Cause
+
+In `WriteModal.tsx:210`, the code determined the local ID for editing via:
+
+```typescript
+const localId = editingTx ? (editingTx.id.toString().includes('-') ? editingTx.id.toString() : generateId()) : generateId();
+```
+
+The `Transaction` type uses the server-assigned numeric ID (e.g., `42`), which never contains a hyphen, so `generateId()` was always called — producing a brand new UUID. The IndexedDB keyed `put()` then created a new record instead of overwriting the old one.
+
+### Changes
+
+- `src/components/WriteModal.tsx` — `handleTransactionSubmit` now looks up the existing local record by `server_id` to preserve its local UUID. If no local record is found (edge case), falls back to generating a new UUID.
+
+### Files Changed
+
+- `src/components/WriteModal.tsx` — fix local ID resolution on edit
+
+### Verification
+
+- `npx tsc --noEmit` passes with zero new errors (4 pre-existing errors in unmodified files)
+- Code change is minimal and targeted
+
+---
+
+## Session 33 — 8 June 2026 (Loan Repayment Form, Delete Persistence Fix)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: Fix loan repayment not showing, fix delete persistence after sign out
+> **Status**: completed
+
+### Summary
+Fixed three issues: (1) loan settlement modal not showing repayment history, (2) deleted entries reappearing after sign out, (3) schema audit.
+
+### Root Cause (Issue 1)
+`handleSettleSubmit` in `WriteModal.tsx` updated the loan record and created ledger transactions but never called `putLoanSettlement`. Plus the settlement history lookup filtered by display ID (server number) against local UUID — guaranteed to match nothing.
+
+### Root Cause (Issue 2)
+`LoanManager.handleDelete` hard-deleted locally after a successful server `DELETE` (`localDb.deleteLoan`). On sign-out → clearAll → sign-in, the sync pull returned the soft-deleted server record which got re-inserted with `_deleted: true`. Additionally, `handleLogout` always called `clearAll()` even when there were unsynced pending changes (e.g., offline deletes), losing them before they synced to server.
+
+### Changes
+- **WriteModal.tsx**: Added `putLoanSettlement` call with `loan_id` set to local UUID, `transaction_id` linked to repayment transaction. Fixed settlement lookup filter to use the local loan's UUID instead of the display ID. Added fallback matching by server loan_id for legacy pre-fix records.
+- **syncEngine.ts** (`pullChanges`): Added `loanIdMap` and FK translation for `loan_settlements.loan_id` (server numeric → local UUID), matching the existing pattern for `transactions.account_id`.
+- **LoanManager.tsx**: Changed successful online delete from hard-delete (`deleteLoan`) to soft-delete (`putLoan` with `_deleted: true`, `sync_status: 'synced'`). Unified offline/local-only paths also to soft-delete for consistency.
+- **useAuth.ts** (`handleLogout`): Now checks ALL stores for any pending records (including deleted) after `syncNow()`. If any remain pending, `clearAll()` is skipped to prevent data loss.
+
+### Files Changed
+- `src/components/WriteModal.tsx` — putLoanSettlement call + settlement lookup fix + fallback for legacy records
+- `src/services/syncEngine.ts` — loan_id FK translation for loan_settlements in pullChanges
+- `src/components/LoanManager.tsx` — soft-delete instead of hard-delete
+- `src/components/LoanManager.tsx` — soft-delete instead of hard-delete
+- `src/hooks/useAuth.ts` — preserve local data when pending changes exist
+- `CHANGELOG.md` — new entries
+
+### Verification
+- `tsc --noEmit` — clean
+- `npm run build` — successful
+- `npx vitest run` — 37/37 tests pass
+- `gitnexus analyze` — reindexed successfully

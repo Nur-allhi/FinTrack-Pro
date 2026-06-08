@@ -113,6 +113,8 @@ export default function WriteModal({ operation, accounts, members, currency, onC
   const [categories, setCategories] = useState<string[]>([]);
   const [loans, setLoans] = useState<{ id: number; label: string; remaining: number; currency: string }[]>([]);
   const [investments, setInvestments] = useState<{ id: number; label: string }[]>([]);
+  const [settlements, setSettlements] = useState<{ date: string; amount: number; notes: string }[]>([]);
+  const [issueDate, setIssueDate] = useState<string>('');
 
   const isEdit = operation.type === 'loan_edit' || operation.type === 'transaction' && !!operation.editTx;
 
@@ -180,6 +182,22 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     }).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (mode !== 'loan_settle' || !settleState.loanId) return;
+    const loanId = settleState.loanId;
+    localDb.getLoans().then(allLoans => {
+      const local = findLocalLoan(allLoans, Number(loanId)) as LocalLoan | undefined;
+      if (local) {
+        setIssueDate(local.date_given || local.created_at || '');
+        localDb.getLoanSettlements().then(all => {
+          const matchLocalId = (s: { loan_id: string | number }) => String(s.loan_id) === local.id;
+          const matchServerId = (s: { loan_id: string | number }) => local.server_id != null && Number(s.loan_id) === local.server_id;
+          setSettlements(all.filter(s => matchLocalId(s) || matchServerId(s)).map(s => ({ date: s.date, amount: s.amount, notes: s.notes })));
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [mode, settleState.loanId]);
+
   const handleClose = () => {
     setBatchMode(false);
     setClosing(true);
@@ -207,8 +225,21 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     if (!targetAccount) { toast("Account not found locally.", 'error'); return false; }
 
     const editingTx = operation.type === 'transaction' ? operation.editTx : undefined;
-    const localId = editingTx ? (editingTx.id.toString().includes('-') ? editingTx.id.toString() : generateId()) : generateId();
+
+    let localId: string;
+    let createdAt: string;
     const oldAmount = editingTx?.amount || 0;
+    if (editingTx) {
+      const allTxns = await localDb.getTransactions();
+      const existing = allTxns.find(t =>
+        typeof t.server_id === 'number' && t.server_id === editingTx.id
+      );
+      localId = existing ? existing.id : generateId();
+      createdAt = existing?.created_at || new Date().toISOString();
+    } else {
+      localId = generateId();
+      createdAt = new Date().toISOString();
+    }
     const delta = amount - oldAmount;
 
     const record: LocalTransaction = {
@@ -222,6 +253,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       type: 'normal',
       linked_transaction_id: editingTx?.linked_transaction_id?.toString() || null,
       summary: null,
+      created_at: createdAt,
       updated_at: new Date().toISOString(),
       sync_status: 'pending',
       _deleted: false,
@@ -270,13 +302,13 @@ export default function WriteModal({ operation, accounts, members, currency, onC
             id: debitId, server_id: data.debitId, account_id: source.id, date: transferState.date,
             particulars: transferState.particulars || 'Transfer', category: 'Transfer',
             amount: -amount, type: 'transfer', linked_transaction_id: String(data.creditId),
-            summary: null, updated_at: now, sync_status: 'synced', _deleted: false,
+            summary: null, created_at: now, updated_at: now, sync_status: 'synced', _deleted: false,
           };
           const creditTx: LocalTransaction = {
             id: creditId, server_id: data.creditId, account_id: dest.id, date: transferState.date,
             particulars: transferState.particulars || 'Transfer', category: 'Transfer',
             amount, type: 'transfer', linked_transaction_id: String(data.debitId),
-            summary: null, updated_at: now, sync_status: 'synced', _deleted: false,
+            summary: null, created_at: now, updated_at: now, sync_status: 'synced', _deleted: false,
           };
           await Promise.all([localDb.putTransaction(debitTx), localDb.putTransaction(creditTx)]);
           await Promise.all([
@@ -299,13 +331,13 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       id: debitId, account_id: source.id, date: transferState.date,
       particulars: transferState.particulars || 'Transfer', category: 'Transfer',
       amount: -amount, type: 'transfer', linked_transaction_id: creditId,
-      summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+      summary: null, created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
     };
     const creditTx: LocalTransaction = {
       id: creditId, account_id: dest.id, date: transferState.date,
       particulars: transferState.particulars || 'Transfer', category: 'Transfer',
       amount, type: 'transfer', linked_transaction_id: debitId,
-      summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+      summary: null, created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
     };
 
     await Promise.all([localDb.putTransaction(debitTx), localDb.putTransaction(creditTx)]);
@@ -339,20 +371,18 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       interest_rate: loanState.interest_rate ? parseFloat(loanState.interest_rate) : null,
       particulars: loanState.particulars,
       status: 'active', settled_date: null,
-      updated_at: now, sync_status: 'pending', _deleted: false,
+      created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
     };
 
     await localDb.putLoan(record);
 
-    const borrowerName = loanState.loanType === 'person' ? loanState.borrower_name : (borrower?.name || null);
+    const borrowerName = loanState.loanType === 'person' ? (loanState.borrower_name || '???') : (borrower?.name || '???');
     const lenderTx: LocalTransaction = {
       id: generateId(), account_id: lender.id, date: loanState.date_given,
-      particulars: borrowerName
-        ? `Loan Given: ${lender.name} → ${borrowerName}${loanState.particulars ? ` - ${loanState.particulars}` : ''}`
-        : `Loan Given: ${lender.name}${loanState.particulars ? ` - ${loanState.particulars}` : ''}`,
+      particulars: `${lender.name} → ${borrowerName}`,
       category: 'Loan Given',
       amount: -amount, type: 'normal', linked_transaction_id: null,
-      summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+      summary: null, created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
     };
     await localDb.putTransaction(lenderTx);
     await localDb.adjustAccountBalance(lender.id, -amount);
@@ -360,10 +390,10 @@ export default function WriteModal({ operation, accounts, members, currency, onC
     if (borrower) {
       const borrowerTx: LocalTransaction = {
         id: generateId(), account_id: borrower.id, date: loanState.date_given,
-        particulars: `Loan Received: ${lender.name} → ${borrower.name}${loanState.particulars ? ` - ${loanState.particulars}` : ''}`,
+        particulars: `${lender.name} → ${borrower.name}`,
         category: 'Loan Received',
         amount: +amount, type: 'normal', linked_transaction_id: null,
-        summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+        summary: null, created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
       };
       await localDb.putTransaction(borrowerTx);
       await localDb.adjustAccountBalance(borrower.id, +amount);
@@ -419,47 +449,67 @@ export default function WriteModal({ operation, accounts, members, currency, onC
 
     const localAccounts = await localDb.getAccounts();
     const lender = localAccounts.find(a => a.id === local.lender_account_id);
-    const counterparty = local.borrower_name || local.borrower_account_name || null;
+    const borrower = local.borrower_account_id
+      ? localAccounts.find(a => a.id === local.borrower_account_id)
+      : null;
+    const fromName = borrower?.name || local.borrower_name || local.borrower_account_name || '???';
+
+    // Generate both IDs upfront so they can be cross-linked
+    const repayTxId = lender ? generateId() : null;
+    const borrowerTxId = borrower ? generateId() : null;
+
     if (lender) {
       const repayTx: LocalTransaction = {
-        id: generateId(), account_id: lender.id, date: settleState.date,
-        particulars: counterparty
-          ? `Loan Repayment: ${counterparty} → ${lender.name}`
-          : `Loan Repayment: ${lender.name}`,
+        id: repayTxId!, account_id: lender.id, date: settleState.date,
+        particulars: `${fromName} → ${lender.name}`,
         category: 'Loan Repayment',
-        amount: +settleAmount, type: 'normal', linked_transaction_id: null,
-        summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+        amount: +settleAmount, type: 'normal',
+        linked_transaction_id: borrowerTxId || null,
+        summary: null, created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
       };
       await localDb.putTransaction(repayTx);
       await localDb.adjustAccountBalance(lender.id, +settleAmount);
     }
 
-    const borrower = local.borrower_account_id
-      ? localAccounts.find(a => a.id === local.borrower_account_id)
-      : null;
     if (borrower) {
       const lenderName = local.lender_name || lender?.name || 'Lender';
       const borrowerTx: LocalTransaction = {
-        id: generateId(), account_id: borrower.id, date: settleState.date,
-        particulars: `Loan Repayment: ${borrower.name} → ${lenderName}`,
+        id: borrowerTxId!, account_id: borrower.id, date: settleState.date,
+        particulars: `${borrower.name} → ${lenderName}`,
         category: 'Loan Repayment',
-        amount: -settleAmount, type: 'normal', linked_transaction_id: null,
-        summary: null, updated_at: now, sync_status: 'pending', _deleted: false,
+        amount: -settleAmount, type: 'normal',
+        linked_transaction_id: repayTxId || null,
+        summary: null, created_at: now, updated_at: now, sync_status: 'pending', _deleted: false,
       };
       await localDb.putTransaction(borrowerTx);
       await localDb.adjustAccountBalance(borrower.id, -settleAmount);
     }
 
+    await localDb.putLoanSettlement({
+      id: generateId(),
+      loan_id: local.id,
+      amount: settleAmount,
+      date: settleState.date,
+      notes: '',
+      transaction_id: repayTxId,
+      created_at: now,
+      updated_at: now,
+      sync_status: 'pending',
+      _deleted: false,
+    });
+
     return true;
   };
 
   const handleInvestmentCreateSubmit = async () => {
+    const now = new Date().toISOString();
     const record = {
       id: generateId(),
       account_id: invState.account_id,
       principal: parseFloat(invState.principal),
       date: invState.date,
-      updated_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
       sync_status: 'pending' as const,
       _deleted: false,
     };
@@ -468,13 +518,15 @@ export default function WriteModal({ operation, accounts, members, currency, onC
   };
 
   const handleInvestmentReturnSubmit = async () => {
+    const now = new Date().toISOString();
     const record = {
       id: generateId(),
       investment_id: returnState.investment_id,
       date: returnState.date,
       amount: parseFloat(returnState.amount),
       percentage: parseFloat(returnState.percentage),
-      updated_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
       sync_status: 'pending' as const,
       _deleted: false,
     };
@@ -544,7 +596,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       case 'loan':
         return <LoanCreateForm state={loanState} onChange={setLoanState} accounts={accounts} editMode={isEdit} currency={currency} />;
       case 'loan_settle':
-        return <LoanSettleForm state={settleState} onChange={setSettleState} loans={loans} currency={currency} loan={operation.type === 'loan_settle' ? operation.loan : undefined} />;
+        return <LoanSettleForm state={settleState} onChange={setSettleState} loans={loans} currency={currency} loan={operation.type === 'loan_settle' ? operation.loan : undefined} settlements={settlements} issueDate={issueDate} />;
       case 'investment':
         return <InvestmentCreateForm state={invState} onChange={setInvState} accounts={accounts} currency={currency} />;
       case 'investment_return':

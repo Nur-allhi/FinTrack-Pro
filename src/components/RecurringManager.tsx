@@ -17,7 +17,7 @@ interface RecurringTx {
 }
 
 interface RecurringManagerProps {
-  accounts: { id: number; name: string }[];
+  accounts: { id: number; name: string; member_name?: string; current_balance?: number }[];
   currency: string;
 }
 

@@ -123,7 +123,7 @@ export default React.memo(function TransactionRow({
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-6 text-xs text-muted">
                   <span>ID: <span className="font-mono text-ink">#{tx.id}</span></span>
-                  {tx.linked_transaction_id && <span>Linked: <span className="font-mono text-ink">#{tx.linked_transaction_id}</span></span>}
+                  {tx.linked_account_name && <span>Pair: <span className="font-mono text-ink">{tx.linked_account_name}</span></span>}
                   {tx.summary && <span className="italic">{tx.summary}</span>}
                 </div>
               </div>

@@ -111,6 +111,7 @@ function serverToLocal(table: TableName, record: ServerRecord, accountIdMap?: Ma
   const base = {
     id: record.client_id || crypto.randomUUID(),
     server_id: record.id,
+    created_at: (record.created_at as string) || undefined,
     updated_at: (record.updated_at as string) || new Date().toISOString(),
     sync_status: 'synced' as const,
     _deleted: false,
@@ -134,7 +135,7 @@ function serverToLocal(table: TableName, record: ServerRecord, accountIdMap?: Ma
     case 'transactions':
       return {
         ...base,
-        account_id: accountIdMap?.get(Number(record.account_id)) || (record.account_id as string),
+        account_id: accountIdMap?.get(Number(record.account_id)) || String(record.account_id),
         date: record.date as string,
         particulars: record.particulars as string,
         category: (record.category as string) || 'Uncategorized',
@@ -146,9 +147,9 @@ function serverToLocal(table: TableName, record: ServerRecord, accountIdMap?: Ma
     case 'loans':
       return {
         ...base,
-        lender_account_id: accountIdMap?.get(Number(record.lender_account_id)) || (record.lender_account_id as string),
+        lender_account_id: accountIdMap?.get(Number(record.lender_account_id)) || String(record.lender_account_id),
         borrower_account_id: record.borrower_account_id != null
-          ? (accountIdMap?.get(Number(record.borrower_account_id)) || (record.borrower_account_id as string))
+          ? (accountIdMap?.get(Number(record.borrower_account_id)) || String(record.borrower_account_id))
           : null,
         borrower_name: (record.borrower_name as string) || null,
         amount: record.amount as number,

@@ -66,7 +66,7 @@ export default function Dashboard({
     }
     if (filterMemberId === 'all') return true;
     if (filterMemberId === 'general') return !acc.member_id;
-    return acc.member_id === filterMemberId;
+    return acc.member_id == filterMemberId;
   }), [activeAccounts, filterType, filterMemberId]);
 
   const groupFilteredAccounts = useMemo(() => activeAccounts.filter(acc => {
@@ -81,7 +81,7 @@ export default function Dashboard({
   const { groupedByMember, unassignedAccounts } = useMemo(() => {
     const grouped = members.map(member => ({
       member,
-      accounts: groupFilteredAccounts.filter(a => a.member_id === member.id)
+      accounts: groupFilteredAccounts.filter(a => a.member_id == member.id)
     })).filter(g => g.accounts.length > 0);
     const unassigned = groupFilteredAccounts.filter(a => !a.member_id);
     return { groupedByMember: grouped, unassignedAccounts: unassigned };

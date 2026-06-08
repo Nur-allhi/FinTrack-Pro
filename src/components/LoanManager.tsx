@@ -104,7 +104,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
             method: 'DELETE',
           });
           if (res.ok) {
-            await localDb.deleteLoan(local.id);
+            await localDb.putLoan({ ...local, _deleted: true, sync_status: 'synced', updated_at: new Date().toISOString() });
             toast("Loan deleted.", 'success');
             fetchLoans();
             return;
@@ -122,8 +122,9 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
       }
 
       if (serverId == null) {
-        await localDb.deleteLoan(local.id);
+        await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
         toast("Loan deleted.", 'success');
+        flushPending();
       } else {
         await localDb.putLoan({ ...local, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
         toast("Loan deleted (will sync when online).", 'info');

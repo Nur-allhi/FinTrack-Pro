@@ -30,7 +30,7 @@ export default function ReportGenerator({ accounts, members, currency }: ReportG
     setShowAll(false);
     try {
       const memberAccountIds = filters.memberId
-        ? accounts.filter(a => a.member_id === Number(filters.memberId)).map(a => a.id)
+        ? accounts.filter(a => a.member_id == Number(filters.memberId)).map(a => a.id)
         : null;
       let allTxs: Transaction[] = [];
       

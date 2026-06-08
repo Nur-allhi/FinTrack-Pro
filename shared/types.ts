@@ -12,6 +12,7 @@ export interface BaseServerRecord {
   id: number;
   client_id?: string | null;
   user_id?: string;
+  created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
 }
@@ -109,7 +110,6 @@ export interface Budget extends BaseServerRecord {
   category: string;
   amount: number;
   month: string; // YYYY-MM format
-  created_at: string;
 }
 
 // ─── Recurring Transactions ────────────────
@@ -122,7 +122,6 @@ export interface RecurringTransaction extends BaseServerRecord {
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
   next_date: string;
   active: boolean;
-  created_at: string;
 }
 
 // ─── Groups ────────────────────────────────

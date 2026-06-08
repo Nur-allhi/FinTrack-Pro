@@ -87,29 +87,53 @@ export function useAuth() {
 
   const handleLogout = useCallback(async () => {
     // Push any pending local changes to the server before clearing localDb.
-    // If the network is offline or the push fails, warn the user.
+    // If the network is offline or the push fails, keep local data so pending
+    // changes (especially deletes) are not lost. Otherwise they'd reappear
+    // on next sign-in when the server returns the non-deleted record.
+    const allStores = [
+      'members', 'accounts', 'transactions', 'loans',
+      'loan_settlements', 'investments', 'investment_returns',
+      'budgets', 'recurring_transactions',
+    ] as const;
+
+    let hasPending = false;
     if (navigator.onLine) {
       try {
         await syncNow();
-        const pending = await localDb.getUnsyncedCount().catch(() => 0);
-        if (pending > 0) {
-          toast(`${pending} change${pending !== 1 ? 's' : ''} couldn't be synced. Please retry from a stable connection.`, 'info');
+        for (const store of allStores) {
+          const records = await localDb.getAllRecords(store);
+          if (records.some(r => r.sync_status === 'pending')) {
+            hasPending = true;
+            break;
+          }
+        }
+        if (hasPending) {
+          toast(`Some changes couldn't be synced and will be preserved for next sign-in.`, 'info');
         }
       } catch (err) {
+        hasPending = true;
         console.warn("Sync before logout failed:", err);
       }
     } else {
-      const pending = await localDb.getUnsyncedCount().catch(() => 0);
-      if (pending > 0) {
-        toast(`You're offline. ${pending} pending change${pending !== 1 ? 's' : ''} will sync on next sign-in.`, 'info');
+      for (const store of allStores) {
+        const records = await localDb.getAllRecords(store);
+        if (records.some(r => r.sync_status === 'pending')) {
+          hasPending = true;
+          break;
+        }
+      }
+      if (hasPending) {
+        toast(`You're offline. Pending changes preserved for next sign-in.`, 'info');
       }
     }
 
-    try {
-      await localDb.clearAll();
-      await localDb.setMeta('sync_timestamp', null);
-    } catch (err) {
-      console.error("Failed to clear local data:", err);
+    if (!hasPending) {
+      try {
+        await localDb.clearAll();
+        await localDb.setMeta('sync_timestamp', null);
+      } catch (err) {
+        console.error("Failed to clear local data:", err);
+      }
     }
 
     await authService.signOut();

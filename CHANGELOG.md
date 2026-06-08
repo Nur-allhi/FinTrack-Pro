@@ -4,6 +4,13 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-08: Add `created_at` column to all Supabase tables (migration 016) and sync to IndexedDB — `created_at` now flows via sync engine (push+pull) for all entities; added to shared schema/types, LocalRecord base, and all local creation paths in WriteModal/migrationService/useTransactions; sort tiebreaker uses `created_at` for correct chronological order across all entities (completed).
+2026-06-08: Fix ledger running balance order for same-date transactions — added `created_at` timestamp to LocalTransaction, set on creation and preserved on edit; sort tiebreaker now uses `created_at` instead of `updated_at` so chronological entry order is maintained regardless of edits (completed).
+2026-06-08: Fix edit transaction creating new entry instead of updating — WriteModal now looks up existing local record by server_id to preserve local UUID, preventing duplicate entries on edit (completed).
+2026-06-08: Fix 4 pre-existing TS errors — `now` reference in GroupManager.tsx replaced with `new Date().toISOString()`, missing `member_name`/`current_balance` fields added to RecurringManager accounts type (completed).
+2026-06-08: Fix loan repayment history not showing in settlement form — `handleSettleSubmit` in WriteModal.tsx now creates a `loan_settlement` record via `putLoanSettlement` (was only updating loan + creating transactions). Also fixed settlement lookup filter to use local UUID instead of display ID (completed).
+2026-06-08: Fix delete persistence bug (entries reappearing after sign out) — LoanManager now soft-deletes instead of hard-deletes after successful server DELETE, keeping local `_deleted: true` consistent with server `deleted_at`. handleLogout preserves IndexedDB when unsynced pending changes exist, preventing them from being wiped before sync (completed).
+2026-06-08: Fix loan settlement history not showing in settlement form — syncEngine pullChanges now translates loan_settlements.loan_id from server numeric ID to local UUID (was missing FK translation). WriteModal filter also falls back to matching by server loan_id for legacy records already synced before the fix (completed).
 2026-06-08: Fix loan grouping — By Pair groups by lender account only (one card per lender); By Borrower groups by borrower; card subtitle lists counterparties in pair mode (completed).
 2026-06-08: Add currency column to Account type and all putAccount/sync paths — resolves TS errors and persists per-account currency (completed).
 2026-06-08: Add counterparty column (Borrower/Lender) to LoanTable after Date column; replace Due column with Paid (amount - remaining); center-align all column headers (completed).
