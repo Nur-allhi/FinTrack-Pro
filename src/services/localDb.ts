@@ -469,7 +469,7 @@ export const localDb = {
       for (const { name, label } of stores) {
         const all = await db.getAll(name);
         for (const r of all) {
-          if (r._deleted) {
+          if (r._deleted && !(r as any)._bin_emptied) {
             const summary = 'name' in r ? (r as { name: string }).name : 'particulars' in r ? (r as { particulars: string }).particulars : label;
             results.push({
               entity_type: name,
@@ -498,17 +498,51 @@ export const localDb = {
     await remove(entityType as EntityName, id);
   },
 
+  async isDeletedId(table: string, serverId: number): Promise<boolean> {
+    const key = `tombstone:${table}:${serverId}`;
+    const existing = await this.getMeta(key);
+    return !!existing;
+  },
+
+  async addDeletedId(table: string, serverId: number): Promise<void> {
+    const key = `tombstone:${table}:${serverId}`;
+    await this.setMeta(key, new Date().toISOString());
+  },
+
   async emptyBin(entityType?: string): Promise<void> {
     const stores: EntityName[] = entityType
       ? [entityType as EntityName]
       : ['transactions', 'accounts', 'loans', 'members', 'groups'];
+
+    const toEmpty: { store: EntityName; record: LocalRecord }[] = [];
     for (const s of stores) {
       const all = await getAllRecords(s);
       for (const r of all) {
-        if (r._deleted) {
-          await remove(s, r.id);
-        }
+        if (r._deleted) toEmpty.push({ store: s, record: r });
       }
+    }
+    if (toEmpty.length === 0) return;
+
+    // Mark as bin-emptied + pending (will push to server)
+    const ts = now();
+    for (const { store: s, record: r } of toEmpty) {
+      r.sync_status = 'pending';
+      r.updated_at = ts;
+      (r as any)._bin_emptied = true;
+      await put(s, r);
+    }
+
+    // Push to server — this must succeed so server gets deleted_at
+    const { flushPending } = await import('./syncEngine');
+    await flushPending();
+
+    // Push succeeded: server has deleted_at. Hard-delete + tombstone.
+    for (const { store: s, record: r } of toEmpty) {
+      const sid = (r as any).server_id as number | undefined;
+      if (sid != null) {
+        await this.addDeletedId(s, sid);
+      }
+      await remove(s, r.id);
     }
   },
 

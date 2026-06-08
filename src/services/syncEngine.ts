@@ -17,7 +17,7 @@ export interface SyncResult {
 }
 
 /** Local-only fields that must never be sent to server */
-const LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as const;
+const LOCAL_ONLY_FIELDS = ['id', 'sync_status', '_deleted', '_bin_emptied'] as const;
 
 /** Server-generated columns that must never be sent to server (e.g., generated tsvector columns) */
 const SERVER_GENERATED_FIELDS = ['fts'] as const;
@@ -76,56 +76,56 @@ async function getUnsyncedForTable(table: SyncTable): Promise<LocalRecord[]> {
     members: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getUnsyncedMembers(),
-        localDb.getAllRecords('members').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('members').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     transactions: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getUnsyncedTransactions(),
-        localDb.getAllRecords('transactions').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('transactions').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     loans: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getUnsyncedLoans(),
-        localDb.getAllRecords('loans').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('loans').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     loan_settlements: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getLoanSettlements().then(r => r.filter(x => x.sync_status === 'pending')),
-        localDb.getAllRecords('loan_settlements').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('loan_settlements').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     investments: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getInvestments().then(r => r.filter(x => x.sync_status === 'pending')),
-        localDb.getAllRecords('investments').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('investments').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     investment_returns: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getInvestmentReturns().then(r => r.filter(x => x.sync_status === 'pending')),
-        localDb.getAllRecords('investment_returns').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('investment_returns').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     budgets: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getBudgets().then(r => r.filter(x => x.sync_status === 'pending')),
-        localDb.getAllRecords('budgets').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('budgets').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
     recurring_transactions: async () => {
       const [pending, deleted] = await Promise.all([
         localDb.getRecurringTransactions().then(r => r.filter(x => x.sync_status === 'pending')),
-        localDb.getAllRecords('recurring_transactions').then(r => r.filter(x => x._deleted)),
+        localDb.getAllRecords('recurring_transactions').then(r => r.filter(x => x._deleted && x.sync_status === 'pending')),
       ]);
       return [...pending, ...deleted];
     },
@@ -298,7 +298,9 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     body: JSON.stringify({ records: sanitized }),
   });
 
-  if (!res.ok) return { pushed: 0, conflicts: 0 };
+  if (!res.ok) {
+    return { pushed: 0, conflicts: 0 };
+  }
 
   const data = await res.json();
   let pushed = 0;
@@ -386,15 +388,34 @@ async function pullChanges(): Promise<number> {
       return sanitized;
     });
 
+    // Filter out records that were permanently deleted (tombstone)
+    // Auto-tombstone any soft-deleted record so it's never re-imported
+    const notTombstoned: Record<string, unknown>[] = [];
+    for (const r of translated) {
+      const sid = r.id as number | undefined;
+      if (sid != null) {
+        if (await localDb.isDeletedId(table, sid)) {
+          continue;
+        }
+        if (r._deleted === true) {
+          await localDb.addDeletedId(table, sid);
+          continue;
+        }
+      }
+      notTombstoned.push(r);
+    }
+    const filtered = notTombstoned;
+
     // Get local records for LWW comparison — key by server_id
     const localRecords = await localDb.getAllRecords(table as EntityName) as Array<LocalRecord & { server_id?: number | null }>;
     const localMap = new Map(localRecords.map(r => [r.server_id, r]));
 
     // Filter: skip records where local has pending changes or is newer
-    const toUpsert = translated.filter((r: Record<string, unknown>) => {
+    const toUpsert = filtered.filter((r: Record<string, unknown>) => {
       const local = localMap.get(r.id as number);
       if (!local) return true; // new record, upsert
       if (local.sync_status === 'pending') return false; // local has unpushed changes, skip
+      if ((local as any)._bin_emptied) return false; // user permanently deleted, skip
       // Both synced — LWW by updated_at
       const serverTime = new Date((r.updated_at as string) || 0).getTime();
       const localTime = new Date(local.updated_at).getTime();

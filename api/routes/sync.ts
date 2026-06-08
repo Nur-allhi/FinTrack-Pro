@@ -25,7 +25,7 @@ interface PushBody {
 }
 
 // Local-only fields that clients might accidentally send
-const SERVER_LOCAL_ONLY_FIELDS = ['id', 'server_id', 'sync_status', '_deleted'] as const;
+const SERVER_LOCAL_ONLY_FIELDS = ['id', 'sync_status', '_deleted'] as const;
 
 /** Server-generated columns that must never be sent to server (e.g., generated tsvector columns) */
 const SERVER_GENERATED_FIELDS = ['fts'] as const;
@@ -78,7 +78,7 @@ router.post("/push", async (req, res) => {
             conflicts++;
             continue;
           }
-          const { id, client_id: _cid, updated_at: _ua, ...fields } = sanitized;
+          const { id, client_id: _cid, updated_at: _ua, server_id: _sid, ...fields } = sanitized;
           const { error } = await client
             .from(table)
             .update({ ...fields, client_id: sanitized.client_id, updated_at: sanitized.updated_at })
@@ -91,18 +91,49 @@ router.post("/push", async (req, res) => {
           pushed++;
           ids.push({ client_id: sanitized.client_id, server_id: existing.id });
         } else {
-          const { id: _localId, ...fields } = sanitized;
-          const { data: inserted, error } = await client
-            .from(table)
-            .insert({ ...fields, user_id: userId, client_id: sanitized.client_id, updated_at: sanitized.updated_at })
-            .select('id')
-            .single();
-          if (error || !inserted) {
-            logger.error({ requestId: req.requestId, error: error?.message, table, client_id: sanitized.client_id }, "sync push insert");
-            continue;
+          // client_id didn't match — try matching by server_id (handles legacy UUID mismatch)
+          let matched = false;
+          if (sanitized.server_id != null) {
+            const { data: byServer } = await client
+              .from(table)
+              .select('id, updated_at')
+              .eq('id', sanitized.server_id)
+              .eq('user_id', userId)
+              .maybeSingle();
+            if (byServer) {
+              if (new Date(sanitized.updated_at) < new Date(byServer.updated_at)) {
+                conflicts++;
+                continue;
+              }
+              const { id, client_id: _cid, updated_at: _ua, server_id: _sid, ...fields } = sanitized;
+              const { error } = await client
+                .from(table)
+                .update({ ...fields, client_id: sanitized.client_id, updated_at: sanitized.updated_at })
+                .eq('id', byServer.id)
+                .eq('user_id', userId);
+              if (error) {
+                logger.error({ requestId: req.requestId, error: error.message, table, server_id: sanitized.server_id }, "sync push update by server_id");
+                continue;
+              }
+              pushed++;
+              ids.push({ client_id: sanitized.client_id, server_id: byServer.id });
+              matched = true;
+            }
           }
-          pushed++;
-          ids.push({ client_id: sanitized.client_id, server_id: inserted.id });
+          if (!matched) {
+            const { id: _localId, server_id: _sid, ...fields } = sanitized;
+            const { data: inserted, error } = await client
+              .from(table)
+              .insert({ ...fields, user_id: userId, client_id: sanitized.client_id, updated_at: sanitized.updated_at })
+              .select('id')
+              .single();
+            if (error || !inserted) {
+              logger.error({ requestId: req.requestId, error: error?.message, table, client_id: sanitized.client_id }, "sync push insert");
+              continue;
+            }
+            pushed++;
+            ids.push({ client_id: sanitized.client_id, server_id: inserted.id });
+          }
         }
       }
 

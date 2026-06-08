@@ -36,7 +36,7 @@ app.use(async (_req: Request, _res: Response, next: NextFunction) => {
 
 app.use(requestIdMiddleware);
 app.use(requestLogger);
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);

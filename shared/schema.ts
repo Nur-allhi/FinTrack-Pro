@@ -16,9 +16,9 @@
 
 export const LOCAL_ONLY_FIELDS = [
   'id',           // local UUID PK → mapped to client_id for server
-  'server_id',    // server BIGSERIAL id, stored locally
   'sync_status',  // 'pending' | 'synced' | 'conflict'
   '_deleted',     // boolean soft-delete flag
+  '_bin_emptied', // local-only flag: user emptied recycle bin
 ] as const;
 
 export const SERVER_ID_FIELD = 'server_id';

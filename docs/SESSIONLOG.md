@@ -927,3 +927,31 @@ Fixed three issues: (1) loan settlement modal not showing repayment history, (2)
 - `npm run build` — successful
 - `npx vitest run` — 37/37 tests pass
 - `gitnexus analyze` — reindexed successfully
+
+---
+
+## Session 34 — 8 June 2026 (Empty Bin Persistence Fix)
+
+> **Branch**: `feat/local-first`
+> **Tasks**: Fix deleted entries reappearing after fresh sign-in
+> **Status**: completed
+
+### Summary
+Fixed the root cause of permanently deleted (bin-emptied) entries reappearing after sign-out → clear IndexedDB → fresh sign-in. Console log confirmed 148 records were still being imported as active because `emptyBin()` only used a local `_bin_emptied` flag and never ensured the server had `deleted_at`.
+
+### Root Cause
+`emptyBin()` marked records as `_bin_emptied = true` (hidden from recycle bin) and did a best-effort push. If the push failed (e.g., 413 PayloadTooLarge before body parser fix), the server never got `deleted_at`. On fresh sign-in after IndexedDB clear, the server returned all 148 non-deleted records as active, bypassing auto-tombstone.
+
+The fix relied on the `_bin_emptied` local flag, which is ephemeral — it disappears with IndexedDB.
+
+### Changes
+- **localDb.ts** (`emptyBin`): Now hard-deletes records + creates tombstones AFTER a successful `flushPending()` push. If push fails, throws — the UI shows an error toast and records remain as `_bin_emptied` for retry on next sync cycle.
+
+### Files Changed
+- `src/services/localDb.ts` — `emptyBin()` now push-first, then hard-delete + tombstone on success
+
+### Verification
+- `npm run build` — successful
+
+### Next Steps
+The user needs to re-delete the 148 orphan records from the UI (these were from earlier failed pushes). After that, future empties will persist through IndexedDB clears.
