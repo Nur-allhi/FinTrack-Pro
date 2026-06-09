@@ -58,16 +58,19 @@ export default function Dashboard({
 
   const activeAccounts = useMemo(() => accounts.filter(a => !a.archived), [accounts]);
 
-  const filteredAccounts = useMemo(() => activeAccounts.filter(acc => {
-    if (filterType !== 'all') {
-      if (filterType === 'other') {
-        if (['bank', 'cash', 'mobile', 'investment'].includes(acc.type)) return false;
-      } else if (acc.type !== filterType) return false;
-    }
-    if (filterMemberId === 'all') return true;
-    if (filterMemberId === 'general') return !acc.member_id;
-    return acc.member_id == filterMemberId;
-  }), [activeAccounts, filterType, filterMemberId]);
+  const filteredAccounts = useMemo(() => activeAccounts
+    .filter(acc => {
+      if (filterType !== 'all') {
+        if (filterType === 'other') {
+          if (['bank', 'cash', 'mobile', 'investment'].includes(acc.type)) return false;
+        } else if (acc.type !== filterType) return false;
+      }
+      if (filterMemberId === 'all') return true;
+      if (filterMemberId === 'general') return !acc.member_id;
+      return acc.member_id == filterMemberId;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name))
+  , [activeAccounts, filterType, filterMemberId]);
 
   const groupFilteredAccounts = useMemo(() => activeAccounts.filter(acc => {
     if (filterType !== 'all') {
@@ -79,11 +82,18 @@ export default function Dashboard({
   }), [activeAccounts, filterType]);
 
   const { groupedByMember, unassignedAccounts } = useMemo(() => {
-    const grouped = members.map(member => ({
-      member,
-      accounts: groupFilteredAccounts.filter(a => a.member_id == member.id)
-    })).filter(g => g.accounts.length > 0);
-    const unassigned = groupFilteredAccounts.filter(a => !a.member_id);
+    const grouped = members
+      .map(member => ({
+        member,
+        accounts: groupFilteredAccounts
+          .filter(a => a.member_id == member.id)
+          .sort((a, b) => a.name.localeCompare(b.name))
+      }))
+      .filter(g => g.accounts.length > 0)
+      .sort((a, b) => a.member.name.localeCompare(b.member.name));
+    const unassigned = groupFilteredAccounts
+      .filter(a => !a.member_id)
+      .sort((a, b) => a.name.localeCompare(b.name));
     return { groupedByMember: grouped, unassignedAccounts: unassigned };
   }, [members, groupFilteredAccounts]);
 
