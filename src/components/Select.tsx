@@ -79,7 +79,7 @@ export default function Select({ value, onChange, options, placeholder, classNam
         ref={buttonRef}
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 bg-surface-soft border border-hairline rounded-pill text-xs font-semibold uppercase tracking-wider text-ink hover:bg-canvas hover:border-muted transition-all cursor-pointer"
+        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 glass-chip rounded-pill text-xs font-semibold uppercase tracking-wider text-ink hover:bg-white/60 hover:border-primary/30 transition-all cursor-pointer"
       >
         <span className="truncate">{displayLabel}</span>
         <ChevronDown className={cn("w-3.5 h-3.5 text-muted shrink-0 transition-transform", open && "rotate-180")} />
@@ -93,7 +93,7 @@ export default function Select({ value, onChange, options, placeholder, classNam
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              className="bg-canvas border border-hairline rounded-xl shadow-xl max-h-[200px] overflow-y-auto"
+              className="glass-popup rounded-xl shadow-xl max-h-[200px] overflow-y-auto"
             >
               {options.map(opt => (
                 <button

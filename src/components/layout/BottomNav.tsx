@@ -49,25 +49,28 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
             const tab = navTabs[0];
             const isActive = activeTab === tab.id && !selectedAccountId;
             return (
-              <button
+              <motion.button
                 onClick={() => onTabChange(tab.id)}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 ${
+                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-colors duration-200 ${
                   isActive
-                    ? 'bg-primary/15 text-primary shadow-sm shadow-primary/10'
+                    ? 'bg-primary/15 text-primary'
                     : 'text-body hover:bg-white/10'
                 }`}
                 aria-label={tab.label}
                 aria-current={isActive ? 'page' : undefined}
+                whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.05 }}
+                style={isActive ? { boxShadow: '0 0 14px color-mix(in srgb, var(--color-primary) 25%, transparent)' } : undefined}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeNav"
                     className="absolute inset-0 rounded-full bg-primary/15"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
                 <tab.icon className="w-5 h-5 relative z-10" />
-              </button>
+              </motion.button>
             );
           })()}
 
@@ -76,25 +79,28 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
             const tab = navTabs[1];
             const isActive = activeTab === tab.id && !selectedAccountId;
             return (
-              <button
+              <motion.button
                 onClick={() => onTabChange(tab.id)}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 ${
+                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-colors duration-200 ${
                   isActive
-                    ? 'bg-primary/15 text-primary shadow-sm shadow-primary/10'
+                    ? 'bg-primary/15 text-primary'
                     : 'text-body hover:bg-white/10'
                 }`}
                 aria-label={tab.label}
                 aria-current={isActive ? 'page' : undefined}
+                whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.05 }}
+                style={isActive ? { boxShadow: '0 0 14px color-mix(in srgb, var(--color-primary) 25%, transparent)' } : undefined}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeNav"
                     className="absolute inset-0 rounded-full bg-primary/15"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
                 <tab.icon className="w-5 h-5 relative z-10" />
-              </button>
+              </motion.button>
             );
           })()}
 
@@ -104,11 +110,15 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
               <motion.button
                 layoutId="fab-plus"
                 onClick={() => setPlusMenuOpen((p) => !p)}
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-primary text-white shadow-lg shadow-primary/30"
+                className="flex items-center justify-center w-11 h-11 rounded-full text-white shadow-lg shadow-primary/30"
+                style={{
+                  background: 'linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 70%, #C4B5FD))',
+                  boxShadow: '0 4px 16px color-mix(in srgb, var(--color-primary) 35%, transparent)',
+                }}
                 aria-label="New transaction or transfer"
                 aria-haspopup="menu"
                 aria-expanded={plusMenuOpen}
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.93 }}
               >
                 <Plus className="w-5 h-5" />
               </motion.button>
@@ -120,7 +130,7 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.9 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-canvas border border-hairline rounded-2xl shadow-2xl overflow-hidden min-w-[200px]"
+                    className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 glass-popup rounded-2xl shadow-2xl overflow-hidden min-w-[200px]"
                     role="menu"
                   >
                     <button
@@ -151,37 +161,42 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
             const tab = navTabs[2];
             const isActive = activeTab === tab.id && !selectedAccountId;
             return (
-              <button
+              <motion.button
                 onClick={() => onTabChange(tab.id)}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 ${
+                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-colors duration-200 ${
                   isActive
-                    ? 'bg-primary/15 text-primary shadow-sm shadow-primary/10'
+                    ? 'bg-primary/15 text-primary'
                     : 'text-body hover:bg-white/10'
                 }`}
                 aria-label={tab.label}
                 aria-current={isActive ? 'page' : undefined}
+                whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.05 }}
+                style={isActive ? { boxShadow: '0 0 14px color-mix(in srgb, var(--color-primary) 25%, transparent)' } : undefined}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeNav"
                     className="absolute inset-0 rounded-full bg-primary/15"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
                 <tab.icon className="w-5 h-5 relative z-10" />
-              </button>
+              </motion.button>
             );
           })()}
 
           {/* Position 5: More */}
-          <button
+          <motion.button
             onClick={() => setMoreOpen(true)}
-            className="flex items-center justify-center w-11 h-11 rounded-full text-body hover:bg-white/10 transition-all duration-200"
+            className="flex items-center justify-center w-11 h-11 rounded-full text-body hover:bg-white/10 transition-colors duration-200"
             aria-label="More options"
             aria-haspopup="dialog"
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05 }}
           >
             <MoreHorizontal className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
       </motion.div>
 

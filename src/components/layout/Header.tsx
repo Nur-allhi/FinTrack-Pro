@@ -119,8 +119,8 @@ export default function Header({
         {/* Search */}
         <div ref={ref} className="relative">
         <div className={cn(
-          "flex items-center gap-2 bg-surface-soft rounded-pill border border-hairline transition-all",
-          focused ? "border-primary bg-canvas shadow-sm" : "hover:border-muted"
+          "flex items-center gap-2 glass-chip rounded-pill transition-all",
+          focused ? "border-primary/30 bg-white/60 shadow-sm" : "hover:border-primary/20"
         )}>
           <Search className="w-3.5 h-3.5 text-muted ml-3 md:ml-4 shrink-0" aria-hidden="true" />
           <input

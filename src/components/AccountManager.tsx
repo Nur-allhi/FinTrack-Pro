@@ -217,9 +217,9 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
             className="w-full max-w-[180px]" />
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-surface-soft p-0.5 rounded-pill border border-hairline">
-            <button onClick={() => setViewMode('grid')} className={cn("px-3 py-1.5 rounded-pill text-[10px] font-bold transition-all", viewMode === 'grid' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>Grid</button>
-            <button onClick={() => setViewMode('list')} className={cn("px-3 py-1.5 rounded-pill text-[10px] font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
+          <div className="flex items-center gap-1 glass-group p-0.5 rounded-pill">
+            <button onClick={() => setViewMode('grid')} className={cn("px-3 py-1.5 rounded-pill text-[10px] font-bold transition-all", viewMode === 'grid' ? "bg-white/70 text-ink shadow-sm dark:bg-white/10" : "text-muted hover:text-ink")}>Grid</button>
+            <button onClick={() => setViewMode('list')} className={cn("px-3 py-1.5 rounded-pill text-[10px] font-bold transition-all", viewMode === 'list' ? "bg-white/70 text-ink shadow-sm dark:bg-white/10" : "text-muted hover:text-ink")}>List</button>
           </div>
           <button onClick={() => setIsAdding(true)} className="btn-primary text-xs px-4 py-2"><Plus className="w-3.5 h-3.5" /> Add</button>
         </div>

@@ -150,15 +150,15 @@ export default function Dashboard({
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 "px-3 py-1.5 rounded-pill text-xs font-bold uppercase tracking-wider transition-all",
-                showFilters || filterType !== 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted'
+                showFilters || filterType !== 'all' ? 'bg-primary text-white shadow-sm' : 'glass-chip text-muted'
               )}
             >
               <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
               Filters
             </button>
-            <div className="flex items-center gap-2 bg-surface-soft p-0.5 rounded-pill border border-hairline">
-              <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'grid' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>Grid</button>
-              <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'list' ? "bg-canvas text-ink shadow-sm" : "text-muted hover:text-ink")}>List</button>
+            <div className="flex items-center gap-2 glass-group p-0.5 rounded-pill">
+              <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'grid' ? "bg-white/70 text-ink shadow-sm dark:bg-white/10" : "text-muted hover:text-ink")}>Grid</button>
+              <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'list' ? "bg-white/70 text-ink shadow-sm dark:bg-white/10" : "text-muted hover:text-ink")}>List</button>
             </div>
           </div>
         </div>
