@@ -58,16 +58,16 @@ export default function Sidebar({
 
       <aside
         className={cn(
-          "hidden md:block fixed inset-y-0 left-0 z-50 w-64 bg-canvas border-r border-hairline transition-transform duration-300 ease-in-out md:fixed md:h-screen md:translate-x-0",
+          "hidden md:block fixed top-4 left-4 bottom-4 z-50 w-64 glass-sidebar transition-transform duration-300 ease-in-out md:fixed md:translate-x-0",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="h-full flex flex-col">
           {/* Brand header */}
           <div className="flex items-center justify-between px-5 py-5">
-            <button onClick={() => window.location.reload()} className="flex items-end gap-2.5 min-w-0 cursor-pointer">
-              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0" xmlns="http://www.w3.org/2000/svg">
-                <rect width="512" height="512" rx="110" fill="#1C1829" />
+            <button onClick={() => window.location.reload()} className="flex items-center gap-2.5 min-w-0 cursor-pointer">
+              <svg viewBox="0 0 512 512" className="w-11 h-11 shrink-0 drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="110" fill="#ffffff" />
                 <g opacity="0.12">
                   <circle cx="128" cy="128" r="2" fill="#A78BFA" />
                   <circle cx="256" cy="128" r="2" fill="#A78BFA" />
@@ -94,9 +94,6 @@ export default function Sidebar({
               <X className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Divider */}
-          <div className="mx-5 h-px bg-gradient-to-r from-hairline to-transparent mb-2" />
 
           {/* Navigation cards */}
           <nav className="flex-1 px-3 space-y-1 overflow-y-auto min-h-0" style={{ overscrollBehavior: 'contain' }}>
@@ -153,10 +150,10 @@ export default function Sidebar({
           </nav>
 
           {/* Bottom section */}
-          <div className="p-4 space-y-3 border-t border-hairline shrink-0">
+          <div className="p-4 space-y-3 shrink-0">
             {/* Profile section */}
             {userEmail && (
-              <button onClick={onOpenProfile} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-soft border border-hairline hover:bg-surface-strong transition-all text-left">
+              <button onClick={onOpenProfile} className="w-full flex items-center gap-3 p-3 rounded-xl glass-chip hover:bg-white/60 hover:border-primary/30 transition-all text-left">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-sm font-bold text-primary">{userEmail[0].toUpperCase()}</span>
                 </div>
@@ -171,7 +168,7 @@ export default function Sidebar({
             {/* Sign out */}
             <button
               onClick={onLogout}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl bg-canvas border border-hairline text-muted hover:text-semantic-down hover:border-semantic-down/20 hover:bg-semantic-down/5 transition-all font-semibold text-xs"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl glass-chip text-muted hover:text-semantic-down hover:border-semantic-down/30 hover:bg-semantic-down/5 transition-all font-semibold text-xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>

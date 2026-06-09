@@ -18,7 +18,7 @@ interface AppSettings {
   showBalanceTrend: boolean;
   enableNotifications: boolean;
   darkMode: boolean;
-  darkModeStyle: 'dark' | 'dark-dim' | 'dark-night';
+  darkModeStyle: string;
   fontSize: string;
   currency: string;
   typeColors: Record<string, string>;

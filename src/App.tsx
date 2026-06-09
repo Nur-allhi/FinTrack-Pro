@@ -65,7 +65,7 @@ const defaultSettings = {
   showBalanceTrend: false,
   enableNotifications: true,
   darkMode: false,
-  darkModeStyle: 'dark' as 'dark' | 'dark-dim' | 'dark-night',
+  darkModeStyle: 'dark',
   fontSize: 'normal',
   currency: '৳',
   typeColors: { ...defaultTypeColors },
@@ -149,12 +149,11 @@ export default function App() {
     const loadSettings = async () => {
       const cachedSettings = await localDb.getSettings() as Record<string, unknown> | undefined;
       if (cachedSettings) {
-        const darkStyle = (['dark', 'dark-dim', 'dark-night'].includes(cachedSettings.darkModeStyle as string) ? cachedSettings.darkModeStyle : 'dark') as 'dark' | 'dark-dim' | 'dark-night';
         setSettings({
           ...defaultSettings,
           ...(cachedSettings as Partial<typeof defaultSettings>),
           accentColor: (cachedSettings.accentColor as string) || '#A78BFA',
-          darkModeStyle: darkStyle,
+          darkModeStyle: 'dark',
           typeColors: { ...defaultTypeColors, ...((cachedSettings.typeColors as Record<string, string>) || {}) }
         });
       }
@@ -265,7 +264,7 @@ export default function App() {
   }
 
   return (
-    <><div className="h-[100dvh] overflow-hidden md:h-auto md:min-h-[100dvh] bg-canvas flex flex-col md:flex-row">
+    <><div className="h-[100dvh] overflow-hidden md:h-auto md:min-h-[100dvh] bg-canvas md:bg-[var(--color-surface-soft)] flex flex-col md:flex-row">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         selectedAccountId={selectedAccountId} setSelectedAccountId={setSelectedAccountId}
@@ -274,7 +273,7 @@ export default function App() {
         userEmail={userEmail} showProfile={showProfile} onOpenProfile={openProfile} onCloseProfile={closeProfile} setShowProfile={setShowProfile}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 min-h-0 md:pl-64">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 md:pl-[288px]">
         <Header 
           setIsMobileMenuOpen={() => {}} 
           selectedAccountId={selectedAccountId} 
@@ -298,7 +297,7 @@ export default function App() {
           onOpenProfile={openProfile}
         />
 
-        <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto">
+        <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto glass-content">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}>
               <ErrorBoundary>

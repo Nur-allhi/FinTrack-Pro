@@ -100,7 +100,7 @@ export default function Header({
   };
 
   return (
-    <header className="bg-canvas border-b border-hairline flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-0 z-40" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px))', minHeight: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
+    <header className="flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-3 md:top-4 z-40 mx-3 md:mx-6 rounded-2xl glass-header" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px))', minHeight: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
       <div className="flex items-center gap-2 md:gap-4">
         <h2 className="text-base md:text-xl font-normal text-ink tracking-tight">
           {selectedAccountId ? 'Ledger' : activeTabLabel}
@@ -110,7 +110,7 @@ export default function Header({
       <div className="flex items-center gap-1 md:gap-2">
         <button
           onClick={onToggleDarkMode}
-          className="p-2 text-muted hover:bg-surface-soft rounded-pill transition-colors"
+          className="p-2 text-muted hover:bg-white/60 hover:border-primary/20 rounded-pill transition-colors border border-transparent"
           aria-label="Toggle dark mode"
         >
           {darkMode ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
@@ -192,7 +192,7 @@ export default function Header({
         {/* Profile avatar */}
         <button
           onClick={onOpenProfile}
-          className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+          className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/15"
           aria-label="Profile"
         >
           <span className="text-xs font-bold text-primary">{userEmail[0].toUpperCase()}</span>

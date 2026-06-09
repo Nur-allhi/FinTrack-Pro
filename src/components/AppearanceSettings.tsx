@@ -6,7 +6,7 @@ import Select from './Select';
 interface AppearanceSettingsProps {
   settings: {
     darkMode: boolean;
-    darkModeStyle: 'dark' | 'dark-dim' | 'dark-night';
+    darkModeStyle: string;
     fontSize: string;
     currency: string;
     accentColor: string;
@@ -50,20 +50,7 @@ export default function AppearanceSettings({ settings, onUpdateSettings, toggleS
               <div className={cn("absolute top-1 w-4 h-4 bg-canvas rounded-full transition-all", settings.darkMode ? "left-7" : "left-1")} />
             </button>
           </div>
-          {settings.darkMode && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-ink">Theme Style</span>
-              <div className="flex items-center gap-1 bg-surface-strong p-0.5 rounded-pill border border-hairline">
-                {(['dark', 'dark-dim', 'dark-night'] as const).map(style => (
-                  <button key={style} onClick={() => onUpdateSettings({ ...settings, darkModeStyle: style })}
-                    className={cn("px-3 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all",
-                      settings.darkModeStyle === style ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-ink'
-                    )}
-                  >{style === 'dark' ? 'Deep' : style === 'dark-dim' ? 'Dim' : 'Night'}</button>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
 
