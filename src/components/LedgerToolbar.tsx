@@ -54,14 +54,14 @@ export default function LedgerToolbar({
           >
             <div className="px-4 py-3 space-y-3 border-b border-hairline bg-surface-soft/20">
               <div className="bg-canvas rounded-xl border border-hairline p-3 space-y-3">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 relative">
                   {modes.map(mode => (
                     <button
                       key={mode}
                       onClick={() => setDateView(mode)}
-                      className={`px-2.5 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
+                      className={`relative px-2.5 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-colors ${
                         dateView === mode
-                          ? 'bg-primary text-white shadow-sm'
+                          ? 'text-white'
                           : 'text-muted hover:text-ink hover:bg-surface-strong'
                       }`}
                     >
@@ -69,6 +69,9 @@ export default function LedgerToolbar({
                       {mode === 'month' && 'Month'}
                       {mode === 'date' && 'Date'}
                       {mode === 'range' && 'Range'}
+                      {dateView === mode && (
+                        <motion.div layoutId="ledger-date-slider" className="absolute inset-0 rounded-pill bg-primary shadow-sm pointer-events-none" />
+                      )}
                     </button>
                   ))}
                 </div>

@@ -652,19 +652,22 @@ export default function WriteModal({ operation, accounts, members, currency, onC
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Mode pills */}
               {!isModeLocked && (
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap relative">
                   {modePills.map(pill => (
                     <button
                       key={pill.key}
                       type="button"
                       onClick={() => setMode(pill.key)}
-                      className={`px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-all ${
+                      className={`relative px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-colors ${
                         mode === pill.key
-                          ? 'bg-primary text-white shadow-sm'
-                          : 'bg-surface-soft text-muted hover:bg-surface-strong'
+                          ? 'text-white'
+                          : 'text-muted hover:bg-surface-strong'
                       }`}
                     >
                       {pill.label}
+                      {mode === pill.key && (
+                        <motion.div layoutId="write-mode-slider" className="absolute inset-0 rounded-pill bg-primary shadow-sm pointer-events-none" />
+                      )}
                     </button>
                   ))}
                 </div>

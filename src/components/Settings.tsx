@@ -89,14 +89,17 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
         </div>
       </div>
 
-      <div className="flex md:hidden gap-1.5 overflow-x-auto pb-1 -mx-3 px-3">
+      <div className="flex md:hidden gap-1.5 overflow-x-auto pb-1 -mx-3 px-3 relative">
         {(['appearance', 'dashboard', 'categories', 'budgets', 'recurring'] as const).map(s => (
           <button key={s} onClick={() => setActiveSection(s)}
-            className={cn("shrink-0 px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-all",
-              activeSection === s ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft text-muted hover:text-ink'
+            className={cn("relative shrink-0 px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-colors",
+              activeSection === s ? 'text-white' : 'text-muted hover:text-ink'
             )}
           >
             {s === 'appearance' ? 'Appearance' : s === 'dashboard' ? 'Dashboard' : s === 'categories' ? 'Categories' : s === 'budgets' ? 'Budgets' : 'Recurring'}
+            {activeSection === s && (
+              <motion.div layoutId="settings-section-slider" className="absolute inset-0 rounded-pill bg-primary shadow-sm pointer-events-none" />
+            )}
           </button>
         ))}
       </div>

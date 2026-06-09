@@ -156,9 +156,17 @@ export default function Dashboard({
               <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
               Filters
             </button>
-            <div className="flex items-center gap-2 glass-group p-0.5 rounded-pill">
-              <button onClick={() => setViewMode('grid')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'grid' ? "bg-white/70 text-ink shadow-sm dark:bg-white/10" : "text-muted hover:text-ink")}>Grid</button>
-              <button onClick={() => setViewMode('list')} className={cn("px-3 md:px-4 py-1 rounded-pill text-xs font-bold transition-all", viewMode === 'list' ? "bg-white/70 text-ink shadow-sm dark:bg-white/10" : "text-muted hover:text-ink")}>List</button>
+            <div className="flex items-center glass-group p-0.5 rounded-pill border-[0.2px] relative shadow-sm">
+              <motion.div
+                className="absolute inset-y-0.5 rounded-pill bg-white/70 shadow-sm dark:bg-white/10 z-0"
+                animate={{
+                  left: viewMode === 'grid' ? '2px' : '50%',
+                  right: viewMode === 'list' ? '2px' : '50%',
+                }}
+                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+              />
+              <button onClick={() => setViewMode('grid')} className={cn("relative z-10 flex-1 px-3 md:px-4 py-1 rounded-pill text-xs font-bold text-center transition-colors", viewMode === 'grid' ? "text-ink" : "text-muted hover:text-ink")}>Grid</button>
+              <button onClick={() => setViewMode('list')} className={cn("relative z-10 flex-1 px-3 md:px-4 py-1 rounded-pill text-xs font-bold text-center transition-colors", viewMode === 'list' ? "text-ink" : "text-muted hover:text-ink")}>List</button>
             </div>
           </div>
         </div>
