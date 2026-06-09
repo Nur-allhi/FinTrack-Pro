@@ -32,7 +32,17 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   const [isAdding, setIsAdding] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [saving, setSaving] = useState(false);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | number>('all');
+  const [selectedMemberId, setSelectedMemberId] = useState<string | number>(() => {
+    const saved = localStorage.getItem('accountManagerMemberFilter');
+    if (saved === null) return 'all';
+    if (saved === 'all' || saved === 'general') return saved;
+    const num = Number(saved);
+    return !isNaN(num) ? num : 'all';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('accountManagerMemberFilter', String(selectedMemberId));
+  }, [selectedMemberId]);
   const [newAcc, setNewAcc] = useState<{
     name: string; type: Account['type']; member_id: string | number;
     parent_id: string; color: string; initial_balance: string; currency?: string;

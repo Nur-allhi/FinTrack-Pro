@@ -4,6 +4,8 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-09: Fix member filter dropdown selection persisting across page reloads — saved to localStorage with null-safe lazy initializer defaulting to "All Members" (completed).
+
 2026-06-08: Add `created_at` column to all Supabase tables (migration 016) and sync to IndexedDB — `created_at` now flows via sync engine (push+pull) for all entities; added to shared schema/types, LocalRecord base, and all local creation paths in WriteModal/migrationService/useTransactions; sort tiebreaker uses `created_at` for correct chronological order across all entities (completed).
 2026-06-08: Fix ledger running balance order for same-date transactions — added `created_at` timestamp to LocalTransaction, set on creation and preserved on edit; sort tiebreaker now uses `created_at` instead of `updated_at` so chronological entry order is maintained regardless of edits (completed).
 2026-06-08: Fix edit transaction creating new entry instead of updating — WriteModal now looks up existing local record by server_id to preserve local UUID, preventing duplicate entries on edit (completed).

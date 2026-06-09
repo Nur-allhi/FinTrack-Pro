@@ -78,7 +78,13 @@ export default function App() {
   const [authPage, setAuthPage] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'recyclebin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
-  const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
+  const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>(() => {
+    const saved = localStorage.getItem('dashboardFilter');
+    if (saved === null) return 'all';
+    if (saved === 'all' || saved === 'general') return saved;
+    const num = Number(saved);
+    return !isNaN(num) ? num : 'all';
+  });
   const [writeOperation, setWriteOperation] = useState<WriteOperation | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [showSignupNudge, setShowSignupNudge] = useState(false);
@@ -106,7 +112,8 @@ export default function App() {
     } else {
       sessionStorage.removeItem('selectedAccountId');
     }
-  }, [isAuthenticated, activeTab, selectedAccountId]);
+    localStorage.setItem('dashboardFilter', String(dashboardFilter));
+  }, [isAuthenticated, activeTab, selectedAccountId, dashboardFilter]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
