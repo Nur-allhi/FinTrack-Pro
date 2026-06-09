@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Account, Member } from '../types';
-import { Plus, Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target, Home } from 'lucide-react';
+import { Plus, Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target, Home, User } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
@@ -18,6 +18,7 @@ interface AccountManagerProps {
   onUpdate: () => void;
   currency: string;
   typeColors?: Record<string, string>;
+  onSelectAccount?: (id: number) => void;
 }
 
 const colors = [
@@ -25,7 +26,7 @@ const colors = [
   '#13111C', '#14B8A6', '#EC4899', '#64748B', '#F97316'
 ];
 
-export default function AccountManager({ accounts, members, onUpdate, currency, typeColors }: AccountManagerProps) {
+export default function AccountManager({ accounts, members, onUpdate, currency, typeColors, onSelectAccount }: AccountManagerProps) {
   const { toast } = useToast();
   const [groups, setGroups] = useState<{ id: number; name: string }[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -238,13 +239,13 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
           <AnimatePresence>
             {filteredAccounts.map(acc => (
               <motion.div key={acc.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}>
-                <AccountGridCard acc={acc} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} />
+                <AccountGridCard acc={acc} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} onSelect={() => onSelectAccount?.(acc.id)} />
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
       ) : (
-        <AccountListView accounts={filteredAccounts} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} />
+        <AccountListView accounts={filteredAccounts} currency={currency} typeColors={typeColors} onEdit={startEdit} onToggleArchive={toggleArchive} onSelectAccount={onSelectAccount} />
       )}
 
       {filteredAccounts.length === 0 && (
@@ -263,11 +264,11 @@ export default function AccountManager({ accounts, members, onUpdate, currency, 
   );
 }
 
-function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive }: { acc: Account; currency: string; typeColors?: Record<string, string>; onEdit: (a: Account) => void; onToggleArchive: (id: number, current: number, localId?: string) => void }) {
+function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive, onSelect }: { acc: Account; currency: string; typeColors?: Record<string, string>; onEdit: (a: Account) => void; onToggleArchive: (id: number, current: number, localId?: string) => void; onSelect?: () => void }) {
   const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = { cash: Wallet, bank: Building2, mobile: Smartphone, investment: TrendingUp, purpose: Target, home_exp: Home };
   const Icon = typeIcons[acc.type] || Wallet;
   return (
-    <div className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md group">
+    <div onClick={onSelect} className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md hover:border-primary/30 cursor-pointer group">
       <div className="h-1" style={{ backgroundColor: acc.color }} />
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
@@ -287,12 +288,15 @@ function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive }:
         <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-3">{currency}{acc.current_balance.toLocaleString()}</p>
         <div className="flex items-center justify-between pt-3 border-t border-hairline">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">{acc.member_name || 'GENERAL'}</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-muted uppercase tracking-wider">
+              <User className="w-3 h-3" />
+              {acc.member_name || 'GENERAL'}
+            </span>
             {acc.parent_name && (<><span className="text-muted/40">/</span><span className="text-xs font-bold text-primary uppercase tracking-wider truncate">{acc.parent_name}</span></>)}
           </div>
           <div className="flex gap-1">
-            <button onClick={() => onEdit(acc)} className="p-2 md:p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
-            <button onClick={() => onToggleArchive(acc.id, acc.archived, acc._localId)} className="p-2 md:p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
+            <button onClick={e => { e.stopPropagation(); onEdit(acc); }} className="p-2 md:p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
+            <button onClick={e => { e.stopPropagation(); onToggleArchive(acc.id, acc.archived, acc._localId); }} className="p-2 md:p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
           </div>
         </div>
       </div>

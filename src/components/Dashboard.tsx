@@ -12,6 +12,7 @@ import {
   ArrowLeftRight,
   Plus,
   SlidersHorizontal,
+  User,
 } from 'lucide-react';
 import DashboardHero from './DashboardHero';
 import DashboardCharts from './DashboardCharts';
@@ -259,7 +260,12 @@ export default function Dashboard({
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</td>
                         <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted">{account.parent_name || '-'}</td>
-                        <td className="px-5 py-3 whitespace-nowrap text-xs font-medium text-muted">{account.member_name || '-'}</td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <User className="w-3 h-3 text-muted shrink-0" />
+                            <span className="text-xs font-medium text-muted">{account.member_name || '-'}</span>
+                          </div>
+                        </td>
                         <td className="px-5 py-3 whitespace-nowrap text-right text-sm font-bold text-ink financial-number">{settings.currency}{account.current_balance.toLocaleString()}</td>
                       </tr>
                     ))}
@@ -278,7 +284,10 @@ export default function Dashboard({
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
                         <span className="text-muted/40">·</span>
-                        <span className="text-xs font-medium text-muted">{account.member_name || 'General'}</span>
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
+                          <User className="w-3 h-3 shrink-0" />
+                          {account.member_name || 'General'}
+                        </span>
                       </div>
                     </div>
                   </button>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Account } from '../types';
-import { Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target, Home } from 'lucide-react';
+import { Edit2, Archive, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ChevronRight, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 
@@ -15,9 +15,10 @@ interface AccountListViewProps {
   typeColors?: Record<string, string>;
   onEdit: (acc: Account) => void;
   onToggleArchive: (id: number, current: number, localId?: string) => void;
+  onSelectAccount?: (id: number) => void;
 }
 
-export default function AccountListView({ accounts, currency, typeColors, onEdit, onToggleArchive }: AccountListViewProps) {
+export default function AccountListView({ accounts, currency, typeColors, onEdit, onToggleArchive, onSelectAccount }: AccountListViewProps) {
   return (
     <>
       <div className="hidden md:block bg-canvas border border-hairline rounded-xl overflow-x-auto">
@@ -36,7 +37,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
             {accounts.map(acc => {
               const Icon = typeIcons[acc.type] || Wallet;
               return (
-                <tr key={acc.id} className="hover:bg-surface-soft/30 transition-colors group">
+                <tr key={acc.id} onClick={() => onSelectAccount?.(acc.id)} className="hover:bg-surface-soft/30 transition-colors cursor-pointer group">
                   <td className="px-3 py-2.5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: acc.color }} />
@@ -50,13 +51,18 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                       <span className="text-xs font-medium text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</span>
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap text-xs font-medium text-muted">{acc.member_name || '-'}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <User className="w-3 h-3 text-muted shrink-0" />
+                      <span className="text-xs font-medium text-muted">{acc.member_name || '-'}</span>
+                    </div>
+                  </td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-xs font-medium text-primary">{acc.parent_name || '-'}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-right text-sm font-bold text-ink financial-number">{currency}{acc.current_balance.toLocaleString()}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => onEdit(acc)} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => onToggleArchive(acc.id, acc.archived, acc._localId)} className="p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-3.5 h-3.5" /></button>
+                      <button onClick={e => { e.stopPropagation(); onEdit(acc); }} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
+                      <button onClick={e => { e.stopPropagation(); onToggleArchive(acc.id, acc.archived, acc._localId); }} className="p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-3.5 h-3.5" /></button>
                     </div>
                   </td>
                 </tr>
@@ -69,7 +75,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
         {accounts.map(acc => {
           const Icon = typeIcons[acc.type] || Wallet;
           return (
-            <div key={acc.id} className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
+            <div key={acc.id} onClick={() => onSelectAccount?.(acc.id)} className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors">
               <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: acc.color + '15', color: acc.color }}>
                 <Icon className="w-4 h-4" />
               </div>
@@ -81,7 +87,10 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</span>
                   <span className="text-muted/40">·</span>
-                  <span className="text-xs font-medium text-muted">{acc.member_name || 'General'}</span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
+                    <User className="w-3 h-3 shrink-0" />
+                    {acc.member_name || 'General'}
+                  </span>
                   {acc.parent_name && (
                     <>
                       <span className="text-muted/40">·</span>
@@ -91,10 +100,11 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                   {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">A</span>}
                 </div>
                 <div className="flex gap-2 mt-1.5">
-                  <button onClick={() => onEdit(acc)} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>
-                  <button onClick={() => onToggleArchive(acc.id, acc.archived, acc._localId)} className="text-[10px] font-bold text-muted hover:text-amber-600 uppercase tracking-wider">{acc.archived ? 'Activate' : 'Archive'}</button>
+                  <button onClick={e => { e.stopPropagation(); onEdit(acc); }} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>
+                  <button onClick={e => { e.stopPropagation(); onToggleArchive(acc.id, acc.archived, acc._localId); }} className="text-[10px] font-bold text-muted hover:text-amber-600 uppercase tracking-wider">{acc.archived ? 'Activate' : 'Archive'}</button>
                 </div>
               </div>
+              <ChevronRight className="w-4 h-4 text-muted shrink-0" />
             </div>
           );
         })}

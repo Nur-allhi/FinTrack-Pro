@@ -90,6 +90,7 @@ export interface LocalGroupChild {
   id: number;
   name: string;
   type: string;
+  member_name?: string;
   current_balance: number;
 }
 
@@ -446,7 +447,7 @@ export const localDb = {
     const stores: EntityName[] = [
       'members', 'transactions', 'loans',
       'loan_settlements', 'investments', 'investment_returns',
-      'budgets', 'recurring_transactions',
+      'budgets', 'recurring_transactions', 'groups',
     ];
     let count = 0;
     for (const s of stores) {
