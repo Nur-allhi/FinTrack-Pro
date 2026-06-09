@@ -42,7 +42,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: acc.color }} />
                       <span className="text-base font-semibold text-ink">{acc.name}</span>
-                      {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">Archived</span>}
+                      {!!acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">Archived</span>}
                     </div>
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
@@ -97,7 +97,7 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                       <span className="text-xs font-medium text-primary">{acc.parent_name}</span>
                     </>
                   )}
-                  {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">A</span>}
+                  {!!acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">A</span>}
                 </div>
                 <div className="flex gap-2 mt-1.5">
                   <button onClick={e => { e.stopPropagation(); onEdit(acc); }} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>

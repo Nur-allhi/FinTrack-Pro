@@ -44,7 +44,6 @@ export default function GroupGridView({ groups, currency, deletingId, onEdit, on
           style={{ willChange: 'transform, opacity' }}
           onClick={() => onSelectGroup(group.id)}
           className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md hover:border-primary/30 cursor-pointer group">
-          <div className="h-1" style={{ backgroundColor: group.color }} />
           <div className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">

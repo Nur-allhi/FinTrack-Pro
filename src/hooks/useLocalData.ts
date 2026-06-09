@@ -157,7 +157,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
               member_id: localMemberId ?? existing.member_id,
               parent_id: localParentId ?? existing.parent_id,
               color: (a.color as string) || existing.color,
-              archived: (a.archived as number) || existing.archived,
+              archived: (a.archived as number) ?? existing.archived,
               initial_balance: (a.initial_balance as number) ?? existing.initial_balance,
               current_balance: existing.current_balance,
               currency: (a.currency as string) || existing.currency,
