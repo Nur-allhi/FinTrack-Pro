@@ -10,6 +10,19 @@ export interface AuthUser {
   email: string;
 }
 
+function isServerReachable(): Promise<boolean> {
+  return new Promise(resolve => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+      resolve(false);
+    }, 1500);
+    fetch('/api/auth/config', { signal: controller.signal, method: 'HEAD' })
+      .then(() => { clearTimeout(timer); resolve(true); })
+      .catch(() => { clearTimeout(timer); resolve(false); });
+  });
+}
+
 export function useAuth() {
   const { toast } = useToast();
   const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
@@ -26,6 +39,15 @@ export function useAuth() {
       }
 
       initPendingCount();
+
+      // Quick reachability check before attempting auth fetch
+      const online = await isServerReachable();
+      if (!online) {
+        setGuestMode(false);
+        setAuthStatus('authenticated');
+        return;
+      }
+
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
