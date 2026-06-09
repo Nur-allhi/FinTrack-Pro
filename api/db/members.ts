@@ -1,8 +1,9 @@
-import { selectMany, insertOne, deleteOne } from "./queries.js";
+import { selectMany, insertOne, softDeleteOne } from "./queries.js";
 import type { Member } from "../../shared/types.js";
 
 export async function getMembers(userId: string): Promise<Member[]> {
-  return selectMany<Member>("members", "*", userId);
+  const members = await selectMany<Member>("members", "*", userId);
+  return members.filter(m => !m.deleted_at);
 }
 
 export async function createMember(userId: string, name: string, relationship: string): Promise<Member> {
@@ -10,5 +11,5 @@ export async function createMember(userId: string, name: string, relationship: s
 }
 
 export async function deleteMember(userId: string, id: number): Promise<void> {
-  await deleteOne("members", userId, id);
+  await softDeleteOne("members", userId, id);
 }

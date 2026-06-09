@@ -47,7 +47,7 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure? Their accounts will become unassigned.")) return;
+    if (!confirm("Delete this member? The member will be hidden but existing account assignments will be preserved.")) return;
     try {
       const members = await localDb.getMembers();
       const member = members.find(m => m.server_id === id);

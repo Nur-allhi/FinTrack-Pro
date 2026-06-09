@@ -79,23 +79,23 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
       if (membersRes.ok) {
         const data = await membersRes.json();
-        // Build map of existing local records by server_id to avoid duplicates
-        const localMembers = await localDb.getMembers();
-        const localByServerId = new Map(localMembers.map(m => [m.server_id, m]));
+        // Build map of all local records (including soft-deleted) by server_id to avoid re-import
+        const allMemberRecords = await localDb.getAllRecords<LocalMember>('members');
+        const localByServerId = new Map(allMemberRecords.map(m => [m.server_id, m]));
 
-        const toUpsert: LocalMember[] = data.map((m: { id: number; name: string; relationship?: string; client_id?: string; updated_at?: string }) => {
+        const toUpsert: LocalMember[] = data.map((m: { id: number; name: string; relationship?: string; client_id?: string; updated_at?: string; deleted_at?: string | null }) => {
           const existing = localByServerId.get(m.id);
           if (existing) {
-            // Preserve local id and pending status
             return {
               ...existing,
               name: m.name,
               relationship: m.relationship || '',
+              _deleted: existing.sync_status === 'pending' ? existing._deleted : !!m.deleted_at,
               updated_at: m.updated_at || existing.updated_at,
               sync_status: existing.sync_status === 'pending' ? 'pending' as const : 'synced' as const,
             };
           }
-          // New record — use client_id or generate UUID
+          if (m.deleted_at) return null;
           return {
             id: m.client_id || generateId(),
             server_id: m.id,
@@ -105,17 +105,22 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
             sync_status: 'synced' as const,
             _deleted: false,
           };
-        });
+        }).filter(Boolean) as LocalMember[];
 
         await localDb.putMembers(toUpsert);
-        // Purge records not in server response (deleted server-side, or sync engine duplicates)
+        // Soft-purge records not in server response (deleted server-side) — mark _deleted instead of hard-delete
+        const accountsLocal = await localDb.getAccounts();
         const serverMemberIds = new Set(data.map((m: { id: number }) => m.id));
         const allLocalMembers = await localDb.getMembers();
-        const orphanedMemberIds = allLocalMembers
-          .filter(m => m.server_id != null && !serverMemberIds.has(m.server_id))
-          .map(m => m.id);
-        if (orphanedMemberIds.length) {
-          await Promise.all(orphanedMemberIds.map(id => localDb.deleteMember(id)));
+        const orphanedLocalMembers = allLocalMembers
+          .filter(m => m.server_id != null && !serverMemberIds.has(m.server_id));
+        for (const orphan of orphanedLocalMembers) {
+          const hasAccounts = accountsLocal.some(a => a.member_id === orphan.server_id || a.member_id === orphan.id);
+          if (hasAccounts) {
+            await localDb.putMember({ ...orphan, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+          } else {
+            await localDb.deleteMember(orphan.id);
+          }
         }
         setMembers(await localDb.getMembers());
       }

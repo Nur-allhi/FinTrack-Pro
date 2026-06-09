@@ -114,7 +114,7 @@ export async function permanentDeleteOne(table: string, userId: string, id: numb
   if (error) throw error;
 }
 
-const SOFT_DELETE_TABLES = new Set(["transactions", "accounts", "loans"]);
+const SOFT_DELETE_TABLES = new Set(["transactions", "accounts", "loans", "members"]);
 
 export function isSoftDeleteTable(table: string): boolean {
   return SOFT_DELETE_TABLES.has(table);
