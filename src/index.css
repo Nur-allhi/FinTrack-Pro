@@ -192,11 +192,12 @@ body {
 #root {
   min-height: 100dvh;
   background-color: var(--color-canvas);
-  padding-top: env(safe-area-inset-top);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   box-sizing: border-box;
 }
+
+
 
 @media (max-width: 767px) {
   #root {

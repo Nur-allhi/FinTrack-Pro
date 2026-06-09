@@ -100,7 +100,7 @@ export default function Header({
   };
 
   return (
-    <header className="h-14 md:h-16 bg-canvas border-b border-hairline flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-0 z-40">
+    <header className="bg-canvas border-b border-hairline flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-0 z-40" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px))', minHeight: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
       <div className="flex items-center gap-2 md:gap-4">
         <h2 className="text-base md:text-xl font-normal text-ink tracking-tight">
           {selectedAccountId ? 'Ledger' : activeTabLabel}
