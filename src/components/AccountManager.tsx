@@ -257,7 +257,6 @@ function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive, o
   const Icon = typeIcons[acc.type] || Wallet;
   return (
     <div onClick={onSelect} className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md hover:border-primary/30 cursor-pointer group">
-      <div className="h-1" style={{ backgroundColor: acc.color }} />
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -270,7 +269,7 @@ function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive, o
             </div>
           </div>
           <div className="flex gap-1 shrink-0">
-            {acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded-pill">Archived</span>}
+            {!!acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded-pill">Archived</span>}
           </div>
         </div>
         <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-3">{currency}{acc.current_balance.toLocaleString()}</p>
