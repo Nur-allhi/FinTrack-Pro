@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Layers, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Layers, Loader2, Wallet, Building2, Smartphone, TrendingUp, Target, Home, ChevronRight, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { useToast } from './Toast';
@@ -12,7 +12,21 @@ import Modal from './Modal';
 
 const colors = ['#A78BFA', '#05b169', '#cf202f', '#f59e0b', '#7c828a', '#13111C', '#14B8A6', '#EC4899', '#64748B', '#F97316'];
 
-export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpdate: () => void; lastUpdate?: number; currency?: string }) {
+const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  cash: Wallet, bank: Building2, mobile: Smartphone,
+  investment: TrendingUp, purpose: Target, home_exp: Home,
+};
+
+interface GroupManagerProps {
+  onUpdate: () => void;
+  lastUpdate?: number;
+  currency?: string;
+  onSelectAccount?: (id: number) => void;
+  selectedGroupId?: number | null;
+  onSelectGroup?: (id: number | null) => void;
+}
+
+export default function GroupManager({ onUpdate, lastUpdate, currency, onSelectAccount, selectedGroupId, onSelectGroup }: GroupManagerProps) {
   const { toast } = useToast();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +34,6 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
   const [isAdding, setIsAdding] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [members, setMembers] = useState<{ id: number; name: string }[]>([]);
   const [newGroup, setNewGroup] = useState({ name: '', member_id: '', color: colors[0] });
 
@@ -196,6 +209,7 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
     }
   };
 
+  const selectedGroup = groups.find(g => g.id === selectedGroupId);
   const totalAccumulated = groups.reduce((s, g) => s + (g.accumulated_balance || 0), 0);
 
   return (
@@ -235,11 +249,10 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
         <GroupGridView
           groups={groups}
           currency={currency || '৳'}
-          expandedId={expandedId}
-          setExpandedId={setExpandedId}
           deletingId={deletingId}
           onEdit={startEdit}
           onDelete={handleDelete}
+          onSelectGroup={(id) => onSelectGroup?.(id)}
         />
       ) : (
         <>
@@ -263,20 +276,26 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                     style={{ willChange: 'transform, opacity' }}
-                    className="hover:bg-surface-soft/30 transition-colors">
+                    onClick={() => onSelectGroup?.(group.id)}
+                    className="hover:bg-surface-soft/30 transition-colors cursor-pointer">
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: group.color }} />
                         <span className="text-base font-semibold text-ink">{group.name}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-xs font-medium text-muted">{group.member_name || '-'}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <User className="w-3 h-3 text-muted shrink-0" />
+                        <span className="text-xs font-medium text-muted">{group.member_name || '-'}</span>
+                      </div>
+                    </td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-right text-xs font-bold text-muted">{group.child_count}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-right text-sm font-bold text-ink financial-number">{currency || '৳'}{group.accumulated_balance?.toLocaleString() || '0'}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => startEdit(group)} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => handleDelete(group.id, group.name)} disabled={deletingId === group.id} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors disabled:opacity-50" title="Delete">
+                        <button onClick={e => { e.stopPropagation(); startEdit(group); }} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
+                        <button onClick={e => { e.stopPropagation(); handleDelete(group.id, group.name); }} disabled={deletingId === group.id} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors disabled:opacity-50" title="Delete">
                           {deletingId === group.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                         </button>
                       </div>
@@ -296,7 +315,8 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 style={{ willChange: 'transform, opacity' }}
-                className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3">
+                onClick={() => onSelectGroup?.(group.id)}
+                className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: group.color + '15', color: group.color }}>
                   <Layers className="w-4 h-4" />
                 </div>
@@ -306,13 +326,16 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
                     <span className="text-sm font-bold text-ink financial-number shrink-0">{currency || '৳'}{group.accumulated_balance?.toLocaleString() || '0'}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs font-medium text-muted">{group.member_name || 'General'}</span>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
+                      <User className="w-3 h-3 shrink-0" />
+                      {group.member_name || 'General'}
+                    </span>
                     <span className="text-muted/40">·</span>
                     <span className="text-xs font-bold text-muted">{group.child_count} account{group.child_count !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="flex gap-2 mt-1.5">
-                    <button onClick={() => startEdit(group)} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>
-                    <button onClick={() => handleDelete(group.id, group.name)} disabled={deletingId === group.id} className="text-[10px] font-bold text-muted hover:text-semantic-down uppercase tracking-wider disabled:opacity-50">
+                    <button onClick={e => { e.stopPropagation(); startEdit(group); }} className="text-[10px] font-bold text-muted hover:text-primary uppercase tracking-wider">Edit</button>
+                    <button onClick={e => { e.stopPropagation(); handleDelete(group.id, group.name); }} disabled={deletingId === group.id} className="text-[10px] font-bold text-muted hover:text-semantic-down uppercase tracking-wider disabled:opacity-50">
                       {deletingId === group.id ? <Loader2 className="w-3 h-3 animate-spin inline" /> : 'Delete'}
                     </button>
                   </div>
@@ -339,6 +362,58 @@ export default function GroupManager({ onUpdate, lastUpdate, currency }: { onUpd
           <p className="text-xs text-muted font-medium">Create groups to organize your accounts.</p>
         </div>
       )}
+
+      <Modal open={selectedGroupId !== null && !isAdding} onClose={() => onSelectGroup?.(null)} title={selectedGroup?.name || ''}
+        subtitle={selectedGroup?.member_name ? <><User className="w-2.5 h-2.5" /> {selectedGroup.member_name}</> : undefined}>
+        {selectedGroup ? (
+          <div className="space-y-1">
+            {selectedGroup.children.length === 0 ? (
+              <p className="text-sm text-muted text-center py-6">No accounts in this group</p>
+            ) : selectedGroup.children.map((child, idx) => {
+                const Icon = typeIcons[child.type] || Wallet;
+                return (
+                  <button key={child.id}
+                    onClick={() => onSelectAccount?.(child.id)}
+                    className={cn(
+                      "w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors hover:bg-surface-soft cursor-pointer group/row",
+                      idx !== selectedGroup.children.length - 1 && "border-b border-hairline"
+                    )}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-surface-soft">
+                        <Icon className="w-3.5 h-3.5 text-muted" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-ink truncate">{child.name}</p>
+                        <p className="inline-flex items-center gap-1 text-[10px] font-bold text-muted uppercase tracking-wider">
+                          <User className="w-2.5 h-2.5" />
+                          {child.member_name || 'General'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-bold text-ink financial-number">{currency || '৳'}{child.current_balance?.toLocaleString() || '0'}</span>
+                      <ChevronRight className="w-4 h-4 text-muted group-hover/row:text-ink transition-colors" />
+                    </div>
+                  </button>
+                );
+              }).concat(
+                <div key="total" className="flex items-center justify-between p-3 border-t border-hairline mt-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 shrink-0"></div>
+                    <span className="text-xs font-bold text-muted uppercase tracking-wider">Total</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-bold text-ink financial-number">{currency || '৳'}{selectedGroup.children.reduce((sum, c) => sum + (c.current_balance || 0), 0).toLocaleString()}</span>
+                    <div className="w-4"></div>
+                  </div>
+                </div>)}
+          </div>
+        ) : (
+          <div className="py-8 text-center">
+            <Loader2 className="w-6 h-6 animate-spin text-muted mx-auto" />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

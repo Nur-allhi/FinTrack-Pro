@@ -3,6 +3,60 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 8 — 09 Jun 2026 (Group Modal, Member Cards, Navigation Polish)
+
+> **Branch**: `feature/ui-ux-polish-improvement`
+> **Tasks**: Clickable group cards, group account modal, account → Ledger navigation, member card sorting + balance, group modal total row, modal subtitle support
+> **Status**: completed
+
+### Summary
+Made group cards clickable to open a modal showing the group's accounts, where each account row navigates to its Ledger. Also made AccountManager grid cards and list rows clickable → Ledger. Added `docs/NAVIGATION_IMPROVEMENTS.md` documenting all navigation improvement opportunities. Added total balance row at bottom of group modal, member name subtitle in modal header, and child member_name display. Sorted member cards alphabetically with balance shown on right.
+
+### Changes
+- **App.tsx**: Added `selectedGroupId` state for group modal context preservation. Wired `onSelectAccount` and `selectedGroupId`/`onSelectGroup` to GroupManager. Wired `onSelectAccount` to AccountManager. Clears `selectedGroupId` on tab switch.
+- **GroupGridView.tsx**: Replaced inline expand/collapse with `onSelectGroup` prop. Entire card is now clickable with `stopPropagation()` on edit/delete. Shows `ChevronRight` affordance.
+- **GroupManager.tsx**: Added `onSelectAccount`, `selectedGroupId`, `onSelectGroup` props. Renders Modal listing group accounts with type icon, name, balance, chevron, and member name. Added total balance row at bottom aligned to account columns. Shows group member name as modal subtitle with User icon.
+- **AccountManager.tsx**: Added `onSelectAccount` prop. Made `AccountGridCard` clickable with `stopPropagation()` on edit/archive. Passed `onSelectAccount` to AccountListView.
+- **AccountListView.tsx**: Added `onSelectAccount` prop. Made desktop table rows and mobile cards clickable with `stopPropagation()` on edit/archive. Added `ChevronRight` affordance on mobile.
+- **MemberManager.tsx**: Sorted member cards alphabetically by name. Added current total balance on right side of each card.
+- **docs/NAVIGATION_IMPROVEMENTS.md**: New file documenting current and future navigation improvement opportunities.
+- **api/db/groups.ts**: Children query joins `members(name)` to include member_name for each child account.
+- **Modal.tsx**: Added optional `subtitle` prop rendered below title in header. Fixed re-mount open bug.
+- **localDb.ts**: Added `member_name` to `LocalGroupChild` interface. Added `groups` to unsynced count stores.
+- **useLocalData.ts**: Groups sync no longer converts `member_id` to local UUID — preserves raw server ID.
+- **syncEngine.ts**: Added groups to SYNC_TABLES with push/pull support and groups→accounts table mapping.
+
+### Files Changed
+- `src/App.tsx` — selectedGroupId state, prop wiring
+- `src/components/GroupGridView.tsx` — clickable card, removed inline expand
+- `src/components/GroupManager.tsx` — group modal, total row, member name subtitle
+- `src/components/AccountManager.tsx` — clickable grid cards
+- `src/components/AccountListView.tsx` — clickable list rows
+- `src/components/MemberManager.tsx` — alphabetical sort, balance display
+- `src/components/Modal.tsx` — subtitle prop, re-mount open bugfix
+- `src/components/AccountCard.tsx` — User icon on member name
+- `src/components/Dashboard.tsx` — User icon on member name
+- `api/db/groups.ts` — child member_name from server join
+- `src/services/localDb.ts` — LocalGroupChild.member_name, groups in unsynced stores
+- `src/hooks/useLocalData.ts` — raw server member_id preservation
+- `src/services/syncEngine.ts` — groups sync support
+- `docs/NAVIGATION_IMPROVEMENTS.md` — new navigation improvement doc
+
+### Verification
+- `npm run lint` (tsc --noEmit) — no errors
+- `npm run build` (vite build) — successful
+
+### Fixes
+- **Modal.tsx**: Fixed modal not opening after remount with `open=true`. Bug was `useRef(open)` causing `prevOpenRef` to match the prop on re-mount, so the effect skipped calling `setVisible(true)`. Fixed by initializing `visible` from the `open` prop and using `undefined` as sentinel for `prevOpenRef`.
+- **useLocalData.ts**: Fixed member assignment vanishing from groups after sync. Bug was the sync code converting `member_id` from server ID (number) to local UUID (string). GroupManager then did `Number(g.member_id)` which returned `NaN` for UUID strings, causing the member to appear unassigned. Fixed by keeping the raw server `member_id` in groups sync.
+- **syncEngine.ts + localDb.ts**: Added groups to the sync engine so offline edits (including member assignment) are pushed when connectivity is restored. Groups were missing from `SYNC_TABLES`, `getUnsyncedForTable`, `upsertFromServer`, pending count, and auto-refresh. Fixed broken FK translation (was treating server member_id as local UUID). Added groups-to-accounts table mapping for server push. Added group extraction from server's accounts changes for pull and initial sync.
+- **All card components**: Added `User` icon next to member name in AccountCard, AccountGridCard, AccountListView (desktop + mobile), GroupGridView, GroupManager (desktop table + mobile list + modal), and Dashboard (desktop table + mobile list). Every member name display in card/row UI now shows a `User` icon.
+
+### Next Steps
+- InvestmentTracker clickable → Ledger (medium priority)
+- Reports drill-down to account → Ledger (lower priority)
+- Implement industry-standard soft-delete for members with fallback name display
+
 ---
 
 ## Quick Reference — Last Session

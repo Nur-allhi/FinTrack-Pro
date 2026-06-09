@@ -140,7 +140,9 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
       </Modal>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
-        {members.map(member => (
+        {[...members].sort((a, b) => a.name.localeCompare(b.name)).map(member => {
+          const memberTotal = accounts.filter(a => a.member_id == member.id && !a.archived).reduce((s, a) => s + (a.current_balance || 0), 0);
+          return (
           <button key={member.id} onClick={() => setSelectedMember(member)}
             className="bg-canvas p-4 md:p-5 rounded-xl border border-hairline text-left transition-all hover:border-primary hover:shadow-sm group relative overflow-hidden">
             <div className="flex items-center gap-3">
@@ -151,13 +153,15 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
                 <h4 className="text-base font-semibold text-ink truncate">{member.name}</h4>
                 <p className="text-xs font-bold text-muted uppercase tracking-wider">{member.relationship || 'MEMBER'}</p>
               </div>
+              <span className="text-sm font-bold text-ink financial-number shrink-0">{currency || '৳'}{memberTotal.toLocaleString()}</span>
               <button onClick={(e) => { e.stopPropagation(); handleDelete(member.id); }}
                 className="p-1.5 text-muted hover:text-semantic-down opacity-0 group-hover:opacity-100 transition-all shrink-0">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {members.length === 0 && (

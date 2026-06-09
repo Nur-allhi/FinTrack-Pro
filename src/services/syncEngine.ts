@@ -5,7 +5,7 @@ import { isLocalOnly } from '../../shared/schema';
 const SYNC_TABLES = [
   'members', 'transactions', 'loans',
   'loan_settlements', 'investments', 'investment_returns',
-  'budgets', 'recurring_transactions',
+  'budgets', 'recurring_transactions', 'groups',
 ] as const;
 
 type SyncTable = typeof SYNC_TABLES[number];
@@ -129,6 +129,10 @@ async function getUnsyncedForTable(table: SyncTable): Promise<LocalRecord[]> {
       ]);
       return [...pending, ...deleted];
     },
+    groups: async () => {
+      const all = await localDb.getAllRecords<LocalRecord>('groups');
+      return all.filter(r => r.sync_status === 'pending');
+    },
   }[table];
   return getter();
 }
@@ -143,6 +147,7 @@ async function markTableSynced(table: SyncTable, ids: string[]): Promise<void> {
     investment_returns: async () => {},
     budgets: async () => {},
     recurring_transactions: async () => {},
+    groups: async () => {},
   }[table];
   return markers();
 }
@@ -157,6 +162,7 @@ async function upsertFromServer(table: SyncTable, records: Record<string, unknow
     investment_returns: (r: Record<string, unknown>[]) => localDb.putInvestmentReturns(r as never[]),
     budgets: (r: Record<string, unknown>[]) => localDb.putBudgets(r as never[]),
     recurring_transactions: (r: Record<string, unknown>[]) => localDb.putRecurringTransactions(r as never[]),
+    groups: (r: Record<string, unknown>[]) => localDb.putGroups(r as never[]),
   }[table];
   return putters(records);
 }
@@ -280,16 +286,21 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
         }
       }
       if (table === 'groups') {
-        if (base.member_id != null) {
-          const serverId = memberLocalIdToServerId.get(base.member_id as string);
-          if (serverId != null) base.member_id = serverId;
-          else skip = true; // required FK
+        if (base.member_id != null && typeof base.member_id === 'string') {
+          const parsed = parseInt(base.member_id, 10);
+          if (!isNaN(parsed)) base.member_id = parsed;
         }
       }
 
       if (!skip) pushable.push(base);
     }
     sanitized[table] = pushable;
+  }
+
+  // Map groups → accounts for server-side storage (groups live in the accounts table)
+  if (sanitized.groups && sanitized.groups.length > 0) {
+    sanitized.accounts = [...(sanitized.accounts || []), ...sanitized.groups];
+    delete sanitized.groups;
   }
 
   const res = await authService.apiFetch('/api/sync/push', {
@@ -340,6 +351,15 @@ async function pullChanges(): Promise<number> {
 
   const data = await res.json();
   let totalPulled = 0;
+
+  // Extract group records from accounts changes (groups live in the accounts table on server)
+  if (data.changes?.accounts) {
+    const groupChanges = data.changes.accounts.filter((r: Record<string, unknown>) => r.type === 'group');
+    if (groupChanges.length > 0) {
+      data.changes.groups = [...(data.changes.groups || []), ...groupChanges];
+      data.changes.accounts = data.changes.accounts.filter((r: Record<string, unknown>) => r.type !== 'group');
+    }
+  }
 
   // Build account server_id → local_id map (for translating transactions/loans account refs)
   const localAccounts = await localDb.getAccounts();
@@ -515,6 +535,15 @@ export async function initialSync(): Promise<boolean> {
     if (!res.ok) return false;
 
     const data = await res.json();
+
+    // Extract group records from accounts data (groups live in the accounts table on server)
+    if (data.data?.accounts) {
+      const groupRows = data.data.accounts.filter((r: Record<string, unknown>) => r.type === 'group');
+      if (groupRows.length > 0) {
+        data.data.groups = [...(data.data.groups || []), ...groupRows];
+      }
+    }
+
     for (const table of SYNC_TABLES) {
       const rows = data.data?.[table];
       if (!Array.isArray(rows) || rows.length === 0) continue;
@@ -710,7 +739,7 @@ export function startPendingCountAutoRefresh() {
   const stores = [
     'members', 'transactions', 'loans',
     'loan_settlements', 'investments', 'investment_returns',
-    'budgets', 'recurring_transactions',
+    'budgets', 'recurring_transactions', 'groups',
   ] as const;
   const unsubs = stores.map(store => localDb.onChange(store, refreshPendingCount));
   return () => { unsubs.forEach(u => u()); };

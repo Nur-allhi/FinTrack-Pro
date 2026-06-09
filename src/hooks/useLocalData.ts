@@ -200,25 +200,17 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         const data = await groupsRes.json();
         const localGroups = await localDb.getGroups();
         const localByServerId = new Map(localGroups.map(g => [g.server_id, g]));
-        
-        // Build member server_id → local_id map for FK conversion
-        const localMembers = await localDb.getMembers();
-        const memberServerIdToLocalId = new Map<number, string>();
-        for (const m of localMembers) {
-          if (m.server_id != null) memberServerIdToLocalId.set(m.server_id, m.id);
-        }
 
         const toUpsert: LocalGroup[] = data.map((g: Record<string, unknown>) => {
           const serverMemberId = g.member_id as number | null;
-          const localMemberId = serverMemberId != null ? memberServerIdToLocalId.get(serverMemberId) ?? null : null;
-          
+
           const existing = localByServerId.get(g.id as number);
-          const children = (g.children as Array<{ id: number; name: string; type: string; current_balance: number }>) || [];
+          const children = (g.children as Array<{ id: number; name: string; type: string; member_name?: string; current_balance: number }>) || [];
           if (existing) {
             return {
               ...existing,
               name: g.name as string,
-              member_id: localMemberId ?? existing.member_id,
+              member_id: serverMemberId ?? existing.member_id,
               color: (g.color as string) || existing.color,
               child_count: (g.child_count as number) ?? existing.child_count,
               accumulated_balance: (g.accumulated_balance as number) ?? existing.accumulated_balance,
@@ -232,7 +224,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
             server_id: g.id as number,
             name: g.name as string,
             type: (g.type as string) || 'group',
-            member_id: localMemberId,
+            member_id: serverMemberId,
             color: (g.color as string) || '#A78BFA',
             child_count: (g.child_count as number) || 0,
             accumulated_balance: (g.accumulated_balance as number) || 0,

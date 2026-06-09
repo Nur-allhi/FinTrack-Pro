@@ -24,7 +24,7 @@ export async function getGroups(userId: string) {
 
   const { data: children, error: cError } = await client
     .from("accounts")
-    .select("id, parent_id, name, type, initial_balance, archived, member_id")
+    .select("id, parent_id, name, type, initial_balance, archived, member_id, members(name)")
     .eq("user_id", userId)
     .is("deleted_at", null)
     .not("parent_id", "is", null);
@@ -38,8 +38,8 @@ export async function getGroups(userId: string) {
     balances[tx.account_id] = (balances[tx.account_id] || 0) + Number(tx.amount);
   }
 
-  return ((groups || []) as AccountRow[]).map((g) => {
-    const childAccounts = ((children || []) as AccountRow[]).filter((c) => c.parent_id === g.id && !c.archived);
+    return ((groups || []) as AccountRow[]).map((g) => {
+    const childAccounts = ((children || []) as unknown as AccountRow[]).filter((c) => c.parent_id === g.id && !c.archived);
     return {
       ...g,
       member_name: g.members?.name,
@@ -49,6 +49,7 @@ export async function getGroups(userId: string) {
         id: c.id,
         name: c.name,
         type: c.type,
+        member_name: c.members?.name,
         current_balance: Number(c.initial_balance || 0) + (balances[c.id] || 0)
       }))
     };

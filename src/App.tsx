@@ -78,6 +78,7 @@ export default function App() {
   const [authPage, setAuthPage] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'accounts' | 'groups' | 'investments' | 'loans' | 'reports' | 'settings' | 'recyclebin'>('dashboard');
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [dashboardFilter, setDashboardFilter] = useState<number | 'all' | 'general'>('all');
   const [writeOperation, setWriteOperation] = useState<WriteOperation | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -218,8 +219,8 @@ export default function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard accounts={accounts} members={members} filterMemberId={dashboardFilter} setFilterMemberId={setDashboardFilter} onSelectAccount={setSelectedAccountId} onWriteOperation={setWriteOperation} onGenerateReport={() => setActiveTab('reports')} settings={settings} userName={localStorage.getItem('user_name') || ''} dataLoading={dataLoading} />;
       case 'members': return <MemberManager members={members} accounts={accounts} onUpdate={fetchData} onSelectAccount={setSelectedAccountId} currency={settings.currency} typeColors={settings.typeColors} />;
-      case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} />;
-      case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} />;
+      case 'accounts': return <AccountManager accounts={accounts} members={members} onUpdate={fetchData} currency={settings.currency} typeColors={settings.typeColors} onSelectAccount={setSelectedAccountId} />;
+      case 'groups': return <GroupManager onUpdate={fetchData} lastUpdate={lastUpdate} currency={settings.currency} onSelectAccount={setSelectedAccountId} selectedGroupId={selectedGroupId} onSelectGroup={setSelectedGroupId} />;
       case 'investments': return <InvestmentTracker accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} />;
       case 'loans': return <LoanManager accounts={accounts} currency={settings.currency} onWriteOperation={setWriteOperation} refreshCounter={refreshCounter} />;
       case 'reports': return <ReportGenerator accounts={accounts} members={members} currency={settings.currency} />;
@@ -333,6 +334,7 @@ export default function App() {
             } else {
               setActiveTab(tab as typeof activeTab);
               setSelectedAccountId(null);
+              setSelectedGroupId(null);
             }
           }}
           onNewTransaction={() => setWriteOperation({ type: 'transaction' })}

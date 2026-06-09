@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion } from 'motion/react';
-import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, Folder, type LucideIcon } from 'lucide-react';
+import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, Folder, User, type LucideIcon } from 'lucide-react';
 import { Account } from '../types';
 
 const typeIcons: Record<string, LucideIcon> = {
@@ -39,7 +39,10 @@ export default memo(function AccountCard({ account, onClick, currency, typeColor
         <div className="flex-1 min-w-0">
           <h5 className="text-base md:text-lg font-semibold text-ink truncate">{account.name}</h5>
           {showMember && (
-            <span className="text-xs text-muted truncate block mt-0.5">{account.member_name}</span>
+            <span className="inline-flex items-center gap-1 text-xs text-muted truncate mt-0.5">
+              <User className="w-3 h-3 shrink-0" />
+              {account.member_name}
+            </span>
           )}
         </div>
         <div className="flex flex-col items-end gap-0.5 shrink-0">

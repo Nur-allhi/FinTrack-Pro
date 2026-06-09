@@ -7,14 +7,15 @@ interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export default function Modal({ open, onClose, title, children }: ModalProps) {
+export default function Modal({ open, onClose, title, subtitle, children }: ModalProps) {
   const [closing, setClosing] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(open);
 
-  const prevOpenRef = useRef(open);
+  const prevOpenRef = useRef<boolean | undefined>(undefined);
   useEffect(() => {
     if (open === prevOpenRef.current) return;
     prevOpenRef.current = open;
@@ -59,8 +60,15 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
         onClick={e => e.stopPropagation()}
         className="bg-canvas w-full max-w-[28rem] md:max-w-[32rem] lg:max-w-[36rem] rounded-xl border border-hairline shadow-2xl"
       >
-        <div className="p-4 sm:p-6 md:p-8 border-b border-hairline flex items-center justify-between bg-surface-soft/30 rounded-t-xl">
-          <h3 className="text-lg sm:text-2xl font-normal text-ink tracking-tight">{title}</h3>
+        <div className="p-4 sm:p-6 md:p-8 border-b border-hairline flex items-start justify-between bg-surface-soft/30 rounded-t-xl">
+          <div>
+            <h3 className="text-lg sm:text-2xl font-normal text-ink tracking-tight">{title}</h3>
+            {subtitle && (
+              <p className="inline-flex items-center gap-1 text-[10px] font-bold text-muted uppercase tracking-wider mt-0.5">
+                {subtitle}
+              </p>
+            )}
+          </div>
           <button onClick={handleClose} className="p-1.5 sm:p-2 text-muted hover:text-ink transition-colors">
             <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
