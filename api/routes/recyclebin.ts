@@ -5,7 +5,7 @@ import { logger } from "../logger.js";
 
 const router = express.Router();
 
-const VALID_TYPES: RecycleBinEntityType[] = ["transactions", "accounts", "loans"];
+const VALID_TYPES: RecycleBinEntityType[] = ["transactions", "accounts", "loans", "members"];
 
 function isValidType(t: string): t is RecycleBinEntityType {
   return VALID_TYPES.includes(t as RecycleBinEntityType);

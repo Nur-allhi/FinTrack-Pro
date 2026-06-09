@@ -52,10 +52,31 @@ Made group cards clickable to open a modal showing the group's accounts, where e
 - **syncEngine.ts + localDb.ts**: Added groups to the sync engine so offline edits (including member assignment) are pushed when connectivity is restored. Groups were missing from `SYNC_TABLES`, `getUnsyncedForTable`, `upsertFromServer`, pending count, and auto-refresh. Fixed broken FK translation (was treating server member_id as local UUID). Added groups-to-accounts table mapping for server push. Added group extraction from server's accounts changes for pull and initial sync.
 - **All card components**: Added `User` icon next to member name in AccountCard, AccountGridCard, AccountListView (desktop + mobile), GroupGridView, GroupManager (desktop table + mobile list + modal), and Dashboard (desktop table + mobile list). Every member name display in card/row UI now shows a `User` icon.
 
+### Member Soft-Delete & Recycle Bin Fixes (later in session)
+
+#### Changes
+- **api/db/queries.ts**: Added `"members"` to `SOFT_DELETE_TABLES`.
+- **api/db/members.ts**: `deleteMember` uses `softDeleteOne`, `getMembers` filters `deleted_at IS NULL`.
+- **api/db/recyclebin.ts**: Added `"members"` to `RecycleBinEntityType`, default `emptyRecycleBin` tables, and `summarizeRow` case. Server hard-deletes on bin empty.
+- **api/routes/recyclebin.ts**: Added `"members"` to `VALID_TYPES`.
+- **src/hooks/useLocalData.ts**: Lookup map now includes soft-deleted members (via `getAllRecords`) to prevent re-import. `_deleted` field preserved when `sync_status === 'pending'`. Orphan purge soft-deletes members with active accounts.
+- **src/services/syncEngine.ts**: `sanitizeForPush` maps `_deleted: false` → `deleted_at: null` so restore works. Removed auto-tombstone for soft-deleted records so they persist locally.
+- **src/components/RecycleBin.tsx**: `handlePermanentDelete` and `handleEmptyAll` call server API first to hard-delete from Supabase, then clean up locally.
+- **src/components/MemberManager.tsx**: Updated confirmation message.
+
+#### Files Changed
+- `api/db/members.ts` — soft-delete + filter
+- `api/db/queries.ts` — SOFT_DELETE_TABLES includes members
+- `api/db/recyclebin.ts` — members support
+- `api/routes/recyclebin.ts` — members in VALID_TYPES
+- `src/hooks/useLocalData.ts` — lookup fix, orphan purge
+- `src/services/syncEngine.ts` — sanitize push/pull fixes
+- `src/components/RecycleBin.tsx` — server API calls
+- `src/components/MemberManager.tsx` — confirmation
+
 ### Next Steps
 - InvestmentTracker clickable → Ledger (medium priority)
 - Reports drill-down to account → Ledger (lower priority)
-- Implement industry-standard soft-delete for members with fallback name display
 
 ---
 

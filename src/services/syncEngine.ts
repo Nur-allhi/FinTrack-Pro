@@ -36,10 +36,8 @@ function sanitizeForPush(record: LocalRecord): Record<string, unknown> {
   }
   // Map id → client_id
   out.client_id = record.id;
-  // Map _deleted boolean → deleted_at timestamp
-  if (record._deleted === true) {
-    out.deleted_at = new Date().toISOString();
-  }
+  // Map _deleted boolean → deleted_at (null to clear server-side for restore)
+  out.deleted_at = record._deleted === true ? new Date().toISOString() : null;
   return out;
 }
 
@@ -409,16 +407,11 @@ async function pullChanges(): Promise<number> {
     });
 
     // Filter out records that were permanently deleted (tombstone)
-    // Auto-tombstone any soft-deleted record so it's never re-imported
     const notTombstoned: Record<string, unknown>[] = [];
     for (const r of translated) {
       const sid = r.id as number | undefined;
       if (sid != null) {
         if (await localDb.isDeletedId(table, sid)) {
-          continue;
-        }
-        if (r._deleted === true) {
-          await localDb.addDeletedId(table, sid);
           continue;
         }
       }

@@ -493,6 +493,9 @@ Earlier work includes:
 2026-06-09: Add member_name to group child accounts end-to-end at api/db/groups.ts, src/services/localDb.ts, src/hooks/useLocalData.ts - Child accounts now carry their associated member name (completed).
 2026-06-09: Add alphabetical sorting and balance to member cards at src/components/MemberManager.tsx - Cards sorted by name, show current total balance on right (completed).
 2026-06-09: Fix groups sync preserving raw server member_id at src/hooks/useLocalData.ts, src/services/localDb.ts, src/services/syncEngine.ts - Groups no longer convert member_id to local UUID (completed).
+2026-06-09: Implement industry-standard member soft-delete at api/db/members.ts, api/db/queries.ts, api/db/recyclebin.ts, api/routes/recyclebin.ts - Members now soft-deleted, filtered from listings, added to recycle bin (completed).
+2026-06-09: Fix member delete: preserve _deleted state from server at src/hooks/useLocalData.ts - lookup map includes soft-deleted members to prevent re-import (completed).
+2026-06-09: Fix recycle bin persistence across sign-in cycles at src/components/RecycleBin.tsx, src/services/syncEngine.ts, api/db/recyclebin.ts - soft-deleted records stored locally, server hard-deletes on bin empty, sanitizeForPush maps _deleted: false (completed).
 2026-06-07: Add offline fallback to AccountManager at src/components/AccountManager.tsx - Local save on API failure (completed).
 2026-06-07: Sync groups to server at src/components/GroupManager.tsx - Add API calls with local-first fallback (completed).
 2026-06-07: Show current_balance in all forms at WriteModalForms, AccountForm, RecurringManager, ReportGenerator - Displays running balance in account dropdowns and edit form (completed).

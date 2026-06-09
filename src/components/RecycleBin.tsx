@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Trash2, RotateCcw, AlertTriangle, Wallet, Handshake, Receipt, User, Layers, Clock, type LucideIcon } from 'lucide-react';
 import { useToast } from './Toast';
 import { localDb } from '../services/localDb';
+import { authService } from '../services/authService';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface DeletedItem {
@@ -73,6 +74,9 @@ export default function RecycleBin() {
     const key = `${item.entity_type}-${item.id}`;
     setActing(key);
     try {
+      if (item.server_id != null) {
+        await authService.apiFetch(`/api/recyclebin/${item.entity_type}/${item.server_id}`, { method: 'DELETE' });
+      }
       await localDb.permanentDelete(item.entity_type, item.id);
       toast(`${item.entity_label} permanently deleted.`, 'success');
       fetchItems();
@@ -87,6 +91,8 @@ export default function RecycleBin() {
     if (!confirm('Permanently delete ALL items in the recycle bin? This cannot be undone.')) return;
     setActing('empty-all');
     try {
+      const type = filter !== 'all' ? filter : undefined;
+      await authService.apiFetch(`/api/recyclebin${type ? `?type=${type}` : ''}`, { method: 'DELETE' });
       await localDb.emptyBin(filter !== 'all' ? filter : undefined);
       toast('Recycle bin emptied.', 'success');
       fetchItems();

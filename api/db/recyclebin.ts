@@ -1,12 +1,13 @@
 import { db } from "../db.js";
 import { restoreOne, permanentDeleteOne } from "./queries.js";
 
-export type RecycleBinEntityType = "transactions" | "accounts" | "loans";
+export type RecycleBinEntityType = "transactions" | "accounts" | "loans" | "members";
 
 const LABEL_MAP: Record<RecycleBinEntityType, string> = {
   transactions: "Transaction",
   accounts: "Account",
   loans: "Loan",
+  members: "Member",
 };
 
 interface DeletedRow {
@@ -17,7 +18,7 @@ interface DeletedRow {
 }
 
 export async function getDeletedItems(userId: string, type?: RecycleBinEntityType) {
-  const tables: RecycleBinEntityType[] = type ? [type] : ["transactions", "accounts", "loans"];
+  const tables: RecycleBinEntityType[] = type ? [type] : ["transactions", "accounts", "loans", "members"];
   const results: Array<{ entity_type: RecycleBinEntityType; entity_label: string; id: number; deleted_at: string; summary: string }> = [];
 
   for (const table of tables) {
@@ -52,6 +53,8 @@ function summarizeRow(table: RecycleBinEntityType, row: DeletedRow): string {
       return `${row.name || "Unnamed"}`;
     case "loans":
       return `${row.borrower_name || "Loan"} — ${row.amount}`;
+    case "members":
+      return `${row.name || "Unnamed Member"}`;
     default:
       return "";
   }
@@ -66,7 +69,7 @@ export async function permanentDeleteItem(userId: string, type: RecycleBinEntity
 }
 
 export async function emptyRecycleBin(userId: string, type?: RecycleBinEntityType) {
-  const tables: RecycleBinEntityType[] = type ? [type] : ["transactions", "accounts", "loans"];
+  const tables: RecycleBinEntityType[] = type ? [type] : ["transactions", "accounts", "loans", "members"];
   for (const table of tables) {
     const { data, error } = await db()
       .from(table)
