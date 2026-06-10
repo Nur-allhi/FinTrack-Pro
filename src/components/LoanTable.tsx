@@ -115,7 +115,10 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
                 )}>{loan.status}</span>
               </div>
               <div className="text-xs text-muted">
-                <span className="font-medium">{counterpartyLabel(groupingMode)}:</span> {counterpartyName(loan, groupingMode)}
+                <span className="font-medium">{counterpartyLabel(groupingMode)}:</span>{' '}
+                {counterpartyName(loan, groupingMode)}
+                {groupingMode === 'pair' && loan.borrower_account_name && loan.borrower_member_name && <span className="text-muted/60"> · {loan.borrower_member_name}</span>}
+                {groupingMode === 'borrower' && loan.member_name && <span className="text-muted/60"> · {loan.member_name}</span>}
               </div>
               {loan.particulars && <div className="text-[11px] text-muted truncate">{loan.particulars}</div>}
             </div>
