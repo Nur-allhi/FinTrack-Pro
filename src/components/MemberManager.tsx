@@ -89,17 +89,15 @@ export default function MemberManager({ members, accounts, onUpdate, onSelectAcc
             const Icon = typeIcons[acc.type] || Wallet;
             return (
               <button key={acc.id} onClick={() => onSelectAccount(acc.id)}
-                className="w-full bg-canvas p-3 md:p-4 rounded-xl border border-hairline flex items-center gap-3 text-left transition-all hover:border-primary hover:shadow-sm group">
+                className="w-full bg-canvas p-3 md:p-4 rounded-xl border border-hairline flex items-start gap-3 text-left transition-all hover:border-primary hover:shadow-sm group">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white" style={{ backgroundColor: typeColors?.[acc.type] || acc.color }}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-base font-semibold text-ink truncate">{acc.name}</span>
-                    <span className="text-sm font-bold text-ink financial-number shrink-0">{currency || '৳'}{acc.current_balance.toLocaleString()}</span>
-                  </div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
+                  <span className="text-base font-semibold text-ink truncate block">{acc.name}</span>
+                  <p className="text-xs font-bold text-muted uppercase tracking-wider mt-0.5">{acc.type.replace('_', ' ')}</p>
                 </div>
+                <span className="text-sm font-bold text-ink financial-number shrink-0 self-start">{currency || '৳'}{acc.current_balance.toLocaleString()}</span>
               </button>
             );
           })}

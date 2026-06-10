@@ -282,22 +282,19 @@ export default function Dashboard({
               </div>
               <div className="md:hidden space-y-2">
                 {filteredAccounts.map(account => (
-                  <button key={account.id} onClick={() => onSelectAccount(account.id)} className="w-full bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3 text-left transition-all hover:border-primary">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: account.color }} />
+                  <button key={account.id} onClick={() => onSelectAccount(account.id)} className="w-full bg-canvas p-3 rounded-xl border border-hairline flex items-start gap-3 text-left transition-all hover:border-primary">
+                    <div className="w-2 h-2 rounded-full shrink-0 mt-2" style={{ backgroundColor: account.color }} />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-base font-semibold text-ink truncate">{account.name}</span>
-                        <span className="text-sm font-bold text-ink financial-number shrink-0">{settings.currency}{account.current_balance.toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-base font-semibold text-ink truncate block">{account.name}</span>
+                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
                         <span className="text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
-                        <span className="text-muted/40">·</span>
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
                           <User className="w-3 h-3 shrink-0" />
                           {account.member_name || 'General'}
                         </span>
                       </div>
                     </div>
+                    <span className="text-sm font-bold text-ink financial-number shrink-0 self-start">{settings.currency}{account.current_balance.toLocaleString()}</span>
                   </button>
                 ))}
               </div>

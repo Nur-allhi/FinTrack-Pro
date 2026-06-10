@@ -75,27 +75,20 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
         {accounts.map(acc => {
           const Icon = typeIcons[acc.type] || Wallet;
           return (
-            <div key={acc.id} onClick={() => onSelectAccount?.(acc.id)} className="bg-canvas p-3 rounded-xl border border-hairline flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors">
+            <div key={acc.id} onClick={() => onSelectAccount?.(acc.id)} className="bg-canvas p-3 rounded-xl border border-hairline flex items-start gap-3 cursor-pointer hover:border-primary/30 transition-colors">
               <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: acc.color + '15', color: acc.color }}>
                 <Icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-base font-semibold text-ink truncate">{acc.name}</span>
-                  <span className="text-sm font-bold text-ink financial-number shrink-0">{currency}{acc.current_balance.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-base font-semibold text-ink truncate block">{acc.name}</span>
+                <div className="flex items-center gap-2 flex-wrap mt-0.5">
                   <span className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</span>
-                  <span className="text-muted/40">·</span>
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
                     <User className="w-3 h-3 shrink-0" />
                     {acc.member_name || 'General'}
                   </span>
                   {acc.parent_name && (
-                    <>
-                      <span className="text-muted/40">·</span>
-                      <span className="text-xs font-medium text-primary">{acc.parent_name}</span>
-                    </>
+                    <span className="text-xs font-medium text-primary">{acc.parent_name}</span>
                   )}
                   {!!acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded-pill">A</span>}
                 </div>
@@ -104,7 +97,10 @@ export default function AccountListView({ accounts, currency, typeColors, onEdit
                   <button onClick={e => { e.stopPropagation(); onToggleArchive(acc.id, acc.archived, acc._localId); }} className="text-[10px] font-bold text-muted hover:text-amber-600 uppercase tracking-wider">{acc.archived ? 'Activate' : 'Archive'}</button>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+              <div className="flex items-center gap-2 shrink-0 self-start">
+                <span className="text-base font-bold text-ink financial-number">{currency}{acc.current_balance.toLocaleString()}</span>
+                <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+              </div>
             </div>
           );
         })}

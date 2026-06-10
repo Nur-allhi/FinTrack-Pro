@@ -277,33 +277,31 @@ function AccountGridCard({ acc, currency, typeColors, onEdit, onToggleArchive, o
   return (
     <div onClick={onSelect} className="bg-canvas rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-md hover:border-primary/30 cursor-pointer group">
       <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white" style={{ backgroundColor: typeColors?.[acc.type] || acc.color }}>
-              <Icon className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <h4 className="text-base font-semibold text-ink truncate">{acc.name}</h4>
-              <p className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white" style={{ backgroundColor: typeColors?.[acc.type] || acc.color }}>
+            <Icon className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-base font-semibold text-ink truncate">{acc.name}</h4>
+            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+              <span className="text-xs font-bold text-muted uppercase tracking-wider">{acc.type.replace('_', ' ')}</span>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-muted uppercase tracking-wider">
+                <User className="w-3 h-3" />
+                {acc.member_name || 'GENERAL'}
+              </span>
+              {acc.parent_name && (
+                <span className="text-xs font-bold text-primary uppercase tracking-wider truncate">{acc.parent_name}</span>
+              )}
             </div>
           </div>
-          <div className="flex gap-1 shrink-0">
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <p className="text-xl font-bold text-ink financial-number tracking-tighter">{currency}{acc.current_balance.toLocaleString()}</p>
             {!!acc.archived && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded-pill">Archived</span>}
           </div>
         </div>
-        <p className="text-xl font-bold text-ink financial-number tracking-tighter mb-3">{currency}{acc.current_balance.toLocaleString()}</p>
-        <div className="flex items-center justify-between pt-3 border-t border-hairline">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-muted uppercase tracking-wider">
-              <User className="w-3 h-3" />
-              {acc.member_name || 'GENERAL'}
-            </span>
-            {acc.parent_name && (<><span className="text-muted/40">/</span><span className="text-xs font-bold text-primary uppercase tracking-wider truncate">{acc.parent_name}</span></>)}
-          </div>
-          <div className="flex gap-1">
-            <button onClick={e => { e.stopPropagation(); onEdit(acc); }} className="p-2 md:p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
-            <button onClick={e => { e.stopPropagation(); onToggleArchive(acc.id, acc.archived, acc._localId); }} className="p-2 md:p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
-          </div>
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-hairline">
+          <button onClick={e => { e.stopPropagation(); onEdit(acc); }} className="p-2 md:p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit"><Edit2 className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
+          <button onClick={e => { e.stopPropagation(); onToggleArchive(acc.id, acc.archived, acc._localId); }} className="p-2 md:p-1.5 text-muted hover:text-amber-600 rounded-full hover:bg-amber-50 transition-colors" title={acc.archived ? "Activate" : "Archive"}><Archive className="w-4 md:w-3.5 h-4 md:h-3.5" /></button>
         </div>
       </div>
     </div>

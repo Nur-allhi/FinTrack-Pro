@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion } from 'motion/react';
-import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, Folder, User, type LucideIcon } from 'lucide-react';
+import { Wallet, Building2, Smartphone, TrendingUp, Target, Home, User, Folder, type LucideIcon } from 'lucide-react';
 import { Account } from '../types';
 
 const typeIcons: Record<string, LucideIcon> = {
@@ -38,23 +38,26 @@ export default memo(function AccountCard({ account, onClick, currency, typeColor
         </div>
         <div className="flex-1 min-w-0">
           <h5 className="text-base md:text-lg font-semibold text-ink truncate">{account.name}</h5>
-          {showMember && (
-            <span className="inline-flex items-center gap-1 text-xs text-muted truncate mt-0.5">
-              <User className="w-3 h-3 shrink-0" />
-              {account.member_name}
-            </span>
-          )}
+          <div className="flex items-center gap-2 flex-wrap mt-0.5">
+            <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
+            {showMember && (
+              <span className="inline-flex items-center gap-1 text-[10px] md:text-xs text-muted">
+                <User className="w-3 h-3 shrink-0" />
+                {account.member_name}
+              </span>
+            )}
+            {hasParent && (
+              <span className="inline-flex items-center gap-1 text-[10px] md:text-xs text-muted">
+                <Folder className="w-3 h-3 shrink-0" />
+                {account.parent_name}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-0.5 shrink-0">
-          <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider">{account.type.replace('_', ' ')}</span>
-          {hasParent && (
-            <span className="flex items-center gap-1 text-[10px] md:text-xs text-muted whitespace-nowrap"><Folder className="w-3 h-3 shrink-0" />{account.parent_name}</span>
-          )}
-        </div>
+        <p className="text-xl md:text-2xl font-normal text-ink financial-number tracking-tighter self-start shrink-0">
+          {currency}{account.current_balance.toLocaleString()}
+        </p>
       </div>
-      <p className="text-xl md:text-2xl font-normal text-ink financial-number tracking-tighter">
-        {currency}{account.current_balance.toLocaleString()}
-      </p>
     </motion.button>
   );
 });
