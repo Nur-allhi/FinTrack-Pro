@@ -43,25 +43,6 @@ export function drawPageHeader(doc: jsPDF, title: string, subtitle?: string, dat
   }
 }
 
-export function drawTableHeader(doc: jsPDF, headers: string[], colWidths: number[], yPos: number, leftAlignCount = 2) {
-  const margin = 14;
-  const pageW = doc.internal.pageSize.getWidth();
-  const usableW = pageW - margin * 2;
-
-  doc.setFillColor(0, 82, 255);
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.rect(margin, yPos, usableW, 7, 'F');
-  let x = margin;
-  headers.forEach((h, i) => {
-    const align = i < leftAlignCount ? 'left' : 'right';
-    doc.text(h, x + (align === 'right' ? colWidths[i] - 3 : 3), yPos + 5, { align });
-    x += colWidths[i];
-  });
-  return yPos + 9;
-}
-
 export function drawFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;

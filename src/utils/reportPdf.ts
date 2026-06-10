@@ -6,9 +6,10 @@ export async function exportReportPDF(
   accounts: { id: number; name: string }[],
   currency: string
 ) {
-  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryDivider }] = await Promise.all([
+  const [{ default: jsPDF }, { drawPageHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryDivider }, { autoTable }] = await Promise.all([
     import('jspdf'),
     import('./pdf'),
+    import('jspdf-autotable'),
   ]);
 
   const doc = new jsPDF();
@@ -16,28 +17,13 @@ export async function exportReportPDF(
   const pageW = doc.internal.pageSize.getWidth();
   const usableW = pageW - margin * 2;
   const colWidths = [24, usableW - 24 - 28 - 28 - 28, 28, 28, 28];
-  const headers = ['Date', 'Particulars', 'Category', 'Debit', 'Credit'];
   const accountName = filters.accountId ? accounts.find(a => a.id === Number(filters.accountId))?.name : 'All Accounts';
   const fm = (n: number) => fmtPdfCurrency(currency, n);
   const totalDebit = reportData.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
   const totalCredit = reportData.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const dateRange = `${filters.startDate} to ${filters.endDate}`;
 
-  let pageNum = 1;
-
-  const drawReportSummary = (yPos: number) => {
-    const sY = yPos + 2;
-    drawSummaryDivider(doc, margin, sY, usableW);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Total:', margin + colWidths[0] + 2, sY + 6);
-    const debitX = margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3];
-    if (totalDebit > 0) doc.text(fm(totalDebit), debitX - 2, sY + 6, { align: 'right' });
-    const creditX = debitX + colWidths[4];
-    if (totalCredit > 0) doc.text(fm(totalCredit), creditX - 2, sY + 6, { align: 'right' });
-    return sY + 12;
-  };
+  const rightEdge = pageW - margin;
 
   drawPageHeader(doc, 'Financial Report', String(accountName), undefined, dateRange);
 
@@ -47,81 +33,74 @@ export async function exportReportPDF(
     subject: 'Financial Report',
   });
 
-  let y = 52;
-  y = drawTableHeader(doc, headers, colWidths, y, 3);
+  const bodyRows = reportData.map(t => [
+    sanitizePdfText(t.date),
+    sanitizePdfText(t.particulars),
+    sanitizePdfText(t.category || ''),
+    t.amount < 0 ? fm(t.amount) : '',
+    t.amount > 0 ? fm(t.amount) : '',
+  ]);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(0, 0, 0);
-
-  const lineH = 5;
-  const pageBottom = doc.internal.pageSize.getHeight() - 24;
-
-  reportData.forEach((t, idx) => {
-    const particWrapped = doc.splitTextToSize(sanitizePdfText(t.particulars), colWidths[1] - 4);
-    const cat = t.category || '';
-    const catWrapped = cat ? doc.splitTextToSize(sanitizePdfText(cat), colWidths[2] - 4) : [''];
-    const numLines = Math.max(particWrapped.length, catWrapped.length);
-    const rowH = Math.max(7, numLines * lineH);
-
-    if (y + rowH > pageBottom) {
-      drawReportSummary(y);
-      drawFooter(doc, pageNum);
-      doc.addPage();
-      pageNum++;
-      drawPageHeader(doc, 'Financial Report', subtitle, undefined, dateRange);
-      y = 52;
-      y = drawTableHeader(doc, headers, colWidths, y, 3);
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(7);
-      doc.setTextColor(140, 140, 140);
-      doc.text('(cont.)', margin + usableW, y - 1, { align: 'right' });
-    }
-    if (idx % 2 === 0) {
-      doc.setFillColor(252, 252, 252);
-      doc.rect(margin, y, usableW, rowH, 'F');
-    }
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-
-    let x = margin;
-    const dateStr = sanitizePdfText(t.date);
-    doc.text(dateStr, x + 2, y + 4);
-    x += colWidths[0];
-
-    particWrapped.forEach((line: string, li: number) => {
-      doc.text(line, x + 2, y + 4 + li * lineH);
-    });
-    x += colWidths[1];
-
-    catWrapped.forEach((line: string, li: number) => {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(140, 140, 140);
-      doc.text(line, x + 2, y + 4 + li * lineH);
-    });
-    x += colWidths[2];
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-
-    if (t.amount < 0) {
-      doc.text(fm(t.amount), x + colWidths[3] - 2, y + 4, { align: 'right' });
-    }
-    x += colWidths[3];
-
-    if (t.amount > 0) {
-      doc.text(fm(t.amount), x + colWidths[4] - 2, y + 4, { align: 'right' });
-    }
-
-    y += rowH;
+  autoTable(doc, {
+    head: [['Date', 'Particulars', 'Category', 'Debit', 'Credit']],
+    body: bodyRows,
+    startY: 50,
+    margin: { top: 50, bottom: 40 },
+    tableWidth: usableW,
+    columnStyles: {
+      0: { cellWidth: colWidths[0], halign: 'left' },
+      1: { cellWidth: colWidths[1], halign: 'left' },
+      2: { cellWidth: colWidths[2], halign: 'left' },
+      3: { cellWidth: colWidths[3], halign: 'right' },
+      4: { cellWidth: colWidths[4], halign: 'right' },
+    },
+    headStyles: {
+      fillColor: [0, 82, 255],
+      textColor: 255,
+      fontSize: 7.5,
+      fontStyle: 'bold',
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [0, 0, 0],
+    },
+    alternateRowStyles: {
+      fillColor: [252, 252, 252],
+    },
+    theme: 'grid',
+    showHead: 'everyPage',
+    didParseCell(data) {
+      if (data.section === 'body' && data.column.index === 2) {
+        data.cell.styles.textColor = [140, 140, 140];
+        data.cell.styles.fontSize = 7.5;
+      }
+    },
+    didDrawPage(data) {
+      if (data.pageNumber > 1) {
+        doc.setPage(data.pageNumber);
+        drawPageHeader(doc, 'Financial Report', String(accountName), undefined, dateRange);
+      }
+      drawFooter(doc, data.pageNumber);
+    },
   });
 
-  if (reportData.length > 0) y = drawReportSummary(y);
-  drawFooter(doc, pageNum);
+  const lj = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable;
+  const finalY = lj?.finalY ?? 0;
+  const lastPage = doc.getNumberOfPages();
+  doc.setPage(lastPage);
+
+  const sY = finalY + 4;
+  drawSummaryDivider(doc, margin, sY, usableW);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(0, 0, 0);
+  doc.text('Total:', margin + colWidths[0] + 2, sY + 6);
+
+  const debitX = margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3];
+  if (totalDebit > 0) doc.text(fm(totalDebit), debitX - 2, sY + 6, { align: 'right' });
+  const creditX = debitX + colWidths[4];
+  if (totalCredit > 0) doc.text(fm(totalCredit), creditX - 2, sY + 6, { align: 'right' });
+
   doc.save(`FinTrack_Report_${filters.startDate}_${filters.endDate}.pdf`);
 }
 
