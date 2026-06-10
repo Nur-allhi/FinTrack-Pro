@@ -45,12 +45,11 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Paid</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Remaining</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Status</th>
-              <th className="px-4 py-2.5 whitespace-nowrap text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
             {loans.map(loan => (
-              <tr key={loan.id} className="hover:bg-surface-soft/30 transition-colors">
+              <tr key={loan.id} onClick={() => setSelectedLoan(loan)} className="hover:bg-surface-soft/30 transition-colors cursor-pointer">
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-ink text-center">{format(new Date(loan.date_given), 'dd MMM yyyy')}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-muted text-center">{loan.member_name || '-'}</td>
                 <td className="px-4 py-2.5 max-w-[160px] truncate text-xs text-muted text-left">{loan.particulars || '-'}</td>
@@ -73,24 +72,6 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
                     {loan.status === 'settled' && <CheckCircle2 className="w-2.5 h-2.5" />}
                     {loan.status}
                   </span>
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    {loan.status === 'active' && (
-                      <button onClick={(e) => { e.stopPropagation(); onSettleOpen(loan); }} disabled={settlingId === loan.id}
-                        className="px-2 py-1 rounded-pill text-[10px] font-bold bg-semantic-up/10 text-semantic-up hover:bg-semantic-up/20 transition-colors disabled:opacity-50">
-                        {settlingId === loan.id ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : 'Settle'}
-                      </button>
-                    )}
-                    <button onClick={(e) => { e.stopPropagation(); onEdit(loan); }}
-                      className="p-1.5 rounded-md text-muted hover:text-ink hover:bg-surface-soft transition-colors">
-                      <Pencil className="w-3 h-3" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(loan.id); }} disabled={deletingId === loan.id}
-                      className="px-2 py-1 rounded-pill text-[10px] font-bold bg-semantic-down/10 text-semantic-down hover:bg-semantic-down/20 transition-colors disabled:opacity-50">
-                      {deletingId === loan.id ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : 'Delete'}
-                    </button>
-                  </div>
                 </td>
               </tr>
             ))}
