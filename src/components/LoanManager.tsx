@@ -78,6 +78,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
           particulars: r.particulars,
           status: r.status as 'active' | 'settled' | 'defaulted',
           settled_date: r.settled_date,
+          member_name: lender?.member_name || localLender?.member_name || '',
           lender_name: r.lender_name || localLender?.name || lender?.name,
           borrower_account_name: r.borrower_account_name || localBorrower?.name || borrower?.name,
         };

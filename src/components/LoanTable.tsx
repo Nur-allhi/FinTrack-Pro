@@ -38,6 +38,7 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
           <thead>
             <tr className="bg-surface-soft text-muted text-[10px] font-bold uppercase tracking-[0.2em]">
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Date</th>
+              <th className="px-4 py-2.5 whitespace-nowrap text-center">Member</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Description</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">{counterpartyLabel(groupingMode)}</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Amount</th>
@@ -51,6 +52,7 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
             {loans.map(loan => (
               <tr key={loan.id} className="hover:bg-surface-soft/30 transition-colors">
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-ink text-center">{format(new Date(loan.date_given), 'dd MMM yyyy')}</td>
+                <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-muted text-center">{loan.member_name || '-'}</td>
                 <td className="px-4 py-2.5 max-w-[160px] truncate text-xs text-muted text-left">{loan.particulars || '-'}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-ink text-center">{counterpartyName(loan, groupingMode)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-bold text-ink financial-number text-center">
@@ -104,8 +106,9 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
             className="px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:bg-surface-soft/30 transition-colors active:bg-surface-soft/60"
           >
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-medium text-ink">{format(new Date(loan.date_given), 'dd MMM yyyy')}</span>
+                {loan.member_name && <span className="text-[11px] text-muted">{loan.member_name}</span>}
                 <span className={cn(
                   "px-1.5 py-0.5 rounded-pill text-[9px] font-bold uppercase tracking-wider",
                   loan.status === 'active' ? "bg-semantic-up/10 text-semantic-up" : "bg-muted/10 text-muted"
@@ -131,6 +134,10 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
               <div>
                 <span className="text-[10px] text-muted font-medium uppercase tracking-wider">Date</span>
                 <p className="text-sm font-medium text-ink">{format(new Date(selectedLoan.date_given), 'dd MMM yyyy')}</p>
+              </div>
+              <div>
+                <span className="text-[10px] text-muted font-medium uppercase tracking-wider">Member</span>
+                <p className="text-sm font-medium text-ink">{selectedLoan.member_name || '-'}</p>
               </div>
               <div>
                 <span className="text-[10px] text-muted font-medium uppercase tracking-wider">{counterpartyLabel(groupingMode)}</span>

@@ -4,6 +4,7 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-10: Add Member column to loan table/card — shows which member owns the lender account; displayed after Date in desktop table, mobile row, and detail modal (completed).
 2026-06-10: Sort account select dropdowns by member name then account name in Unified modal — accounts grouped by member for easier selection (completed).
 2026-06-10: Improve account select dropdowns in Unified modal — account labels now show member name in muted color for quick visual identification of which account belongs to which member (completed).
 2026-06-10: Redesign all account cards — all text (name, type, member, group) left-aligned, only current balance number right-aligned. Applies to AccountCard, AccountGridCard, AccountListView mobile, Dashboard list mobile, MemberManager account list (completed).
