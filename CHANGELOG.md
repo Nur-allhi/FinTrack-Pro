@@ -4,6 +4,7 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-10: Remove card shadow/border/rounded styling from main content container — blends seamlessly with parent background by removing shadow-sm, border-hairline, rounded-[20px], margins, and changing bg-surface-soft to bg-canvas (completed).
 2026-06-10: Fix cross-device balance sync — after pulling transactions in sync engine, recalculate all account balances from scratch so transactions created on Device A update balances on Device B (completed).
 2026-06-10: Fix modal close delay after posting entry — removed 600ms success animation timeout and success checkmark UI; modal closes immediately after save, toast notification alone confirms success (completed).
 2026-06-10: Remove liquid glass effect from entire app — removed all 8 glass CSS classes from index.css, replaced with solid bg/border tokens; fixed button text hidden by absolute slider across 6 components; added z-10 wrappers to all pill slider labels and icons (completed).

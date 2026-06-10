@@ -1071,6 +1071,7 @@ Fixed two issues: (1) account balance not updating when remote transactions are 
 - `src/services/localDb.ts` — added `recalculateAllBalances()` method
 - `src/services/syncEngine.ts` — call recalculateAllBalances after pulling transactions
 - `src/components/WriteModal.tsx` — remove close delay, success checkmark UI, unused state/import
+- `src/App.tsx` — remove shadow/border/rounded/margins from scrollable content container; bg-surface-soft → bg-canvas
 - `CHANGELOG.md` — new entries
 
 ### Verification

@@ -297,7 +297,7 @@ export default function App() {
           onOpenProfile={openProfile}
         />
 
-        <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto bg-surface-soft md:bg-transparent border border-hairline md:border-0 rounded-[20px] md:rounded-none shadow-sm md:shadow-none mx-3 md:mx-0 mb-3 md:mb-0">
+        <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto bg-canvas md:bg-transparent">
           <AnimatePresence mode="wait">
             <motion.div key={showProfile ? 'profile' : selectedAccountId || activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}>
               <ErrorBoundary>
