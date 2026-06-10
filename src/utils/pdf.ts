@@ -80,9 +80,7 @@ export function drawFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
   doc.text(pageText, pageW / 2, fy, { align: 'center' });
 }
 
-export function drawSummaryBackground(doc: jsPDF, x: number, y: number, w: number, h: number) {
-  doc.setFillColor(245, 245, 247);
-  doc.rect(x, y, w, h, 'F');
+export function drawSummaryDivider(doc: jsPDF, x: number, y: number, w: number) {
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.6);
   doc.line(x, y, x + w, y);

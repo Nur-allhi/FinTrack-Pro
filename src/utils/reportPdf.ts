@@ -6,7 +6,7 @@ export async function exportReportPDF(
   accounts: { id: number; name: string }[],
   currency: string
 ) {
-  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryBackground }] = await Promise.all([
+  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryDivider }] = await Promise.all([
     import('jspdf'),
     import('./pdf'),
   ]);
@@ -27,7 +27,7 @@ export async function exportReportPDF(
 
   const drawReportSummary = (yPos: number) => {
     const sY = yPos + 2;
-    drawSummaryBackground(doc, margin, sY, usableW, 8);
+    drawSummaryDivider(doc, margin, sY, usableW);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);

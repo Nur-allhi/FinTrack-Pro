@@ -7,7 +7,7 @@ export const exportLedgerPDF = async (
   currency: string,
   dateRange?: string
 ) => {
-  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryBackground }] = await Promise.all([
+  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryDivider }] = await Promise.all([
     import('jspdf'),
     import('./pdf'),
   ]);
@@ -35,9 +35,19 @@ export const exportLedgerPDF = async (
 
   const subtitleParts = [account.name, account.member_name, account.type.replace(/_/g, ' ')].filter(Boolean);
   const subtitle = subtitleParts.join(' · ');
-  const rightText = `Bal: ${fm(account.initial_balance)}${dateRange ? `  |  ${dateRange}` : ''}`;
 
-  drawPageHeader(doc, 'Account Statement', subtitle, undefined, rightText);
+  drawPageHeader(doc, 'Account Statement', subtitle);
+
+  const rightEdge = pageW - margin;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(140, 140, 140);
+  if (dateRange) doc.text(dateRange, rightEdge, 26, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Opening: ${fm(account.initial_balance)}`, rightEdge, 33, { align: 'right' });
+  doc.text(`Closing: ${fm(closingBal)}`, rightEdge, 40, { align: 'right' });
 
   doc.setProperties({
     title: `Account Statement - ${account.name}`,
@@ -55,7 +65,7 @@ export const exportLedgerPDF = async (
     const sY = yPos + 2;
     const summaryH = isLastPage ? 20 : 10;
 
-    drawSummaryBackground(doc, margin, sY, usableW, summaryH);
+    drawSummaryDivider(doc, margin, sY, usableW);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
@@ -95,7 +105,16 @@ export const exportLedgerPDF = async (
       drawFooter(doc, pageNum);
       doc.addPage();
       pageNum++;
-      drawPageHeader(doc, 'Account Statement', subtitle, undefined, rightText);
+      drawPageHeader(doc, 'Account Statement', subtitle);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(140, 140, 140);
+      if (dateRange) doc.text(dateRange, rightEdge, 26, { align: 'right' });
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Opening: ${fm(account.initial_balance)}`, rightEdge, 33, { align: 'right' });
+      doc.text(`Closing: ${fm(closingBal)}`, rightEdge, 40, { align: 'right' });
       y = 52;
       y = drawTableHeader(doc, headers, colWidths, y, 3);
       doc.setFont('helvetica', 'italic');
