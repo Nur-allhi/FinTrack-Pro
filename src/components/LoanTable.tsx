@@ -103,7 +103,7 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
         {loans.map(loan => (
           <div key={loan.id}
             onClick={() => setSelectedLoan(loan)}
-            className="px-4 py-3 flex items-center justify-between gap-3 cursor-pointer hover:bg-surface-soft/30 transition-colors active:bg-surface-soft/60"
+            className="px-4 py-3 flex items-start justify-between gap-3 cursor-pointer hover:bg-surface-soft/30 transition-colors active:bg-surface-soft/60"
           >
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -117,10 +117,11 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
               <div className="text-xs text-muted">
                 <span className="font-medium">{counterpartyLabel(groupingMode)}:</span> {counterpartyName(loan, groupingMode)}
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-sm font-bold text-ink financial-number">{currency}{loan.amount.toLocaleString()}</span>
-                {loan.particulars && <span className="text-[11px] text-muted truncate">{loan.particulars}</span>}
-              </div>
+              {loan.particulars && <div className="text-[11px] text-muted truncate">{loan.particulars}</div>}
+            </div>
+            <div className="text-right shrink-0 self-start">
+              <div className="text-sm font-bold text-ink financial-number">{currency}{loan.amount.toLocaleString()}</div>
+              <div className="text-[10px] text-muted font-medium uppercase tracking-wider">Amount</div>
             </div>
           </div>
         ))}
