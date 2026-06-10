@@ -7,7 +7,7 @@ export const exportLedgerPDF = async (
   currency: string,
   dateRange?: string
 ) => {
-  const [{ default: jsPDF }, { drawPageHeader, drawFooter, fmtPdfCurrency, sanitizePdfText, drawSummaryDivider }, { autoTable }] = await Promise.all([
+  const [{ default: jsPDF }, { drawPageHeader, drawFooter, fmtPdfCurrency, sanitizePdfText }, { autoTable }] = await Promise.all([
     import('jspdf'),
     import('./pdf'),
     import('jspdf-autotable'),
@@ -119,7 +119,6 @@ export const exportLedgerPDF = async (
   doc.setPage(lastPage);
 
   const sY = finalY + 4;
-  drawSummaryDivider(doc, margin, sY, usableW);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
