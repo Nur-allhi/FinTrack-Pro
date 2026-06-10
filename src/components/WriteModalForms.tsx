@@ -84,7 +84,10 @@ export function TransactionForm({ state, onChange, accounts, categories, currenc
           value={state.account_id}
           onChange={v => onChange({ ...state, account_id: v })}
           placeholder="Select Account"
-          options={accounts.filter(a => !a.archived).map(a => ({
+          options={accounts.filter(a => !a.archived).sort((a, b) => {
+            const am = a.member_name || ''; const bm = b.member_name || '';
+            const mc = am.localeCompare(bm); return mc !== 0 ? mc : a.name.localeCompare(b.name);
+          }).map(a => ({
             value: String(a.id),
             label: (
               <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
@@ -158,7 +161,10 @@ export function TransferForm({ state, onChange, accounts, currency }: TransferFo
           value={state.from_account_id}
           onChange={v => onChange({ ...state, from_account_id: v })}
           placeholder="Select Source"
-          options={accounts.filter(a => !a.archived).map(a => ({
+          options={accounts.filter(a => !a.archived).sort((a, b) => {
+            const am = a.member_name || ''; const bm = b.member_name || '';
+            const mc = am.localeCompare(bm); return mc !== 0 ? mc : a.name.localeCompare(b.name);
+          }).map(a => ({
             value: String(a.id),
             label: (
               <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
@@ -177,7 +183,10 @@ export function TransferForm({ state, onChange, accounts, currency }: TransferFo
           value={state.to_account_id}
           onChange={v => onChange({ ...state, to_account_id: v })}
           placeholder="Select Destination"
-          options={accounts.filter(a => !a.archived).map(a => ({
+          options={accounts.filter(a => !a.archived).sort((a, b) => {
+            const am = a.member_name || ''; const bm = b.member_name || '';
+            const mc = am.localeCompare(bm); return mc !== 0 ? mc : a.name.localeCompare(b.name);
+          }).map(a => ({
             value: String(a.id),
             label: (
               <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
@@ -221,7 +230,10 @@ interface LoanCreateFormProps {
 
 export function LoanCreateForm({ state, onChange, accounts, editMode, currency }: LoanCreateFormProps) {
   const activeAccounts = accounts.filter(a => !a.archived);
-  const accountOptions = activeAccounts.map(a => ({
+  const accountOptions = activeAccounts.sort((a, b) => {
+    const am = a.member_name || ''; const bm = b.member_name || '';
+    const mc = am.localeCompare(bm); return mc !== 0 ? mc : a.name.localeCompare(b.name);
+  }).map(a => ({
     value: String(a.id),
     label: (
       <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
@@ -421,14 +433,13 @@ export function InvestmentCreateForm({ state, onChange, accounts, currency }: In
           value={state.account_id}
           onChange={v => onChange({ ...state, account_id: v })}
           placeholder="Select Investment Account"
-          options={accounts.filter(a => a.type === 'investment').map(a => ({
+          options={accounts.filter(a => a.type === 'investment').sort((a, b) => {
+            const am = a.member_name || ''; const bm = b.member_name || '';
+            const mc = am.localeCompare(bm); return mc !== 0 ? mc : a.name.localeCompare(b.name);
+          }).map(a => ({
             value: String(a.id),
             label: (
-              <span className="flex items-center gap-2">
-                <span>{a.name}</span>
-                {a.member_name && <span className="text-muted font-normal">· {a.member_name}</span>}
-                <span className="text-muted/60 ml-auto tabular-nums">({currency}{(a.current_balance || 0).toLocaleString()})</span>
-              </span>
+              <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
             )
           }))}
         />
