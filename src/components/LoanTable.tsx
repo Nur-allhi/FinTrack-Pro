@@ -119,10 +119,7 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
               </div>
               {loan.particulars && <div className="text-[11px] text-muted truncate">{loan.particulars}</div>}
             </div>
-            <div className="text-right shrink-0 self-start">
-              <div className="text-sm font-bold text-ink financial-number">{currency}{loan.amount.toLocaleString()}</div>
-              <div className="text-[10px] text-muted font-medium uppercase tracking-wider">Amount</div>
-            </div>
+            <div className="text-sm font-bold text-ink financial-number shrink-0 self-start">{currency}{loan.amount.toLocaleString()}</div>
           </div>
         ))}
       </div>

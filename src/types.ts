@@ -61,6 +61,7 @@ export interface Loan {
   borrower_name?: string | null;
   borrower_account_name?: string;
   member_name?: string;
+  borrower_member_name?: string;
   amount: number;
   remaining: number;
   date_given: string;

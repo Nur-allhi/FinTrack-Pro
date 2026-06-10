@@ -79,6 +79,7 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
           status: r.status as 'active' | 'settled' | 'defaulted',
           settled_date: r.settled_date,
           member_name: lender?.member_name || localLender?.member_name || '',
+          borrower_member_name: borrower?.member_name || localBorrower?.member_name || '',
           lender_name: r.lender_name || localLender?.name || lender?.name,
           borrower_account_name: r.borrower_account_name || localBorrower?.name || borrower?.name,
         };
@@ -153,8 +154,10 @@ export default function LoanManager({ accounts, onWriteOperation, currency, refr
         const first = sorted[0];
         const isPair = groupingMode === 'pair';
         const groupName = isPair
-          ? (first.lender_name || `Account #${first.lender_account_id}`)
-          : (first.borrower_name || first.borrower_account_name || (first.borrower_account_id ? `Account #${first.borrower_account_id}` : 'Unknown'));
+          ? (first.lender_name || `Account #${first.lender_account_id}`) + (first.member_name ? ` (${first.member_name})` : '')
+          : (first.borrower_account_name
+            ? first.borrower_account_name + (first.borrower_member_name ? ` (${first.borrower_member_name})` : '')
+            : (first.borrower_name || (first.borrower_account_id ? `Account #${first.borrower_account_id}` : 'Unknown')));
         return { key, loans: sorted, groupName, lenderName: isPair ? undefined : first.lender_name, totalAmount: loans.reduce((s, l) => s + l.amount, 0), totalRemaining: loans.reduce((s, l) => s + l.remaining, 0), activeCount: loans.filter(l => l.status === 'active').length, latestDate: sorted[0].date_given } as LoanGroup;
       })
       .sort((a, b) => a.groupName.localeCompare(b.groupName));
