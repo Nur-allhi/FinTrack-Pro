@@ -38,8 +38,8 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
           <thead>
             <tr className="bg-surface-soft text-muted text-[10px] font-bold uppercase tracking-[0.2em]">
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Date</th>
-              <th className="px-4 py-2.5 whitespace-nowrap text-center">Member</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Description</th>
+              <th className="px-4 py-2.5 whitespace-nowrap text-center">Member</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">{counterpartyLabel(groupingMode)}</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Amount</th>
               <th className="px-4 py-2.5 whitespace-nowrap text-center">Paid</th>
@@ -51,8 +51,8 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
             {loans.map(loan => (
               <tr key={loan.id} onClick={() => setSelectedLoan(loan)} className="hover:bg-surface-soft/30 transition-colors cursor-pointer">
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-ink text-center">{format(new Date(loan.date_given), 'dd MMM yyyy')}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-muted text-center">{loan.member_name || '-'}</td>
                 <td className="px-4 py-2.5 max-w-[160px] truncate text-xs text-muted text-left">{loan.particulars || '-'}</td>
+                <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-muted text-center">{loan.member_name || '-'}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium text-ink text-center">{counterpartyName(loan, groupingMode)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-xs font-bold text-ink financial-number text-center">
                   {currency}{loan.amount.toLocaleString()}
