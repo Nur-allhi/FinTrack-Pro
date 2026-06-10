@@ -619,6 +619,8 @@ export default function WriteModal({ operation, accounts, members, currency, onC
         onClick={e => e.stopPropagation()}
         className="bg-canvas w-full max-w-[28rem] md:max-w-[32rem] lg:max-w-[42rem] rounded-xl border border-hairline shadow-2xl"
       >
+        <div style={{ overflow: 'hidden' }}>
+          <motion.div layout transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}>
         {/* Header */}
         <div className="p-4 sm:p-6 md:p-10 border-b border-hairline flex items-center justify-between bg-surface-soft/30 rounded-t-xl">
           <h3 className="text-lg sm:text-2xl font-normal text-ink tracking-tight">{title}</h3>
@@ -652,22 +654,19 @@ export default function WriteModal({ operation, accounts, members, currency, onC
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Mode pills */}
               {!isModeLocked && (
-                <div className="flex items-center gap-2 flex-wrap relative">
+                <div className="flex items-center gap-2 flex-wrap">
                   {modePills.map(pill => (
                     <button
                       key={pill.key}
                       type="button"
                       onClick={() => setMode(pill.key)}
-                      className={`relative px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-colors ${
+                      className={`px-4 py-2 rounded-pill text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                         mode === pill.key
-                          ? 'text-white'
-                          : 'text-muted hover:bg-surface-strong'
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'bg-surface-soft text-muted hover:bg-surface-strong hover:text-ink'
                       }`}
                     >
                       {pill.label}
-                      {mode === pill.key && (
-                        <motion.div layoutId="write-mode-slider" className="absolute inset-0 rounded-pill bg-primary shadow-sm pointer-events-none" />
-                      )}
                     </button>
                   ))}
                 </div>
@@ -688,6 +687,8 @@ export default function WriteModal({ operation, accounts, members, currency, onC
             </form>
           )}
         </div>
+      </motion.div>
+      </div>
       </motion.div>
     </motion.div>,
     document.body

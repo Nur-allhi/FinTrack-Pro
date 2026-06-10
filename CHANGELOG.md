@@ -4,6 +4,10 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-10: Remove liquid glass effect from entire app — removed all 8 glass CSS classes from index.css, replaced with solid bg/border tokens; fixed button text hidden by absolute slider across 6 components; added z-10 wrappers to all pill slider labels and icons (completed).
+2026-06-10: Fix smooth modal size transition in WriteModal — replaced AnimatePresence with layout animation wrapper for smooth height interpolation on tab switch; removed slide animation in favor of clean fade; fixed mode pill slider layoutId vertical drift by switching to CSS transition (completed).
+2026-06-10: Fix ErrorBoundary retry button doing nothing — added retryKey to force full children remount (breaks re-catch cycle); added Refresh Page button after 2 failed retries (completed).
+2026-06-10: Fix Settings module crash — added missing `import { motion }` in Settings.tsx (completed).
 2026-06-09: Fix member filter dropdown selection persisting across page reloads — saved to localStorage with null-safe lazy initializer defaulting to "All Members" (completed).
 
 2026-06-08: Add `created_at` column to all Supabase tables (migration 016) and sync to IndexedDB — `created_at` now flows via sync engine (push+pull) for all entities; added to shared schema/types, LocalRecord base, and all local creation paths in WriteModal/migrationService/useTransactions; sort tiebreaker uses `created_at` for correct chronological order across all entities (completed).

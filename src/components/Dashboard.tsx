@@ -150,13 +150,13 @@ export default function Dashboard({
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 "px-3 py-1.5 rounded-pill text-xs font-bold uppercase tracking-wider transition-all",
-                showFilters || filterType !== 'all' ? 'bg-primary text-white shadow-sm' : 'glass-chip text-muted'
+                showFilters || filterType !== 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft border border-hairline text-muted'
               )}
             >
               <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />
               Filters
             </button>
-            <div className="flex items-center glass-group p-0.5 rounded-pill border-[0.2px] relative shadow-sm">
+            <div className="flex items-center bg-surface-soft border border-hairline p-0.5 rounded-pill relative shadow-sm">
               <motion.div
                 className="absolute inset-y-0.5 rounded-pill bg-white/70 shadow-sm dark:bg-white/10 z-0"
                 animate={{

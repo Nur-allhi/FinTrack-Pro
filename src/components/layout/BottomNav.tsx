@@ -43,7 +43,7 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
         animate={{ y: visible ? 0 : 120 }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
-        <div className="flex items-center gap-2 px-3 py-2 rounded-full glass-nav shadow-2xl pointer-events-auto mb-4">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-surface-soft border border-hairline shadow-2xl pointer-events-auto mb-4">
           {/* Position 1: Home */}
           {(() => {
             const tab = navTabs[0];
@@ -130,7 +130,7 @@ export default function BottomNav({ activeTab, selectedAccountId, onTabChange, o
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.9 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 glass-popup rounded-2xl shadow-2xl overflow-hidden min-w-[200px]"
+                    className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-canvas border border-hairline rounded-2xl shadow-2xl overflow-hidden min-w-[200px]"
                     role="menu"
                   >
                     <button

@@ -100,7 +100,7 @@ export default function Header({
   };
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-3 md:top-4 z-40 mx-3 md:mx-6 rounded-2xl glass-header" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px))', minHeight: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
+    <header className="flex items-center justify-between px-4 md:px-8 lg:px-12 sticky top-3 md:top-4 z-40 mx-3 md:mx-6 rounded-2xl bg-canvas border border-hairline shadow-sm" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px))', minHeight: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
       <div className="flex items-center gap-2 md:gap-4">
         <h2 className="text-base md:text-xl font-normal text-ink tracking-tight">
           {selectedAccountId ? 'Ledger' : activeTabLabel}
@@ -119,7 +119,7 @@ export default function Header({
         {/* Search */}
         <div ref={ref} className="relative">
         <div className={cn(
-          "flex items-center gap-2 glass-chip rounded-pill transition-all",
+          "flex items-center gap-2 bg-surface-soft border border-hairline rounded-pill transition-all",
           focused ? "border-primary/30 bg-white/60 shadow-sm" : "hover:border-primary/20"
         )}>
           <Search className="w-3.5 h-3.5 text-muted ml-3 md:ml-4 shrink-0" aria-hidden="true" />

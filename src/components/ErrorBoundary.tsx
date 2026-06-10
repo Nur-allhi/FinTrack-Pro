@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { RefreshCw, WifiOff } from 'lucide-react';
+import React, { Component, Fragment } from 'react';
+import { RefreshCw, RotateCcw, WifiOff } from 'lucide-react';
 
 interface Props {
   children: React.ReactNode;
@@ -9,10 +9,12 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  retryKey: number;
+  retryCount: number;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false, error: null };
+  state: State = { hasError: false, error: null, retryKey: 0, retryCount: 0 };
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
@@ -23,13 +25,25 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState(prev => ({
+      hasError: false,
+      error: null,
+      retryKey: prev.retryKey + 1,
+      retryCount: prev.retryCount + 1,
+    }));
+  };
+
+  handleRefresh = () => {
+    window.location.reload();
   };
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
-      const isOffline = this.state.error?.message?.includes('fetch') || this.state.error?.message?.includes('dynamically imported');
+      const isOffline =
+        this.state.error?.message?.includes('fetch') ||
+        this.state.error?.message?.includes('dynamically imported');
+      const canRefresh = this.state.retryCount >= 2;
       return (
         <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center p-8">
           <div className="w-16 h-16 rounded-full bg-muted/10 flex items-center justify-center">
@@ -40,12 +54,27 @@ export default class ErrorBoundary extends Component<Props, State> {
               ? 'You appear to be offline. Some features may be unavailable.'
               : 'Something went wrong while loading this section.'}
           </p>
-          <button onClick={this.handleRetry} className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-pill transition-colors">
-            Try Again
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={this.handleRetry}
+              className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-pill transition-colors"
+            >
+              Try Again
+            </button>
+            {canRefresh && (
+              <button
+                onClick={this.handleRefresh}
+                className="px-4 py-2 text-sm font-medium text-muted bg-surface-soft hover:bg-surface-strong border border-hairline rounded-pill transition-colors flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Refresh Page
+              </button>
+            )}
+          </div>
         </div>
       );
     }
-    return this.props.children;
+
+    return <Fragment key={this.state.retryKey}>{this.props.children}</Fragment>;
   }
 }

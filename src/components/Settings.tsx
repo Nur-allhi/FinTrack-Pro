@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Settings as SettingsIcon, Eye, Palette, Tags, PiggyBank, Repeat } from 'lucide-react';
 import { cn } from '../utils/cn';
 import RenameModal from './RenameModal';
@@ -96,7 +97,7 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
               activeSection === s ? 'text-white' : 'text-muted hover:text-ink'
             )}
           >
-            {s === 'appearance' ? 'Appearance' : s === 'dashboard' ? 'Dashboard' : s === 'categories' ? 'Categories' : s === 'budgets' ? 'Budgets' : 'Recurring'}
+            <span className="relative z-10">{s === 'appearance' ? 'Appearance' : s === 'dashboard' ? 'Dashboard' : s === 'categories' ? 'Categories' : s === 'budgets' ? 'Budgets' : 'Recurring'}</span>
             {activeSection === s && (
               <motion.div layoutId="settings-section-slider" className="absolute inset-0 rounded-pill bg-primary shadow-sm pointer-events-none" />
             )}

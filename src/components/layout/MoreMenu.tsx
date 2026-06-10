@@ -45,7 +45,7 @@ export default function MoreMenu({ isOpen, onClose, activeTab, onTabChange }: Mo
             role="dialog"
             aria-modal="true"
             aria-label="More navigation"
-            className="fixed bottom-0 inset-x-0 z-50 rounded-t-3xl shadow-2xl glass-sheet"
+            className="fixed bottom-0 inset-x-0 z-50 rounded-t-3xl shadow-2xl bg-canvas border-t border-hairline"
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}

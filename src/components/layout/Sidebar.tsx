@@ -58,7 +58,7 @@ export default function Sidebar({
 
       <aside
         className={cn(
-          "hidden md:block fixed top-4 left-4 bottom-4 z-50 w-64 glass-sidebar transition-transform duration-300 ease-in-out md:fixed md:translate-x-0",
+          "hidden md:block fixed top-4 left-4 bottom-4 z-50 w-64 bg-canvas border border-hairline shadow-xl rounded-[20px] transition-transform duration-300 ease-in-out md:fixed md:translate-x-0",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -153,7 +153,7 @@ export default function Sidebar({
           <div className="p-4 space-y-3 shrink-0">
             {/* Profile section */}
             {userEmail && (
-              <button onClick={onOpenProfile} className="w-full flex items-center gap-3 p-3 rounded-xl glass-chip hover:bg-white/60 hover:border-primary/30 transition-all text-left">
+              <button onClick={onOpenProfile} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-soft border border-hairline hover:bg-white/60 hover:border-primary/30 transition-all text-left">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-sm font-bold text-primary">{userEmail[0].toUpperCase()}</span>
                 </div>
@@ -168,7 +168,7 @@ export default function Sidebar({
             {/* Sign out */}
             <button
               onClick={onLogout}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl glass-chip text-muted hover:text-semantic-down hover:border-semantic-down/30 hover:bg-semantic-down/5 transition-all font-semibold text-xs"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl bg-surface-soft border border-hairline text-muted hover:text-semantic-down hover:border-semantic-down/30 hover:bg-semantic-down/5 transition-all font-semibold text-xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>

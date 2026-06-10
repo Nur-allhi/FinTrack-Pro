@@ -126,7 +126,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
               type="button"
               onClick={() => setShowFilters(!showFilters)}
               className={`-ml-1 px-3 py-1.5 rounded-pill text-[10px] font-bold uppercase tracking-wider transition-all ${
-                showFilters || dateView !== 'all' || categoryFilter ? 'bg-primary text-white shadow-sm' : 'glass-chip text-muted'
+                showFilters || dateView !== 'all' || categoryFilter ? 'bg-primary text-white shadow-sm' : 'bg-surface-soft border border-hairline text-muted'
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" />

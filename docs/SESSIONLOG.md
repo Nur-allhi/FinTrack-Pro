@@ -225,26 +225,41 @@ Implemented the full Phase 14 plan from `docs/LOCAL_FIRST_READ_PATH_FIX.md`. loc
 Use this template for new sessions:
 
 ```markdown
-## Session N — DD MMM YYYY (Short Title)
+## Session 1 — 10 Jun 2026 (Remove Liquid Glass, Fix UI Animations & ErrorBoundary)
 
-> **Branch**: `branch-name`
-> **Tasks**: T-XXX, T-YYY, T-ZZZ
-> **Status**: completed | in-progress | partial
+> **Branch**: `feat/liquid-glass-nav`
+> **Tasks**: Remove glass CSS, Fix button text visibility, Fix modal animation, Fix ErrorBoundary retry, Fix slider animation
+> **Status**: completed
 
 ### Summary
-Brief description of what was accomplished.
+Removed the entire liquid glass effect from the app. Fixed multiple UI bugs including button text hidden behind absolute sliders, WriteModal tab switch animation, ErrorBoundary retry not working, missing `motion` import in Settings, and pill slider layoutId vertical drift.
 
 ### Changes
-- What was changed and why
+- Removed all 8 `.glass-*` CSS classes from `index.css` and replaced with solid Tailwind tokens across 10 components
+- Wrapped pill slider labels/icons in `z-10` spans to fix text hidden behind absolute-positioned sliders
+- Added `whitespace-nowrap` to "By Borrower" button to prevent text wrapping
+- Fixed ErrorBoundary retry via `retryKey` remount + "Refresh Page" fallback after 2 failed retries
+- Replaced `AnimatePresence` in WriteModal with persistent `layout` wrapper for smooth height transitions
+- Replaced Framer Motion `layoutId` slider with CSS `transition-all` on pill buttons to eliminate calc() drift
+- Added missing `motion` import to Settings.tsx
 
 ### Files Changed
-- `path/to/file.ts` — what changed
+- `src/index.css` — removed all glass class definitions
+- `src/App.tsx` — glass-content → solid Tailwind
+- `src/components/ErrorBoundary.tsx` — retryKey remount logic
+- `src/components/WriteModal.tsx` — layout animation, removed AnimatePresence
+- `src/components/Settings.tsx` — added motion import
+- `src/components/LoanFilters.tsx` — icon/label z-index, whitespace-nowrap
+- `src/components/Select.tsx` — z-index on labels
+- `src/components/AccountManager.tsx`, `GroupManager.tsx`, `LedgerToolbar.tsx` — z-index fixes
+- `src/components/Dashboard.tsx`, `Ledger.tsx` — glass classes replaced
+- `src/components/layout/BottomNav.tsx`, `Header.tsx`, `MoreMenu.tsx`, `Sidebar.tsx` — glass classes replaced
 
 ### Verification
-- How the changes were verified (tests, lint, etc.)
+- `npm run build` passes without errors
 
 ### Next Steps
-- What should be done next (if any)
+- Push to feat/liquid-glass-nav, merge into dev, push dev
 ```
 
 ---

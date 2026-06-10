@@ -65,10 +65,12 @@ export default function LedgerToolbar({
                           : 'text-muted hover:text-ink hover:bg-surface-strong'
                       }`}
                     >
-                      {mode === 'all' && 'All'}
-                      {mode === 'month' && 'Month'}
-                      {mode === 'date' && 'Date'}
-                      {mode === 'range' && 'Range'}
+                      <span className="relative z-10">
+                        {mode === 'all' && 'All'}
+                        {mode === 'month' && 'Month'}
+                        {mode === 'date' && 'Date'}
+                        {mode === 'range' && 'Range'}
+                      </span>
                       {dateView === mode && (
                         <motion.div layoutId="ledger-date-slider" className="absolute inset-0 rounded-pill bg-primary shadow-sm pointer-events-none" />
                       )}

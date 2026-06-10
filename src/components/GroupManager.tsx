@@ -217,11 +217,11 @@ export default function GroupManager({ onUpdate, lastUpdate, currency, onSelectA
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h3 className="text-lg font-normal text-ink tracking-tight">Account Groups</h3>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 glass-group p-0.5 rounded-pill relative shadow-sm">
+          <div className="flex items-center gap-1 bg-surface-soft border border-hairline p-0.5 rounded-pill relative shadow-sm">
             {['grid', 'list'].map(m => (
               <button key={m} onClick={() => setViewMode(m as 'grid' | 'list')}
                 className={cn("relative px-3 py-1.5 rounded-pill text-[10px] font-bold transition-colors", viewMode === m ? "text-ink" : "text-muted hover:text-ink")}>
-                {m === 'grid' ? 'Grid' : 'List'}
+                <span className="relative z-10">{m === 'grid' ? 'Grid' : 'List'}</span>
                 {viewMode === m && (
                   <motion.div layoutId="group-view-slider" className="absolute inset-0 rounded-pill bg-white/70 shadow-sm dark:bg-white/10 pointer-events-none" />
                 )}
