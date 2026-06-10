@@ -108,7 +108,6 @@ export default function LoanTable({ loans, currency, settlingId, deletingId, onS
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-medium text-ink">{format(new Date(loan.date_given), 'dd MMM yyyy')}</span>
-                {loan.member_name && <span className="text-[11px] text-muted">{loan.member_name}</span>}
                 <span className={cn(
                   "px-1.5 py-0.5 rounded-pill text-[9px] font-bold uppercase tracking-wider",
                   loan.status === 'active' ? "bg-semantic-up/10 text-semantic-up" : "bg-muted/10 text-muted"
