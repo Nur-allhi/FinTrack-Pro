@@ -1,15 +1,15 @@
 import type { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
 
-export function drawPageHeader(doc: jsPDF, title: string, subtitle?: string, dateRange?: string) {
+export function drawPageHeader(doc: jsPDF, title: string, subtitle?: string, dateRange?: string, rightText?: string) {
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
 
   doc.setFillColor(248, 248, 250);
-  doc.rect(0, 0, pageW, 38, 'F');
+  doc.rect(0, 0, pageW, 48, 'F');
   doc.setDrawColor(0, 82, 255);
   doc.setLineWidth(0.8);
-  doc.line(0, 38, pageW, 38);
+  doc.line(0, 48, pageW, 48);
   doc.setLineWidth(0.2);
 
   doc.setFont('helvetica', 'bold');
@@ -32,7 +32,14 @@ export function drawPageHeader(doc: jsPDF, title: string, subtitle?: string, dat
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     const subtitleText = dateRange ? `${subtitle}  |  ${dateRange}` : subtitle;
-    doc.text(subtitleText, margin, 30);
+    doc.text(subtitleText, margin, 32);
+  }
+
+  if (rightText) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(rightText, pageW - margin, 32, { align: 'right' });
   }
 }
 
@@ -55,12 +62,31 @@ export function drawTableHeader(doc: jsPDF, headers: string[], colWidths: number
   return yPos + 9;
 }
 
-export function drawFooter(doc: jsPDF, pageNum: number) {
+export function drawFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
   const pageW = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  const usableW = pageW - margin * 2;
+  const fy = doc.internal.pageSize.getHeight() - 10;
+
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.line(margin, fy - 4, margin + usableW, fy - 4);
+  doc.setLineWidth(0.2);
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(160, 160, 160);
-  doc.text(`Page ${pageNum}`, pageW / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+  const pageText = totalPages ? `Page ${pageNum} of ${totalPages}` : `Page ${pageNum}`;
+  doc.text(pageText, pageW / 2, fy, { align: 'center' });
+}
+
+export function drawSummaryBackground(doc: jsPDF, x: number, y: number, w: number, h: number) {
+  doc.setFillColor(245, 245, 247);
+  doc.rect(x, y, w, h, 'F');
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.6);
+  doc.line(x, y, x + w, y);
+  doc.setLineWidth(0.2);
 }
 
 export function fmtPdfCurrency(currency: string, n: number) {
@@ -92,5 +118,3 @@ export function sanitizePdfText(text: string): string {
   }
   return result;
 }
-
-

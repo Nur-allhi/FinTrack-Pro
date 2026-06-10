@@ -100,7 +100,11 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
         <button onClick={onBack} className="flex items-center gap-2 md:gap-3 text-muted hover:text-ink transition-colors font-semibold text-[10px] md:text-sm">
           <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" /> Back to Portfolio
         </button>
-        <button onClick={() => exportLedgerPDF(filteredTxs, account.name, currency, account.initial_balance)} className="p-2 md:p-3 text-muted hover:text-ink hover:bg-surface-soft rounded-full border border-hairline transition-all">
+          <button onClick={() => {
+            const dates = filteredTxs.map(t => t.date).filter(Boolean).sort();
+            const dateRange = dates.length > 1 ? `${dates[dates.length - 1]} to ${dates[0]}` : undefined;
+            exportLedgerPDF(filteredTxs, account, currency, dateRange);
+          }} className="p-2 md:p-3 text-muted hover:text-ink hover:bg-surface-soft rounded-full border border-hairline transition-all">
           <Download className="w-4 h-4 md:w-5 md:h-5" />
         </button>
       </div>
