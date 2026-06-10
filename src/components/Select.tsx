@@ -6,7 +6,8 @@ import { cn } from '../utils/cn';
 
 interface Option {
   value: string | number;
-  label: string;
+  label: React.ReactNode;
+  searchLabel?: string;
 }
 
 interface SelectProps {
@@ -71,7 +72,7 @@ export default function Select({ value, onChange, options, placeholder, classNam
   }, [open, close]);
 
   const selected = options.find(o => o.value === value);
-  const displayLabel = selected?.label || placeholder || 'Select...';
+  const displayLabel = selected ? selected.label : (placeholder || 'Select...');
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
@@ -81,7 +82,7 @@ export default function Select({ value, onChange, options, placeholder, classNam
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-2 px-3.5 py-3 bg-surface-soft border border-hairline rounded-pill text-xs font-semibold uppercase tracking-wider text-ink hover:bg-white/60 hover:border-primary/30 transition-all cursor-pointer"
       >
-        <span className="truncate">{displayLabel}</span>
+        <span className="truncate flex-1 text-left">{displayLabel}</span>
         <ChevronDown className={cn("w-3.5 h-3.5 text-muted shrink-0 transition-transform", open && "rotate-180")} />
       </button>
       {createPortal(

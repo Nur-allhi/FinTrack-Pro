@@ -86,9 +86,9 @@ export function TransactionForm({ state, onChange, accounts, categories, currenc
           placeholder="Select Account"
           options={accounts.filter(a => !a.archived).map(a => ({
             value: String(a.id),
-            label: a.member_name
-              ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
-              : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+            label: (
+              <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
+            )
           }))}
         />
       </div>
@@ -160,9 +160,9 @@ export function TransferForm({ state, onChange, accounts, currency }: TransferFo
           placeholder="Select Source"
           options={accounts.filter(a => !a.archived).map(a => ({
             value: String(a.id),
-            label: a.member_name
-              ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
-              : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+            label: (
+              <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
+            )
           }))}
         />
       </div>
@@ -179,9 +179,9 @@ export function TransferForm({ state, onChange, accounts, currency }: TransferFo
           placeholder="Select Destination"
           options={accounts.filter(a => !a.archived).map(a => ({
             value: String(a.id),
-            label: a.member_name
-              ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
-              : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+            label: (
+              <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
+            )
           }))}
         />
       </div>
@@ -223,9 +223,9 @@ export function LoanCreateForm({ state, onChange, accounts, editMode, currency }
   const activeAccounts = accounts.filter(a => !a.archived);
   const accountOptions = activeAccounts.map(a => ({
     value: String(a.id),
-    label: a.member_name
-      ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
-      : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+    label: (
+      <span>{a.name}{a.member_name && <span className="text-muted"> · {a.member_name}</span>}<span className="text-muted/60"> ({currency}{(a.current_balance || 0).toLocaleString()})</span></span>
+    )
   }));
 
   const set = (field: Partial<LoanFormState>) => onChange({ ...state, ...field });
@@ -423,9 +423,13 @@ export function InvestmentCreateForm({ state, onChange, accounts, currency }: In
           placeholder="Select Investment Account"
           options={accounts.filter(a => a.type === 'investment').map(a => ({
             value: String(a.id),
-            label: a.member_name
-              ? `${a.name} · ${a.member_name} (${currency}${(a.current_balance || 0).toLocaleString()})`
-              : `${a.name} (${currency}${(a.current_balance || 0).toLocaleString()})`
+            label: (
+              <span className="flex items-center gap-2">
+                <span>{a.name}</span>
+                {a.member_name && <span className="text-muted font-normal">· {a.member_name}</span>}
+                <span className="text-muted/60 ml-auto tabular-nums">({currency}{(a.current_balance || 0).toLocaleString()})</span>
+              </span>
+            )
           }))}
         />
       </div>
