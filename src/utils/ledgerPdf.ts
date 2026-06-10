@@ -6,7 +6,7 @@ export const exportLedgerPDF = async (
   currency: string,
   initialBalance: number = 0
 ) => {
-  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency }] = await Promise.all([
+  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText }] = await Promise.all([
     import('jspdf'),
     import('./pdf'),
   ]);
@@ -84,7 +84,7 @@ export const exportLedgerPDF = async (
   const pageBottom = doc.internal.pageSize.getHeight() - 24;
 
   txsAsc.forEach((t, idx) => {
-    const wrapped = doc.splitTextToSize(t.particulars, colParticulars - 4);
+    const wrapped = doc.splitTextToSize(sanitizePdfText(t.particulars), colParticulars - 4);
     const numLines = wrapped.length;
     const rowH = Math.max(7, numLines * lineH);
 
@@ -104,7 +104,7 @@ export const exportLedgerPDF = async (
     }
 
     let x = margin;
-    doc.text(t.date, x + 2, y + 4);
+    doc.text(sanitizePdfText(t.date), x + 2, y + 4);
     x += colDate;
 
     wrapped.forEach((line: string, li: number) => {

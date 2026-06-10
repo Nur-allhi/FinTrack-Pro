@@ -69,4 +69,28 @@ export function fmtPdfCurrency(currency: string, n: number) {
   return `${pdfCur}${Math.abs(n).toLocaleString(loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+const unicodeMap: Record<string, string> = {
+  '\u2192': ' -> ',
+  '\u2013': '-',
+  '\u2014': '--',
+  '\u2018': "'",
+  '\u2019': "'",
+  '\u201c': '"',
+  '\u201d': '"',
+  '\u2026': '...',
+  '\u00a0': ' ',
+};
+
+export function sanitizePdfText(text: string): string {
+  let result = '';
+  for (const ch of text) {
+    if (ch.charCodeAt(0) < 128) {
+      result += ch;
+    } else {
+      result += unicodeMap[ch] ?? '?';
+    }
+  }
+  return result;
+}
+
 

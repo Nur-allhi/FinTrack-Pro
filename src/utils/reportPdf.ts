@@ -6,7 +6,7 @@ export async function exportReportPDF(
   accounts: { id: number; name: string }[],
   currency: string
 ) {
-  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency }] = await Promise.all([
+  const [{ default: jsPDF }, { drawPageHeader, drawTableHeader, drawFooter, fmtPdfCurrency, sanitizePdfText }] = await Promise.all([
     import('jspdf'),
     import('./pdf'),
   ]);
@@ -52,7 +52,7 @@ export async function exportReportPDF(
   const pageBottom = doc.internal.pageSize.getHeight() - 20;
 
   reportData.forEach((t, idx) => {
-    const particWrapped = doc.splitTextToSize(t.particulars, colWidths[1] - 4);
+    const particWrapped = doc.splitTextToSize(sanitizePdfText(t.particulars), colWidths[1] - 4);
     const cat = t.category || '';
     const catWrapped = cat ? doc.splitTextToSize(cat, colWidths[2] - 4) : [''];
     const numLines = Math.max(particWrapped.length, catWrapped.length);
@@ -72,7 +72,7 @@ export async function exportReportPDF(
       doc.rect(margin, y, usableW, rowH, 'F');
     }
     let x = margin;
-    doc.text(t.date, x + 2, y + 4);
+    doc.text(sanitizePdfText(t.date), x + 2, y + 4);
     x += colWidths[0];
 
     particWrapped.forEach((line: string, li: number) => {
