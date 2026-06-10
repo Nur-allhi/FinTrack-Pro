@@ -1045,3 +1045,34 @@ The fix relied on the `_bin_emptied` local flag, which is ephemeral — it disap
 
 ### Next Steps
 The user needs to re-delete the 148 orphan records from the UI (these were from earlier failed pushes). After that, future empties will persist through IndexedDB clears.
+
+---
+
+## Session 35 — 10 Jun 2026 (Fix Balance Sync & Modal Close Delay)
+
+> **Branch**: `feat/liquid-glass-nav`
+> **Status**: completed
+
+### Summary
+Fixed two issues: (1) account balance not updating when remote transactions are pulled from another device during sync, (2) WriteModal taking too long to close after posting an entry.
+
+### Changes
+**Balance Sync Fix** (`src/services/localDb.ts`, `src/services/syncEngine.ts`):
+- Added `recalculateAllBalances()` to `localDb` — recomputes `current_balance` for every account as `initial_balance + SUM(all transaction amounts)`
+- `pullChanges()` now calls `recalculateAllBalances()` after pulling any transactions — remote transactions automatically update the local balance
+
+**Modal Close Fix** (`src/components/WriteModal.tsx`):
+- Removed 600ms `setTimeout(handleClose, 600)` delay — modal closes immediately after save
+- Removed success checkmark animation (`CheckCircle2`) — toast notification is sufficient feedback
+- Removed unused `success` state variable
+- Removed unused `CheckCircle2` import
+
+### Files Changed
+- `src/services/localDb.ts` — added `recalculateAllBalances()` method
+- `src/services/syncEngine.ts` — call recalculateAllBalances after pulling transactions
+- `src/components/WriteModal.tsx` — remove close delay, success checkmark UI, unused state/import
+- `CHANGELOG.md` — new entries
+
+### Verification
+- `gitnexus detect_changes` — low risk, 4 symbols touched, no affected processes
+- `npm run build` — clean build, no errors

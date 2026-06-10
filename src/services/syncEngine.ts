@@ -373,6 +373,8 @@ async function pullChanges(): Promise<number> {
     if (l.server_id != null) loanIdMap.set(l.server_id, l.id);
   }
 
+  let pulledTransactions = false;
+
   for (const [i, table] of SYNC_TABLES.entries()) {
     _syncProgress = { current: i + 1, total: SYNC_TABLES.length };
     syncState.setState({ progress: _syncProgress });
@@ -451,7 +453,12 @@ async function pullChanges(): Promise<number> {
     });
 
     await upsertFromServer(table as SyncTable, localRecords2);
+    if (table === 'transactions') pulledTransactions = true;
     totalPulled += toUpsert.length;
+  }
+
+  if (pulledTransactions) {
+    await localDb.recalculateAllBalances();
   }
 
   if (totalPulled > 0 || data.pulledAt) {

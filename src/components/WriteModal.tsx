@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { X, CheckCircle2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Account, Transaction, Loan, Investment, Member, WriteOperation } from '../types';
 import { localDb, LocalTransaction, LocalLoan, LocalInvestment, LocalInvestmentReturn } from '../services/localDb';
 import { findLocalLoan, loanDisplayId } from './LoanManager';
@@ -108,7 +108,6 @@ export default function WriteModal({ operation, accounts, members, currency, onC
   const { toast } = useToast();
   const isWriting = useRef(false);
   const [closing, setClosing] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
   const [batchMode, setBatchMode] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [loans, setLoans] = useState<{ id: number; label: string; remaining: number; currency: string }[]>([]);
@@ -553,15 +552,12 @@ export default function WriteModal({ operation, accounts, members, currency, onC
       if (ok) {
         const msg = isEdit ? 'Updated.' : 'Saved.';
         flushPending();
+        toast(msg, 'success');
+        onTransactionSaved?.();
         if (batchMode) {
-          toast(`${mode} ${msg}`, 'success');
           resetAllForms();
-          onTransactionSaved?.();
         } else {
-          setSuccess(msg);
-          toast(msg, 'success');
-          onTransactionSaved?.();
-          setTimeout(handleClose, 600);
+          handleClose();
         }
       }
     } catch (error) {
@@ -643,15 +639,7 @@ export default function WriteModal({ operation, accounts, members, currency, onC
         </div>
 
         <div className="p-4 sm:p-6 md:p-10 lg:p-12">
-          {success ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-20 h-20 bg-semantic-up/10 rounded-full flex items-center justify-center text-semantic-up shadow-lg shadow-semantic-up/10">
-                <CheckCircle2 className="w-12 h-12" />
-              </div>
-              <h4 className="text-2xl font-normal text-ink">{success}</h4>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
               {/* Mode pills */}
               {!isModeLocked && (
                 <div className="flex items-center gap-2 flex-wrap">
@@ -685,7 +673,6 @@ export default function WriteModal({ operation, accounts, members, currency, onC
                 </button>
               </div>
             </form>
-          )}
         </div>
       </motion.div>
       </div>

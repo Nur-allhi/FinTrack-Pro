@@ -599,6 +599,30 @@ export const localDb = {
     return adjustAccountBalance(accountLocalId, delta);
   },
 
+  async recalculateAllBalances(): Promise<void> {
+    const accounts = await withDB(async (db) => {
+      const all = await db.getAll('accounts');
+      return all.filter(r => !r._deleted && r.type !== 'group') as LocalAccount[];
+    });
+    const transactions = await getAllVisible<LocalTransaction>('transactions');
+    const sums = new Map<string, number>();
+    for (const t of transactions) {
+      sums.set(t.account_id, (sums.get(t.account_id) || 0) + t.amount);
+    }
+    const now = new Date().toISOString();
+    const toUpdate: LocalAccount[] = [];
+    for (const a of accounts) {
+      const sum = sums.get(a.id) || 0;
+      a.current_balance = (a.initial_balance || 0) + sum;
+      a.updated_at = now;
+      toUpdate.push(a);
+    }
+    if (toUpdate.length > 0) {
+      await putAll('accounts', toUpdate);
+      for (const a of toUpdate) notify('accounts', a, 'put');
+    }
+  },
+
   async markPushed(store: EntityName, mappings: { client_id: string; server_id: number }[]): Promise<void> {
     return markPushed(store, mappings);
   },
