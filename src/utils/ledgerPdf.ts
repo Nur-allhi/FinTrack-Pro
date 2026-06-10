@@ -35,7 +35,7 @@ export const exportLedgerPDF = async (
     doc.line(margin, sY, margin + usableW, sY);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
 
     const partsX = margin + colDate;
     doc.text('Total:', partsX + 2, sY + 6);
@@ -51,7 +51,7 @@ export const exportLedgerPDF = async (
       doc.line(margin, sY + 10, margin + usableW, sY + 10);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.setTextColor(30, 30, 30);
+      doc.setTextColor(0, 0, 0);
       doc.text('Closing Balance', partsX + 2, sY + 18);
       doc.text(fm(closingBal), margin + usableW - 2, sY + 18, { align: 'right' });
       return sY + 24;
@@ -68,7 +68,7 @@ export const exportLedgerPDF = async (
   doc.rect(margin, openingY, usableW, 11, 'S');
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
   doc.text('Opening Balance', margin + 4, openingY + 7.5);
   doc.setFont('helvetica', 'bold');
   doc.text(fm(initialBalance), margin + usableW - 4, openingY + 7.5, { align: 'right' });
@@ -77,11 +77,18 @@ export const exportLedgerPDF = async (
   y = drawTableHeader(doc, headers, colWidths, y);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(8);
+  doc.setTextColor(0, 0, 0);
+
+  const lineH = 5;
+  const pageBottom = doc.internal.pageSize.getHeight() - 24;
 
   txsAsc.forEach((t, idx) => {
-    if (y + 6 > doc.internal.pageSize.getHeight() - 24) {
+    const wrapped = doc.splitTextToSize(t.particulars, colParticulars - 4);
+    const numLines = wrapped.length;
+    const rowH = Math.max(7, numLines * lineH);
+
+    if (y + rowH > pageBottom) {
       drawLedgerSummary(y, false);
       drawFooter(doc, pageNum);
       doc.addPage();
@@ -90,22 +97,37 @@ export const exportLedgerPDF = async (
       y = 44;
       y = drawTableHeader(doc, headers, colWidths, y);
     }
+
     if (idx % 2 === 0) {
       doc.setFillColor(252, 252, 252);
-      doc.rect(margin, y, usableW, 6, 'F');
+      doc.rect(margin, y, usableW, rowH, 'F');
     }
 
-    const partic = t.particulars.length > 30 ? t.particulars.slice(0, 30) + '...' : t.particulars;
     let x = margin;
-    const vals = [t.date, partic, t.amount < 0 ? fm(t.amount) : '', t.amount > 0 ? fm(t.amount) : '', fm(t.runningBalance)];
-    const aligns: ('left' | 'right')[] = ['left', 'left', 'right', 'right', 'right'];
+    doc.text(t.date, x + 2, y + 4);
+    x += colDate;
 
-    vals.forEach((v, i) => {
-      const px = aligns[i] === 'right' ? x + colWidths[i] - 2 : x + 2;
-      doc.text(v, px, y + 4, { align: aligns[i] });
-      x += colWidths[i];
+    wrapped.forEach((line: string, li: number) => {
+      doc.text(line, x + 2, y + 4 + li * lineH);
     });
-    y += 6;
+
+    x += colParticulars;
+
+    if (t.amount < 0) {
+      doc.text(fm(t.amount), x + colAmt - 2, y + 4, { align: 'right' });
+    }
+    x += colAmt;
+
+    if (t.amount > 0) {
+      doc.text(fm(t.amount), x + colAmt - 2, y + 4, { align: 'right' });
+    }
+    x += colAmt;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(fm(t.runningBalance), x + colAmt - 2, y + 4, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+
+    y += rowH;
   });
 
   y = drawLedgerSummary(y, true);

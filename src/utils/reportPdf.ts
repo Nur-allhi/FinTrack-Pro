@@ -30,7 +30,7 @@ export async function exportReportPDF(
     doc.line(margin, yPos + 2, margin + usableW, yPos + 2);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     const partsX = margin + colWidths[0];
     doc.text('Total:', partsX + 2, yPos + 8);
     const debitX = margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3];
@@ -45,11 +45,20 @@ export async function exportReportPDF(
   y = drawTableHeader(doc, headers, colWidths, y, 3);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(8);
+  doc.setTextColor(0, 0, 0);
+
+  const lineH = 5;
+  const pageBottom = doc.internal.pageSize.getHeight() - 20;
 
   reportData.forEach((t, idx) => {
-    if (y + 6 > doc.internal.pageSize.getHeight() - 20) {
+    const particWrapped = doc.splitTextToSize(t.particulars, colWidths[1] - 4);
+    const cat = t.category || '';
+    const catWrapped = cat ? doc.splitTextToSize(cat, colWidths[2] - 4) : [''];
+    const numLines = Math.max(particWrapped.length, catWrapped.length);
+    const rowH = Math.max(7, numLines * lineH);
+
+    if (y + rowH > pageBottom) {
       drawReportSummary(y);
       drawFooter(doc, pageNum);
       doc.addPage();
@@ -60,22 +69,32 @@ export async function exportReportPDF(
     }
     if (idx % 2 === 0) {
       doc.setFillColor(252, 252, 252);
-      doc.rect(margin, y, usableW, 6, 'F');
+      doc.rect(margin, y, usableW, rowH, 'F');
     }
     let x = margin;
-    const cat = t.category || '';
-    const cells: { text: string; align: 'left' | 'right' }[] = [
-      { text: t.date, align: 'left' },
-      { text: t.particulars, align: 'left' },
-      { text: cat.length > 16 ? cat.slice(0, 14) + '..' : cat, align: 'left' },
-      { text: t.amount < 0 ? fm(t.amount) : '', align: 'right' },
-      { text: t.amount > 0 ? fm(t.amount) : '', align: 'right' }
-    ];
-    cells.forEach((cell, ci) => {
-      doc.text(cell.text, x + (cell.align === 'right' ? colWidths[ci] - 2 : 2), y + 4, { align: cell.align });
-      x += colWidths[ci];
+    doc.text(t.date, x + 2, y + 4);
+    x += colWidths[0];
+
+    particWrapped.forEach((line: string, li: number) => {
+      doc.text(line, x + 2, y + 4 + li * lineH);
     });
-    y += 6;
+    x += colWidths[1];
+
+    catWrapped.forEach((line: string, li: number) => {
+      doc.text(line, x + 2, y + 4 + li * lineH);
+    });
+    x += colWidths[2];
+
+    if (t.amount < 0) {
+      doc.text(fm(t.amount), x + colWidths[3] - 2, y + 4, { align: 'right' });
+    }
+    x += colWidths[3];
+
+    if (t.amount > 0) {
+      doc.text(fm(t.amount), x + colWidths[4] - 2, y + 4, { align: 'right' });
+    }
+
+    y += rowH;
   });
 
   if (reportData.length > 0) drawReportSummary(y);
