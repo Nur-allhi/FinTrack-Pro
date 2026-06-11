@@ -40,11 +40,37 @@ export function useAuth() {
 
       initPendingCount();
 
-      // Quick reachability check before attempting auth fetch
+      // Try to refresh token from Supabase session first (works offline too)
+      try {
+        const token = await authService.refreshToken();
+        if (token) {
+          const meRes = await fetch('/api/auth/me');
+          if (meRes.ok) {
+            const d = await meRes.json();
+            if (d.user?.email) setUserEmail(d.user.email);
+            setGuestMode(false);
+            setAuthStatus('authenticated');
+            return;
+          }
+          // Token returned but /api/auth/me failed — token may be stale.
+          // Wait briefly for Supabase auto-refresh, then retry before falling through.
+          await new Promise(r => setTimeout(r, 400));
+          const meRes2 = await fetch('/api/auth/me');
+          if (meRes2.ok) {
+            const d = await meRes2.json();
+            if (d.user?.email) setUserEmail(d.user.email);
+            setGuestMode(false);
+            setAuthStatus('authenticated');
+            return;
+          }
+        }
+      } catch {}
+
+      // Token refresh failed — check server reachability before giving up
       const online = await isServerReachable();
       if (!online) {
-        setGuestMode(true);
-        localDb.getOrCreateGuestId().catch(() => {});
+        // Server unreachable but token might still be valid — keep loading briefly
+        // The Login component will attempt its own refresh
         setAuthStatus('guest');
         return;
       }

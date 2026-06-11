@@ -47,8 +47,15 @@ async function getSupabase(): Promise<SupabaseClient | null> {
 async function refreshTokenInternal(): Promise<string | null> {
   const sb = await getSupabase();
   if (!sb) return null;
-  const { data } = await sb.auth.getSession();
+  let { data } = await sb.auth.getSession();
   if (data.session?.access_token) {
+    try {
+      const { data: refreshed } = await sb.auth.refreshSession();
+      if (refreshed?.session?.access_token) {
+        await setSession(refreshed.session.access_token);
+        return refreshed.session.access_token;
+      }
+    } catch {}
     await setSession(data.session.access_token);
     return data.session.access_token;
   }
