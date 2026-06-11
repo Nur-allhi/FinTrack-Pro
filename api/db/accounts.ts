@@ -59,9 +59,30 @@ export async function updateAccount(userId: string, id: number, updates: Partial
 }
 
 export async function deleteAccount(userId: string, id: number) {
+  const now = new Date().toISOString();
+  
+  // Cascade soft-delete related transactions
+  const { error: txErr } = await db()
+    .from("transactions")
+    .update({ deleted_at: now })
+    .eq("account_id", id)
+    .eq("user_id", userId)
+    .is("deleted_at", null);
+  if (txErr) throw txErr;
+
+  // Cascade soft-delete related loans (as lender or borrower)
+  const { error: loanErr } = await db()
+    .from("loans")
+    .update({ deleted_at: now })
+    .or(`lender_account_id.eq.${id},borrower_account_id.eq.${id}`)
+    .eq("user_id", userId)
+    .is("deleted_at", null);
+  if (loanErr) throw loanErr;
+
+  // Soft-delete the account itself
   const { error } = await db()
     .from("accounts")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: now })
     .eq("id", id)
     .eq("user_id", userId);
   if (error) throw error;
