@@ -97,14 +97,14 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
   return (
     <div className="space-y-4 md:space-y-8">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="flex items-center gap-2 md:gap-3 text-muted hover:text-ink transition-colors font-semibold text-[10px] md:text-sm">
-          <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" /> Back to Portfolio
+        <button onClick={onBack} className="w-9 h-9 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-canvas border border-hairline shadow-lg hover:shadow-xl transition-shadow text-muted hover:text-ink">
+          <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
         </button>
           <button onClick={() => {
             const dates = filteredTxs.map(t => t.date).filter(Boolean).sort();
             const dateRange = dates.length > 1 ? `${dates[dates.length - 1]} to ${dates[0]}` : undefined;
             exportLedgerPDF(filteredTxs, account, currency, dateRange);
-          }} className="p-2 md:p-3 text-muted hover:text-ink hover:bg-surface-soft rounded-full border border-hairline transition-all">
+          }} className="w-9 h-9 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-canvas border border-hairline shadow-lg hover:shadow-xl transition-shadow text-muted hover:text-ink">
           <Download className="w-4 h-4 md:w-5 md:h-5" />
         </button>
       </div>
