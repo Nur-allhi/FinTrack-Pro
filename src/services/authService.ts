@@ -20,7 +20,7 @@ async function getSupabase(): Promise<SupabaseClient | null> {
 
   _initPromise = (async () => {
     try {
-      const res = await fetch('/api/auth/config');
+      const res = await fetch('/api/auth/config', { credentials: 'same-origin' });
       const config = await res.json();
       if (!config.supabaseUrl || !config.supabaseAnonKey) {
         console.warn('Supabase not configured for frontend auth');
@@ -60,6 +60,7 @@ async function setSession(accessToken: string): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ access_token: accessToken }),
+    credentials: 'same-origin',
   });
 }
 
@@ -93,7 +94,7 @@ export const authService = {
   },
 
   async clearSession() {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
   },
 
   async getSession() {
@@ -140,18 +141,21 @@ export const authService = {
     await this.clearSession();
   },
 
-  onAuthStateChange(callback: (session: Session | null) => void) {
+  onAuthStateChange(callback: (session: Session | null) => void): () => void {
+    let unsubscribe: (() => void) | null = null;
     getSupabase().then(sb => {
       if (!sb) return;
-      sb.auth.onAuthStateChange((_event, session) => {
+      const { data } = sb.auth.onAuthStateChange((_event, session) => {
         callback(session);
       });
+      unsubscribe = () => data.subscription.unsubscribe();
     });
+    return () => { unsubscribe?.(); };
   },
 
   async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
     if (_guestMode && !url.includes('/api/auth/')) {
-      return new Response(JSON.stringify({ error: 'Guest mode' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Guest mode — sign in to sync' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
     if (_signedOut && !url.includes('/api/auth/logout')) {
       return new Response(JSON.stringify({ error: 'Signed out' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
@@ -159,11 +163,13 @@ export const authService = {
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string> || {}),
     };
-    const res = await fetch(url, { ...options, headers });
+    const res = await fetch(url, { ...options, headers, credentials: 'same-origin' });
     if (res.status === 401) {
       const newToken = await refreshTokenInternal();
       if (newToken) {
-        return fetch(url, { ...options, headers });
+        // Wait for cookie to propagate, then retry with fresh credentials
+        await new Promise(r => setTimeout(r, 100));
+        return fetch(url, { ...options, headers, credentials: 'same-origin' });
       }
       if (!_signedOut) {
         _onSessionExpired?.();
