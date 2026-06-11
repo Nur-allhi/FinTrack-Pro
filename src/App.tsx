@@ -174,6 +174,7 @@ export default function App() {
       return;
     }
     startSyncScheduler();
+    syncNow();
   }, [isAuthenticated]);
 
   const checkSignupNudge = useCallback(async () => {
