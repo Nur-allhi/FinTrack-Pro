@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { authService, setOnSessionExpired, setGuestMode } from '../services/authService';
-import { initPendingCount, syncNow } from '../services/syncEngine';
+import { initPendingCount, syncNow, stopSyncScheduler } from '../services/syncEngine';
 import { localDb } from '../services/localDb';
 import { useToast } from '../components/Toast';
 
@@ -43,8 +43,9 @@ export function useAuth() {
       // Quick reachability check before attempting auth fetch
       const online = await isServerReachable();
       if (!online) {
-        setGuestMode(false);
-        setAuthStatus('authenticated');
+        setGuestMode(true);
+        localDb.getOrCreateGuestId().catch(() => {});
+        setAuthStatus('guest');
         return;
       }
 
@@ -159,7 +160,11 @@ export function useAuth() {
     }
 
     await authService.signOut();
-    localStorage.clear();
+    // Stop sync scheduler before clearing data
+    stopSyncScheduler();
+    // Only clear app-specific keys, not all localStorage (preserves third-party data)
+    localStorage.removeItem('last_sync');
+    localStorage.removeItem('dashboardFilter');
     sessionStorage.clear();
 
     setAuthStatus('guest');
