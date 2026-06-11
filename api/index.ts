@@ -70,7 +70,7 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
 
-app.post("/api/auth/login", authLimiter, csrfProtection, async (req, res) => {
+app.post("/api/auth/login", authLimiter, async (req, res) => {
   try {
     const { access_token } = req.body;
     if (!access_token) {
@@ -93,7 +93,7 @@ app.post("/api/auth/login", authLimiter, csrfProtection, async (req, res) => {
   }
 });
 
-app.post("/api/auth/session", authLimiter, csrfProtection, async (req, res) => {
+app.post("/api/auth/session", authLimiter, async (req, res) => {
   try {
     const { access_token } = req.body;
     if (!access_token) {
@@ -113,7 +113,7 @@ app.post("/api/auth/session", authLimiter, csrfProtection, async (req, res) => {
   }
 });
 
-app.post("/api/auth/logout", csrfProtection, (req, res) => {
+app.post("/api/auth/logout", (req, res) => {
   clearSessionCookie(req, res);
   res.json({ success: true });
 });
