@@ -77,6 +77,12 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         authService.apiFetch('/api/accounts'),
       ]);
 
+      // Detect guest mode (403) and show toast
+      if (membersRes.status === 403) {
+        toast("Sign in to sync your data across devices.", 'info');
+        return;
+      }
+
       if (membersRes.ok) {
         const data = await membersRes.json();
         // Build map of all local records (including soft-deleted) by server_id to avoid re-import

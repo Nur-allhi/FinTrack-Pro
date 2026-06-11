@@ -155,7 +155,7 @@ export const authService = {
 
   async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
     if (_guestMode && !url.includes('/api/auth/')) {
-      return new Response(JSON.stringify({ error: 'Guest mode' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Guest mode — sign in to sync' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
     if (_signedOut && !url.includes('/api/auth/logout')) {
       return new Response(JSON.stringify({ error: 'Signed out' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
