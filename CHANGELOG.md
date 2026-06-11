@@ -515,5 +515,6 @@ Earlier work includes:
 2026-06-07: Sync groups to server at src/components/GroupManager.tsx - Add API calls with local-first fallback (completed).
 2026-06-07: Show current_balance in all forms at WriteModalForms, AccountForm, RecurringManager, ReportGenerator - Displays running balance in account dropdowns and edit form (completed).
 2026-06-11: Complete Phase 21 — Offline Usability Fixes (7/7 tasks) at sw.ts, BudgetManager.tsx, RecurringManager.tsx, RecycleBin.tsx, GroupManager.tsx, authService.ts - SW NetworkFirst→StaleWhileRevalidate, BudgetManager/RecurringManager now fully offline via localDb, RecycleBin local-first deletes, GroupManager pending-first edits, authService offline resilience (completed).
+2026-06-11: Complete Phase 22 — Security Audit Fixes (9/9 tasks) at api/index.ts, api/db/investments.ts, api/routes/*.ts, api/middleware/*.ts, shared/validation.ts, src/services/authService.ts, src/hooks/useAuth.ts - Add helmet, fix investment_returns auth, fix search injection, add budget/recurring Zod schemas, remove /api/auth/config, rate-limit /api/auth/session, add CSRF validation, fix cookie Secure flag, add investment ownership checks (completed).
 
 See git log or HANDOFF.md for full historical details.

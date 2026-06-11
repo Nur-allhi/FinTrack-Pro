@@ -67,8 +67,12 @@ vi.mock("../middleware/auth.js", () => ({
     req.user = { id: "test-user-id", email: "test@example.com" };
     next();
   }),
-  setSessionCookie: vi.fn(),
-  clearSessionCookie: vi.fn(),
+  setSessionCookie: vi.fn().mockImplementation((_req: any, _res: any, _token: string) => {}),
+  clearSessionCookie: vi.fn().mockImplementation((_req: any, _res: any) => {}),
+}));
+
+vi.mock("../middleware/csrf.js", () => ({
+  csrfProtection: vi.fn((_req: unknown, _res: unknown, next: () => void) => next()),
 }));
 
 // Default mock: getUser returns valid user

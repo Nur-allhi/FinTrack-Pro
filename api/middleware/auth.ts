@@ -31,19 +31,24 @@ function getTokenFromCookie(req: Request): string | undefined {
   return undefined;
 }
 
-export function setSessionCookie(res: Response, token: string): void {
-  const isProd = process.env.NODE_ENV === "production";
+function isLocalhost(req: Request): boolean {
+  const host = req.headers.host || "";
+  return host.startsWith("localhost:") || host === "localhost" || host.startsWith("127.0.0.1:");
+}
+
+export function setSessionCookie(req: Request, res: Response, token: string): void {
+  const secure = !isLocalhost(req);
   res.setHeader(
     "Set-Cookie",
-    `${COOKIE_NAME}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${isProd ? "; Secure" : ""}`
+    `${COOKIE_NAME}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${secure ? "; Secure" : ""}`
   );
 }
 
-export function clearSessionCookie(res: Response): void {
-  const isProd = process.env.NODE_ENV === "production";
+export function clearSessionCookie(req: Request, res: Response): void {
+  const secure = !isLocalhost(req);
   res.setHeader(
     "Set-Cookie",
-    `${COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${isProd ? "; Secure" : ""}`
+    `${COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secure ? "; Secure" : ""}`
   );
 }
 
@@ -61,7 +66,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   try {
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data.user) {
-      clearSessionCookie(res);
+      clearSessionCookie(req, res);
       return res.status(401).json({ error: "Invalid or expired token" });
     }
     req.user = { id: data.user.id, email: data.user.email };

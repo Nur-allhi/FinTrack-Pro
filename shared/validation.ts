@@ -104,6 +104,21 @@ export const investmentReturnSchema = z.object({
   percentage: z.number().optional(),
 });
 
+export const budgetSchema = z.object({
+  category: sanitizedStringRequired("Category is required"),
+  amount: z.number(),
+  month: z.string().regex(/^\d{4}-\d{2}$/, "Month must be in YYYY-MM format"),
+});
+
+export const recurringSchema = z.object({
+  account_id: z.number().int().positive(),
+  particulars: sanitizedStringRequired("Particulars is required"),
+  category: sanitizedString().optional(),
+  amount: z.number(),
+  frequency: z.enum(["daily", "weekly", "monthly", "yearly"]),
+  next_date: z.string().min(1).max(20),
+});
+
 export const transferSchema = z.object({
   from_account_id: z.number().int().positive(),
   to_account_id: z.number().int().positive(),

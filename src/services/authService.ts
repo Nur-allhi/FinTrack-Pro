@@ -20,13 +20,13 @@ async function getSupabase(): Promise<SupabaseClient | null> {
 
   _initPromise = (async () => {
     try {
-      const res = await fetch('/api/auth/config', { credentials: 'same-origin' });
-      const config = await res.json();
-      if (!config.supabaseUrl || !config.supabaseAnonKey) {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !supabaseAnonKey) {
         console.warn('Supabase not configured for frontend auth');
         return null;
       }
-      _supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+      _supabase = createClient(supabaseUrl, supabaseAnonKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
       _supabase.auth.onAuthStateChange((event) => {

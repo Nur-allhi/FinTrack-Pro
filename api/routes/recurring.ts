@@ -1,5 +1,6 @@
 import express from "express";
 import { db } from "../db.js";
+import { recurringSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
@@ -27,10 +28,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { account_id, particulars, category, amount, frequency, next_date } = req.body;
-    if (!account_id || !particulars || !amount || !frequency || !next_date) {
-      return sendError(res, 400, "Missing required fields", "VALIDATION_ERROR");
-    }
+    const parsed = validate(recurringSchema, req.body);
+    if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
+    const { account_id, particulars, category, amount, frequency, next_date } = parsed.data;
     const { data, error } = await db()
       .from("recurring_transactions")
       .insert({ user_id: req.user!.id, account_id, particulars, category, amount, frequency, next_date })

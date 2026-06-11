@@ -88,8 +88,9 @@ describe("requireAuth middleware", () => {
 
 describe("Session cookies", () => {
   it("setSessionCookie sets cookie with correct options", () => {
+    const req = { headers: { host: "localhost:3001" } } as any;
     const res = { setHeader: vi.fn() } as any;
-    setSessionCookie(res, "my-token");
+    setSessionCookie(req, res, "my-token");
     expect(res.setHeader).toHaveBeenCalledWith(
       "Set-Cookie",
       expect.stringContaining("sb-access-token=my-token")
@@ -99,11 +100,13 @@ describe("Session cookies", () => {
     expect(cookieVal).toContain("SameSite=Strict");
     expect(cookieVal).toContain("Path=/");
     expect(cookieVal).toContain("Max-Age=3600");
+    expect(cookieVal).not.toContain("Secure");
   });
 
   it("clearSessionCookie clears the cookie", () => {
+    const req = { headers: { host: "localhost:3001" } } as any;
     const res = { setHeader: vi.fn() } as any;
-    clearSessionCookie(res);
+    clearSessionCookie(req, res);
     expect(res.setHeader).toHaveBeenCalledWith(
       "Set-Cookie",
       expect.stringContaining("Max-Age=0")

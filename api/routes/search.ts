@@ -23,7 +23,8 @@ router.get("/", async (req, res) => {
     }
 
     const userId = req.user!.id;
-    const tsQuery = q.split(/\s+/).filter(Boolean).join(' & ');
+    const safe = q.replace(/[^a-zA-Z0-9\s\-'_]/g, '');
+    const tsQuery = safe.split(/\s+/).filter(Boolean).join(' & ');
     const results: SearchResult[] = [];
 
     const { data: transactions } = await db()
@@ -31,7 +32,7 @@ router.get("/", async (req, res) => {
       .select("id, particulars, category, amount, date, account_id, accounts(name)")
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .or(`fts.teq.${tsQuery},particulars.ilike.%${q}%`)
+      .or(`fts.teq.${tsQuery},particulars.ilike.%${safe}%`)
       .order("date", { ascending: false })
       .limit(20);
 
@@ -53,7 +54,7 @@ router.get("/", async (req, res) => {
       .select("id, name, type")
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .or(`fts.teq.${tsQuery},name.ilike.%${q}%`)
+      .or(`fts.teq.${tsQuery},name.ilike.%${safe}%`)
       .limit(10);
 
     for (const acc of accounts || []) {
@@ -70,7 +71,7 @@ router.get("/", async (req, res) => {
       .select("id, borrower_name, amount, date_given, particulars, status")
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .or(`fts.teq.${tsQuery},borrower_name.ilike.%${q}%,particulars.ilike.%${q}%`)
+      .or(`fts.teq.${tsQuery},borrower_name.ilike.%${safe}%,particulars.ilike.%${safe}%`)
       .order("date_given", { ascending: false })
       .limit(10);
 

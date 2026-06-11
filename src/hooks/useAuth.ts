@@ -17,7 +17,7 @@ function isServerReachable(): Promise<boolean> {
       controller.abort();
       resolve(false);
     }, 1500);
-    fetch('/api/auth/config', { signal: controller.signal, method: 'HEAD' })
+    fetch('/api/auth/me', { signal: controller.signal, method: 'HEAD' })
       .then(() => { clearTimeout(timer); resolve(true); })
       .catch(() => { clearTimeout(timer); resolve(false); });
   });

@@ -16,10 +16,10 @@ function req() {
 // ─── Auth Endpoints ──────────────────────────────────────────────────────────
 
 describe("Auth Endpoints", () => {
-  it("GET /api/auth/config", async () => {
-    const res = await (await req()).get("/api/auth/config");
+  it("GET /api/auth/me returns user (requireAuth mock injects user)", async () => {
+    const res = await (await req()).get("/api/auth/me");
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty("supabaseUrl");
+    expect(res.body).toHaveProperty("user");
   });
 
   it("POST /api/auth/logout", async () => {

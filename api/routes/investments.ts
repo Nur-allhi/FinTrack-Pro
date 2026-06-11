@@ -1,5 +1,5 @@
 import express from "express";
-import { getInvestments, createInvestment, getInvestmentReturns, createInvestmentReturn } from "../db/index.js";
+import { getInvestments, getInvestmentById, createInvestment, getInvestmentReturns, createInvestmentReturn } from "../db/index.js";
 import { investmentSchema, investmentReturnSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
@@ -19,7 +19,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id/returns", async (req, res) => {
   try {
-    const data = await getInvestmentReturns(Number(req.params.id));
+    const investment = await getInvestmentById(Number(req.params.id), req.user!.id);
+    if (!investment) return sendError(res, 404, "Investment not found", "NOT_FOUND");
+    const data = await getInvestmentReturns(Number(req.params.id), req.user!.id);
     res.json(data);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
@@ -43,9 +45,11 @@ router.post("/", async (req, res) => {
 
 router.post("/:id/returns", async (req, res) => {
   try {
+    const investment = await getInvestmentById(Number(req.params.id), req.user!.id);
+    if (!investment) return sendError(res, 404, "Investment not found", "NOT_FOUND");
     const parsed = validate(investmentReturnSchema, req.body);
     if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
-    const result = await createInvestmentReturn(Number(req.params.id), parsed.data.date, parsed.data.amount, parsed.data.percentage);
+    const result = await createInvestmentReturn(Number(req.params.id), req.user!.id, parsed.data.date, parsed.data.amount, parsed.data.percentage);
     res.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

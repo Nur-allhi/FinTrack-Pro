@@ -1,8 +1,10 @@
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
+import helmet from "helmet";
 import { fileURLToPath } from "url";
 import { initDb, supabase } from "./db.js";
 import { requireAuth, setSessionCookie, clearSessionCookie } from "./middleware/auth.js";
+import { csrfProtection } from "./middleware/csrf.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 import { errorHandler } from "./middleware/error.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
@@ -39,6 +41,7 @@ app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+app.use(helmet());
 app.use(requestIdMiddleware);
 app.use(requestLogger);
 app.use(express.json({ limit: '10mb' }));
@@ -51,7 +54,7 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
 
-app.post("/api/auth/login", authLimiter, async (req, res) => {
+app.post("/api/auth/login", authLimiter, csrfProtection, async (req, res) => {
   try {
     const { access_token } = req.body;
     if (!access_token) {
@@ -61,7 +64,7 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
     if (error) {
       return res.status(401).json({ error: error.message });
     }
-    setSessionCookie(res, access_token);
+    setSessionCookie(req, res, access_token);
     res.json({
       success: true,
       user: { id: data.user.id, email: data.user.email },
@@ -74,7 +77,7 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
   }
 });
 
-app.post("/api/auth/session", async (req, res) => {
+app.post("/api/auth/session", authLimiter, csrfProtection, async (req, res) => {
   try {
     const { access_token } = req.body;
     if (!access_token) {
@@ -82,10 +85,10 @@ app.post("/api/auth/session", async (req, res) => {
     }
     const { data, error } = await supabase.auth.getUser(access_token);
     if (error) {
-      clearSessionCookie(res);
+      clearSessionCookie(req, res);
       return res.status(401).json({ error: error.message });
     }
-    setSessionCookie(res, access_token);
+    setSessionCookie(req, res, access_token);
     res.json({ success: true, user: { id: data.user.id, email: data.user.email } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
@@ -94,37 +97,30 @@ app.post("/api/auth/session", async (req, res) => {
   }
 });
 
-app.post("/api/auth/logout", (_req, res) => {
-  clearSessionCookie(res);
+app.post("/api/auth/logout", csrfProtection, (req, res) => {
+  clearSessionCookie(req, res);
   res.json({ success: true });
 });
 
-app.get("/api/auth/config", (_req, res) => {
-  res.json({
-    supabaseUrl: process.env.SUPABASE_URL || "",
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
-  });
-});
-
-app.get("/api/auth/me", requireAuth, (req, res) => {
+app.get("/api/auth/me", requireAuth, csrfProtection, (req, res) => {
   res.json({ user: req.user });
 });
 
 app.use("/api", apiLimiter);
-app.use("/api/members", requireAuth, memberRoutes);
-app.use("/api/accounts", requireAuth, accountRoutes);
-app.use("/api/transactions", requireAuth, transactionRoutes);
-app.use("/api/investments", requireAuth, investmentRoutes);
-app.use("/api/transfers", requireAuth, transferRoutes);
-app.use("/api/loans", requireAuth, loanRoutes);
-app.use("/api/groups", requireAuth, groupRoutes);
-app.use("/api/recyclebin", requireAuth, recyclebinRoutes);
-app.use("/api/export", requireAuth, exportRoutes);
-app.use("/api/import", requireAuth, exportRoutes);
-app.use("/api/search", requireAuth, searchRoutes);
-app.use("/api/budgets", requireAuth, budgetRoutes);
-app.use("/api/recurring", requireAuth, recurringRoutes);
-app.use("/api/sync", requireAuth, syncRoutes);
+app.use("/api/members", requireAuth, csrfProtection, memberRoutes);
+app.use("/api/accounts", requireAuth, csrfProtection, accountRoutes);
+app.use("/api/transactions", requireAuth, csrfProtection, transactionRoutes);
+app.use("/api/investments", requireAuth, csrfProtection, investmentRoutes);
+app.use("/api/transfers", requireAuth, csrfProtection, transferRoutes);
+app.use("/api/loans", requireAuth, csrfProtection, loanRoutes);
+app.use("/api/groups", requireAuth, csrfProtection, groupRoutes);
+app.use("/api/recyclebin", requireAuth, csrfProtection, recyclebinRoutes);
+app.use("/api/export", requireAuth, csrfProtection, exportRoutes);
+app.use("/api/import", requireAuth, csrfProtection, exportRoutes);
+app.use("/api/search", requireAuth, csrfProtection, searchRoutes);
+app.use("/api/budgets", requireAuth, csrfProtection, budgetRoutes);
+app.use("/api/recurring", requireAuth, csrfProtection, recurringRoutes);
+app.use("/api/sync", requireAuth, csrfProtection, syncRoutes);
 
 app.use(errorHandler);
 

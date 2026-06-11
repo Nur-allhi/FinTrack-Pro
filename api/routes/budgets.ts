@@ -1,5 +1,6 @@
 import express from "express";
 import { db } from "../db.js";
+import { budgetSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
@@ -25,10 +26,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { category, amount, month } = req.body;
-    if (!category || !amount || !month) {
-      return sendError(res, 400, "category, amount, and month are required", "VALIDATION_ERROR");
-    }
+    const parsed = validate(budgetSchema, req.body);
+    if (!parsed.success) return sendError(res, 400, parsed.error, "VALIDATION_ERROR");
+    const { category, amount, month } = parsed.data;
     const { data, error } = await db()
       .from("budgets")
       .upsert({ user_id: req.user!.id, category, amount, month }, { onConflict: "user_id,category,month" })
