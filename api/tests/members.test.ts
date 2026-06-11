@@ -10,6 +10,11 @@ const mockSupabase = vi.hoisted(() => ({
         single: vi.fn(() => Promise.resolve({ data: { id: 1, name: "Alice", relationship: "Friend" }, error: null })),
       })),
     })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      })),
+    })),
     delete: vi.fn(() => ({
       eq: vi.fn(() => ({
         eq: vi.fn(() => Promise.resolve({ error: null })),
