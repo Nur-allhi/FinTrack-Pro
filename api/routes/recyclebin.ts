@@ -17,7 +17,8 @@ router.get("/", async (req, res) => {
     if (type && !isValidType(type)) {
       return sendError(res, 400, `Invalid type. Must be one of: ${VALID_TYPES.join(", ")}`, "VALIDATION_ERROR");
     }
-    const items = await getDeletedItems(req.user!.id, type as RecycleBinEntityType | undefined);
+    const validType: RecycleBinEntityType | undefined = type && isValidType(type) ? type : undefined;
+    const items = await getDeletedItems(req.user!.id, validType);
     res.json(items);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

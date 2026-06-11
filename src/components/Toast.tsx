@@ -26,18 +26,36 @@ let syncingToastId: number | null = null;
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const wasSyncing = useRef(false);
+  const timeoutsRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
   const addToast = useCallback((message: string, type: ToastType = 'info') => {
     const id = nextId++;
     setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
+      timeoutsRef.current.delete(id);
     }, 4000);
+    timeoutsRef.current.set(id, timeoutId);
     return id;
   }, []);
 
   const removeToast = useCallback((id: number) => {
+    const timeoutId = timeoutsRef.current.get(id);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutsRef.current.delete(id);
+    }
     setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // Clean up all timeouts on unmount
+  useEffect(() => {
+    return () => {
+      for (const timeoutId of timeoutsRef.current.values()) {
+        clearTimeout(timeoutId);
+      }
+      timeoutsRef.current.clear();
+    };
   }, []);
 
   useEffect(() => {

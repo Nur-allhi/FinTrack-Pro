@@ -195,7 +195,7 @@ export default function Header({
           className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/15"
           aria-label="Profile"
         >
-          <span className="text-xs font-bold text-primary">{userEmail[0].toUpperCase()}</span>
+          <span className="text-xs font-bold text-primary">{(userEmail?.[0] || '?').toUpperCase()}</span>
         </button>
       </div>
     </header>
