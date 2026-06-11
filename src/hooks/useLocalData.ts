@@ -18,8 +18,8 @@ function toApiAccount(
   const memberId = r.member_id != null
     ? memberLocalIdToServerId.get(String(r.member_id)) ?? r.member_id
     : null;
-  const memberName = r.member_id != null ? memberNameById.get(r.member_id) : undefined;
-  const parentName = r.parent_id != null ? accountNameById.get(r.parent_id) : undefined;
+  const memberName = r.member_id != null ? memberNameById.get(r.member_id) ?? undefined : undefined;
+  const parentName = r.parent_id != null ? accountNameById.get(r.parent_id) ?? undefined : undefined;
   return {
     id: r.server_id ?? 0,
     _localId: r.id,
@@ -256,40 +256,36 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     }
   }, [toast]);
 
-  // Initial load: read local first, then background fetch (runs once when first authenticated)
+  // Initial load + auth transition: read local first, then background fetch
   useEffect(() => {
-    if (!isAuthenticated) return;
-    if (initialLoadDoneRef.current) return;
-    initialLoadDoneRef.current = true;
-
-    loadFromLocal().then(() => {
-      onInitialLoad?.();
-      if (isOnline()) {
-        fetchData();
-      }
-    });
-    // Only when first authenticated. Auth transitions handled by login transition effect below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  // On login transition: clear stale state and fetch fresh data
-  useEffect(() => {
-    if (!isAuthenticated || prevAuthRef.current) {
-      if (!isAuthenticated && prevAuthRef.current) {
+    if (!isAuthenticated) {
+      // On logout: clear state
+      if (prevAuthRef.current) {
         loadedRef.current = false;
         setMembers([]);
         setAccounts([]);
       }
-      prevAuthRef.current = isAuthenticated;
+      prevAuthRef.current = false;
       return;
     }
 
-    loadedRef.current = false;
-    setMembers([]);
-    setAccounts([]);
-    if (isOnline()) fetchData();
+    // On first auth or login transition: load from local, then fetch from server
+    if (!initialLoadDoneRef.current || !prevAuthRef.current) {
+      loadedRef.current = false;
+      setMembers([]);
+      setAccounts([]);
+      initialLoadDoneRef.current = true;
+
+      loadFromLocal().then(() => {
+        onInitialLoad?.();
+        if (isOnline()) {
+          fetchData();
+        }
+      });
+    }
     prevAuthRef.current = isAuthenticated;
-  }, [isAuthenticated, fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // Polling every 30s
   useEffect(() => {
