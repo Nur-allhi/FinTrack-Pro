@@ -577,6 +577,31 @@
 
 ---
 
+---
+
+## Phase 22 — Security Audit Fixes
+
+> **Source**: `docs/SECURITY_AUDIT.md`
+> **Branch**: `fix/security-audit`
+> **Status**: 0/9 complete
+
+### 🟠 HIGH Priority
+
+- [ ] **T-300** Add `helmet` middleware for security headers (CSP, HSTS, X-Frame-Options, etc.) (30m) — `📄 docs/SECURITY_AUDIT.md:H-1`
+- [ ] **T-301** Fix `investment_returns` queries — add `userId` filter to `getInvestmentReturns` and `user_id` to `createInvestmentReturn` (30m) — `📄 docs/SECURITY_AUDIT.md:H-2`
+- [ ] **T-302** Fix search route Supabase `.or()` injection — sanitize/validate input before interpolation (1h) — `📄 docs/SECURITY_AUDIT.md:H-3`
+- [ ] **T-303** Add Zod validation schemas for `budgets` and `recurring_transactions` in `shared/validation.ts` (1h) — `📄 docs/SECURITY_AUDIT.md:H-4`
+- [ ] **T-304** Remove or protect `/api/auth/config` — stop leaking Supabase credentials via unauthenticated endpoint (30m) — `📄 docs/SECURITY_AUDIT.md:H-5`
+
+### 🟡 MEDIUM Priority
+
+- [ ] **T-305** Add rate limiting (`authLimiter`) to `/api/auth/session` endpoint (15m) — `📄 docs/SECURITY_AUDIT.md:M-1`
+- [ ] **T-306** Add CSRF token validation for state-changing requests (1h) — `📄 docs/SECURITY_AUDIT.md:M-2`
+- [ ] **T-307** Fix cookie `Secure` flag — always set for non-localhost environments (15m) — `📄 docs/SECURITY_AUDIT.md:M-3`
+- [ ] **T-308** Add user_id ownership check for `investment_returns` in route handler (30m) — `📄 docs/SECURITY_AUDIT.md:M-5`
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
