@@ -21,8 +21,6 @@ import { localDb } from './services/localDb';
 import { authService } from './services/authService';
 import { syncNow, startSyncScheduler, stopSyncScheduler } from './services/syncEngine';
 
-// Debug: expose localDb for console queries
-(window as any).__localDb = localDb;
 import { useToast } from './components/Toast';
 import { Agentation } from 'agentation';
 import type { WriteOperation } from './types';
@@ -102,7 +100,10 @@ export default function App() {
     const savedTab = sessionStorage.getItem('activeTab');
     const savedAccountId = sessionStorage.getItem('selectedAccountId');
     if (savedTab) setActiveTab(savedTab as typeof activeTab);
-    if (savedAccountId) setSelectedAccountId(Number(savedAccountId));
+    if (savedAccountId) {
+      const parsed = Number(savedAccountId);
+      setSelectedAccountId(isNaN(parsed) ? null : parsed);
+    }
   }, [isAuthenticated]);
 
   useEffect(() => {
