@@ -533,11 +533,18 @@ export const localDb = {
       await put(s, r);
     }
 
-    // Push to server — this must succeed so server gets deleted_at
-    const { flushPending } = await import('./syncEngine');
+    // Push to server — wait for sync to complete before hard-deleting
+    const { flushPending, isSyncing } = await import('./syncEngine');
     await flushPending();
+    
+    // Wait for any ongoing sync to finish (flushPending may return immediately if sync is running)
+    const maxWait = 30_000; // 30s max wait
+    const start = Date.now();
+    while (isSyncing() && Date.now() - start < maxWait) {
+      await new Promise(r => setTimeout(r, 500));
+    }
 
-    // Push succeeded: server has deleted_at. Hard-delete + tombstone.
+    // Hard-delete + tombstone
     for (const { store: s, record: r } of toEmpty) {
       const sid = (r as any).server_id as number | undefined;
       if (sid != null) {
