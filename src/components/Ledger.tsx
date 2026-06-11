@@ -96,16 +96,16 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
 
   return (
     <div className="space-y-4 md:space-y-8">
-      <div className="flex items-center justify-between">
-        <button onClick={onBack} className="w-9 h-9 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-canvas border border-hairline shadow-lg hover:shadow-xl transition-shadow text-muted hover:text-ink">
-          <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+      <div className="flex items-center justify-between mt-4 md:mt-8 px-3 md:px-0">
+        <button onClick={onBack} className="w-11 h-11 flex items-center justify-center rounded-full bg-canvas border border-hairline shadow-lg hover:shadow-xl transition-shadow text-muted hover:text-ink">
+          <ArrowLeft className="w-5 h-5" />
         </button>
           <button onClick={() => {
             const dates = filteredTxs.map(t => t.date).filter(Boolean).sort();
             const dateRange = dates.length > 1 ? `${dates[dates.length - 1]} to ${dates[0]}` : undefined;
             exportLedgerPDF(filteredTxs, account, currency, dateRange);
-          }} className="w-9 h-9 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-canvas border border-hairline shadow-lg hover:shadow-xl transition-shadow text-muted hover:text-ink">
-          <Download className="w-4 h-4 md:w-5 md:h-5" />
+          }} className="w-11 h-11 flex items-center justify-center rounded-full bg-canvas border border-hairline shadow-lg hover:shadow-xl transition-shadow text-muted hover:text-ink">
+          <Download className="w-5 h-5" />
         </button>
       </div>
 
