@@ -102,7 +102,8 @@ export default function App() {
     if (savedTab) setActiveTab(savedTab as typeof activeTab);
     if (savedAccountId) {
       const parsed = Number(savedAccountId);
-      setSelectedAccountId(isNaN(parsed) ? null : parsed);
+      // Treat 0 (unsynced accounts) and NaN as null
+      setSelectedAccountId(parsed > 0 ? parsed : null);
     }
   }, [isAuthenticated]);
 
@@ -172,7 +173,6 @@ export default function App() {
       stopSyncScheduler();
       return;
     }
-    syncNow();
     startSyncScheduler();
   }, [isAuthenticated]);
 
@@ -217,7 +217,7 @@ export default function App() {
     if (showProfile) {
       return <UserProfile userEmail={userEmail} onRefreshData={() => fetchData(true)} onExportData={handleExportData} onClearCache={handleClearCache} onLogout={handleLogout} currency={settings.currency} accounts={accounts} />;
     }
-    if (selectedAccountId) {
+    if (selectedAccountId && selectedAccountId > 0) {
       const account = accounts.find(a => a.id === selectedAccountId);
       if (!account) return <div className="p-8 text-center text-muted">Account not found</div>;
       return <Ledger account={account} onBack={() => setSelectedAccountId(null)} onWriteOperation={setWriteOperation} currency={settings.currency} />;
