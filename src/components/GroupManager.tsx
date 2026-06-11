@@ -75,15 +75,15 @@ export default function GroupManager({ onUpdate, lastUpdate, currency, onSelectA
         const localGroups = await localDb.getGroups();
         const local = localGroups.find(g => g.server_id === editingGroup.id);
         if (local) {
-          const updated = {
+          const pending = {
             ...local,
             name: newGroup.name,
             member_id: memberId,
             color: newGroup.color,
             updated_at: now,
-            sync_status: 'synced' as const,
+            sync_status: 'pending' as const,
           };
-          await localDb.putGroup(updated);
+          await localDb.putGroup(pending);
           const body: Record<string, unknown> = { name: newGroup.name, color: newGroup.color };
           if (memberId !== null) body.member_id = Number(memberId);
           else body.member_id = null;
@@ -92,8 +92,9 @@ export default function GroupManager({ onUpdate, lastUpdate, currency, onSelectA
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
-          if (!res.ok) {
-            await localDb.putGroup({ ...local, name: newGroup.name, member_id: memberId, color: newGroup.color, updated_at: now, sync_status: 'pending' });
+          if (res.ok) {
+            await localDb.putGroup({ ...pending, sync_status: 'synced' as const });
+          } else {
             toast("Saved locally. Will sync when online.", 'success');
           }
         }

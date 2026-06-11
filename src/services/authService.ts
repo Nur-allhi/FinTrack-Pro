@@ -37,6 +37,7 @@ async function getSupabase(): Promise<SupabaseClient | null> {
       return _supabase;
     } catch (err) {
       console.error('Failed to init Supabase auth:', err);
+      _initPromise = null;
       return null;
     }
   })();
@@ -63,12 +64,14 @@ async function refreshTokenInternal(): Promise<string | null> {
 }
 
 async function setSession(accessToken: string): Promise<void> {
-  await fetch('/api/auth/session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ access_token: accessToken }),
-    credentials: 'same-origin',
-  });
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: accessToken }),
+      credentials: 'same-origin',
+    });
+  } catch { /* offline — swallow */ }
 }
 
 export const authService = {

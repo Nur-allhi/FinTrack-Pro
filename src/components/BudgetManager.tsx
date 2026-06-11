@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PiggyBank, Plus, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
+import { flushPending } from '../services/syncEngine';
 import { format } from 'date-fns';
 
-interface Budget {
-  id: number;
+interface BudgetItem {
+  id: string;
   category: string;
   amount: number;
   month: string;
@@ -19,51 +21,60 @@ interface BudgetManagerProps {
 
 export default function BudgetManager({ currency, categories }: BudgetManagerProps) {
   const { toast } = useToast();
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [newCategory, setNewCategory] = useState('');
   const [newAmount, setNewAmount] = useState('');
 
-  useEffect(() => { loadBudgets(); }, [currentMonth]);
-
-  const loadBudgets = async () => {
+  const loadBudgets = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authService.apiFetch(`/api/budgets?month=${currentMonth}`);
-      if (res.ok) setBudgets(await res.json());
+      const all = await localDb.getBudgets();
+      setItems(all.filter(b => b.month === currentMonth).map(b => ({
+        id: b.id,
+        category: b.category,
+        amount: b.amount,
+        month: b.month,
+      })));
     } catch { /* silent */ }
     setLoading(false);
-  };
+  }, [currentMonth]);
+
+  useEffect(() => { loadBudgets(); }, [loadBudgets]);
 
   const handleAdd = async () => {
     if (!newCategory || !newAmount) return;
     setSaving(true);
     try {
-      const res = await authService.apiFetch('/api/budgets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: newCategory, amount: Number(newAmount), month: currentMonth }),
+      await localDb.putBudget({
+        id: generateId(),
+        category: newCategory,
+        amount: Number(newAmount),
+        month: currentMonth,
+        updated_at: new Date().toISOString(),
+        sync_status: 'pending' as const,
+        _deleted: false,
       });
-      if (res.ok) {
-        toast('Budget saved.', 'success');
-        setNewCategory('');
-        setNewAmount('');
-        loadBudgets();
-      }
+      flushPending();
+      toast('Budget saved.', 'success');
+      setNewCategory('');
+      setNewAmount('');
+      loadBudgets();
     } catch { toast('Failed to save budget.', 'error'); }
     setSaving(false);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
-      await authService.apiFetch(`/api/budgets/${id}`, { method: 'DELETE' });
+      await localDb.permanentDelete('budgets', id);
+      flushPending();
       loadBudgets();
     } catch { toast('Failed to delete budget.', 'error'); }
   };
 
-  const totalBudget = budgets.reduce((s, b) => s + b.amount, 0);
+  const totalBudget = items.reduce((s, b) => s + b.amount, 0);
 
   return (
     <div className="card-xl space-y-4">
@@ -94,12 +105,12 @@ export default function BudgetManager({ currency, categories }: BudgetManagerPro
 
       {loading ? (
         <div className="flex items-center gap-2 text-muted py-4"><Loader2 className="w-4 h-4 animate-spin" /><span className="text-xs">Loading...</span></div>
-      ) : budgets.length === 0 ? (
+      ) : items.length === 0 ? (
         <p className="text-xs text-muted py-4">No budgets set for this month.</p>
       ) : (
         <div className="space-y-2">
           <AnimatePresence>
-            {budgets.map(b => (
+            {items.map(b => (
               <motion.div key={b.id} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                 className="flex items-center justify-between p-3 bg-surface-soft rounded-lg border border-hairline">
                 <div>

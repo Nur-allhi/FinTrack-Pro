@@ -26,7 +26,7 @@ offlineFallback({ pageFallback: '/offline.html' });
 
 registerRoute(
   ({ request }) => request.destination === 'document',
-  new NetworkFirst({ cacheName: 'pages' })
+  new StaleWhileRevalidate({ cacheName: 'pages' })
 );
 
 registerRoute(

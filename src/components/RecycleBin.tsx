@@ -74,10 +74,10 @@ export default function RecycleBin() {
     const key = `${item.entity_type}-${item.id}`;
     setActing(key);
     try {
-      if (item.server_id != null) {
-        await authService.apiFetch(`/api/recyclebin/${item.entity_type}/${item.server_id}`, { method: 'DELETE' });
-      }
       await localDb.permanentDelete(item.entity_type, item.id);
+      if (item.server_id != null) {
+        authService.apiFetch(`/api/recyclebin/${item.entity_type}/${item.server_id}`, { method: 'DELETE' }).catch(() => {});
+      }
       toast(`${item.entity_label} permanently deleted.`, 'success');
       fetchItems();
     } catch {
@@ -92,8 +92,8 @@ export default function RecycleBin() {
     setActing('empty-all');
     try {
       const type = filter !== 'all' ? filter : undefined;
-      await authService.apiFetch(`/api/recyclebin${type ? `?type=${type}` : ''}`, { method: 'DELETE' });
-      await localDb.emptyBin(filter !== 'all' ? filter : undefined);
+      await localDb.emptyBin(type);
+      authService.apiFetch(`/api/recyclebin${type ? `?type=${type}` : ''}`, { method: 'DELETE' }).catch(() => {});
       toast('Recycle bin emptied.', 'success');
       fetchItems();
     } catch {

@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Repeat, Plus, Trash2, Pause, Play, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast';
-import { authService } from '../services/authService';
+import { localDb } from '../services/localDb';
+import { generateId } from '../utils/ids';
+import { flushPending } from '../services/syncEngine';
 
-interface RecurringTx {
-  id: number;
-  account_id: number;
-  account_name?: string;
+interface RecurringItem {
+  id: string;
+  accountId: string;
+  accountName?: string;
   particulars: string;
-  category?: string;
+  category: string;
   amount: number;
   frequency: string;
-  next_date: string;
+  nextDate: string;
   active: boolean;
 }
 
@@ -23,44 +25,81 @@ interface RecurringManagerProps {
 
 export default function RecurringManager({ accounts, currency }: RecurringManagerProps) {
   const { toast } = useToast();
-  const [items, setItems] = useState<RecurringTx[]>([]);
+  const [items, setItems] = useState<RecurringItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ account_id: '', particulars: '', category: '', amount: '', frequency: 'monthly', next_date: '' });
 
-  useEffect(() => { loadItems(); }, []);
-
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authService.apiFetch('/api/recurring');
-      if (res.ok) setItems(await res.json());
+      const map = new Map(accounts.map(a => [a.id.toString(), a.name]));
+      const all = await localDb.getRecurringTransactions();
+      setItems(all.filter(r => !r._deleted).map(r => ({
+        id: r.id,
+        accountId: r.account_id,
+        accountName: map.get(r.account_id) || 'Account',
+        particulars: r.particulars,
+        category: r.category,
+        amount: r.amount,
+        frequency: r.frequency,
+        nextDate: r.next_date,
+        active: r.active,
+      })));
     } catch { /* silent */ }
     setLoading(false);
-  };
+  }, [accounts]);
+
+  useEffect(() => { loadItems(); }, [loadItems]);
 
   const handleAdd = async () => {
     if (!form.account_id || !form.particulars || !form.amount || !form.next_date) return;
     setSaving(true);
     try {
-      const res = await authService.apiFetch('/api/recurring', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, account_id: Number(form.account_id), amount: Number(form.amount) }),
+      await localDb.putRecurringTransaction({
+        id: generateId(),
+        account_id: form.account_id,
+        particulars: form.particulars,
+        category: form.category,
+        amount: Number(form.amount),
+        frequency: form.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly',
+        next_date: form.next_date,
+        active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        sync_status: 'pending' as const,
+        _deleted: false,
       });
-      if (res.ok) { toast('Recurring transaction created.', 'success'); setForm({ account_id: '', particulars: '', category: '', amount: '', frequency: 'monthly', next_date: '' }); loadItems(); }
+      flushPending();
+      toast('Recurring transaction created.', 'success');
+      setForm({ account_id: '', particulars: '', category: '', amount: '', frequency: 'monthly', next_date: '' });
+      loadItems();
     } catch { toast('Failed to create.', 'error'); }
     setSaving(false);
   };
 
-  const handleToggle = async (id: number, active: boolean) => {
-    await authService.apiFetch(`/api/recurring/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !active }) });
-    loadItems();
+  const handleToggle = async (id: string, active: boolean) => {
+    try {
+      const all = await localDb.getRecurringTransactions();
+      const record = all.find(r => r.id === id);
+      if (record) {
+        await localDb.putRecurringTransaction({ ...record, active: !active, sync_status: 'pending', updated_at: new Date().toISOString() });
+        flushPending();
+        loadItems();
+      }
+    } catch { toast('Failed to toggle.', 'error'); }
   };
 
-  const handleDelete = async (id: number) => {
-    await authService.apiFetch(`/api/recurring/${id}`, { method: 'DELETE' });
-    loadItems();
+  const handleDelete = async (id: string) => {
+    try {
+      const all = await localDb.getRecurringTransactions();
+      const record = all.find(r => r.id === id);
+      if (record) {
+        await localDb.putRecurringTransaction({ ...record, _deleted: true, sync_status: 'pending', updated_at: new Date().toISOString() });
+        flushPending();
+        loadItems();
+      }
+    } catch { toast('Failed to delete.', 'error'); }
   };
 
   return (
@@ -106,7 +145,7 @@ export default function RecurringManager({ accounts, currency }: RecurringManage
                 className="flex items-center justify-between p-3 bg-surface-soft rounded-lg border border-hairline">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-ink truncate">{r.particulars}</p>
-                  <p className="text-[10px] text-muted">{r.account_name || 'Account'} · {r.frequency} · {currency}{r.amount.toLocaleString()} · Next: {r.next_date}</p>
+                  <p className="text-[10px] text-muted">{r.accountName || 'Account'} · {r.frequency} · {currency}{r.amount.toLocaleString()} · Next: {r.nextDate}</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => handleToggle(r.id, r.active)} className="p-1 text-muted hover:text-ink transition-colors">

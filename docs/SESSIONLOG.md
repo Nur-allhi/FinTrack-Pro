@@ -3,6 +3,38 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 21 — 11 Jun 2026 (Phase 21 — Offline Usability Fixes)
+
+> **Branch**: `feature/ui-ux-polish-improvement`
+> **Tasks**: T-272, T-273, T-274, T-275, T-276, T-277, T-278
+> **Status**: completed
+
+### Summary
+Completed all 7 Phase 21 tasks from `docs/OFFLINE_AUDIT.md`. Service worker now serves cached pages instantly offline (StaleWhileRevalidate). BudgetManager and RecurringManager no longer depend on API — they read/write to localDb with sync_status tracking. RecycleBin does local delete first, server as best-effort. GroupManager edit saves as `pending` first, updates to `synced` only after PATCH confirms. authService has offline-safe setSession() and retries Supabase init on failure.
+
+### Changes
+- **sw.ts**: Changed document route from NetworkFirst to StaleWhileRevalidate — serves cached index.html instantly, avoids blank screen offline
+- **BudgetManager.tsx**: Fully rewritten to use localDb (getBudgets, putBudget, permanentDelete) + flushPending() — reads local data filtered by month, writes with sync_status: 'pending'
+- **RecurringManager.tsx**: Fully rewritten to use localDb (getRecurringTransactions, putRecurringTransaction) + flushPending() — local reads, create/toggle/delete with pending status
+- **RecycleBin.tsx**: Reordered permanent delete and empty-bin — localDb.permanentDelete/emptyBin first, then fire-and-forget server delete
+- **GroupManager.tsx**: Edit now saves to localDb as `sync_status: 'pending'` first, updates to `'synced'` only after PATCH succeeds
+- **authService.ts**: setSession() POST wrapped in try/catch (offline-safe), _initPromise cleared on getSupabase() failure so retries trigger when back online
+
+### Files Changed
+- `sw.ts` — NetworkFirst → StaleWhileRevalidate
+- `src/components/BudgetManager.tsx` — localDb rewrite
+- `src/components/RecurringManager.tsx` — localDb rewrite
+- `src/components/RecycleBin.tsx` — local-first delete order
+- `src/components/GroupManager.tsx` — pending-first edit
+- `src/services/authService.ts` — offline resilience
+- `docs/TODO.md` — Phase 21 marked complete
+- `CHANGELOG.md` — Phase 21 entry
+
+### Verification
+- `npm run build` ✅ (succeeds)
+- Pre-existing TS error in api/tests/members.test.ts only (unrelated)
+
+---
 ## Session 20 — 11 Jun 2026 (Phase 20 Bug Fixes)
 
 > **Branch**: `fix/all-bugs`

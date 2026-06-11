@@ -547,6 +547,36 @@
 
 ---
 
+## Phase 21 — Offline Usability Fixes
+
+> **Source**: `docs/OFFLINE_AUDIT.md`
+> **Branch**: `feature/ui-ux-polish-improvement`
+> **Status**: 7/7 complete ✅
+
+### CRITICAL — Service Worker
+
+- [x] **T-272** Change document strategy from `NetworkFirst` to `StaleWhileRevalidate` in `sw.ts:28` — serve cached `index.html` instantly offline, avoid blank screen on refresh (30m) — `📄 docs/OFFLINE_AUDIT.md:Issue 1`
+
+### HIGH — Budget Manager Offline Support
+
+- [x] **T-273** Rewrite `BudgetManager.tsx` reads/writes to use `localDb` with `sync_status: 'pending'` + `flushPending()` — follow pattern from `MemberManager.tsx` (2h) — `📄 docs/OFFLINE_AUDIT.md:Issue 2`
+
+### HIGH — Recurring Manager Offline Support
+
+- [x] **T-274** Rewrite `RecurringManager.tsx` reads/writes to use `localDb` with `sync_status: 'pending'` + `flushPending()` — follow pattern from other managers (2h) — `📄 docs/OFFLINE_AUDIT.md:Issue 3`
+
+### MEDIUM — Recycle Bin Offline Cleanup
+
+- [x] **T-275** Fix `RecycleBin.tsx` permanent delete and empty-bin — do local delete first regardless of API outcome, then attempt server delete as best-effort (1h) — `📄 docs/OFFLINE_AUDIT.md:Issue 4`
+
+### LOW — Remaining Offline Polish
+
+- [x] **T-276** Fix `GroupManager.tsx` edit — save to localDb as `pending` first, then update to `synced` only after PATCH confirms (30m) — `📄 docs/OFFLINE_AUDIT.md:Issue 5`
+- [x] **T-277** Wrap `setSession()` POST in try/catch in `authService.ts:refreshTokenInternal` to prevent unhandled rejection when offline (15m) — `📄 docs/OFFLINE_AUDIT.md:Issue 6`
+- [x] **T-278** Clear `_initPromise` in `getSupabase()` on failure so subsequent calls retry when back online (15m) — `📄 docs/OFFLINE_AUDIT.md:Issue 7`
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
