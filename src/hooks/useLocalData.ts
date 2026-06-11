@@ -52,12 +52,16 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   authRef.current = isAuthenticated;
 
   const loadFromLocal = useCallback(async () => {
-    const [localMembers, localAccounts] = await Promise.all([
-      localDb.getMembers(),
-      localDb.getAccounts(),
-    ]);
-    setMembers(localMembers);
-    setAccounts(localAccounts);
+    try {
+      const [localMembers, localAccounts] = await Promise.all([
+        localDb.getMembers(),
+        localDb.getAccounts(),
+      ]);
+      setMembers(localMembers);
+      setAccounts(localAccounts);
+    } catch (e) {
+      console.error('loadFromLocal failed:', e);
+    }
   }, []);
 
 

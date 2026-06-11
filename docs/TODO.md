@@ -532,6 +532,21 @@
 
 ---
 
+## Phase 20 — Post-Phase 19 Bug Fixes (4 bugs from verification scan)
+
+> **Source**: `docs/BUG_REPORT.md` §New Findings
+> **Branch**: `fix/all-bugs`
+> **Status**: in-progress
+
+### Bugs to Fix
+
+- [x] **T-268** BUG-NEW-001: Replace `localStorage.clear()` in `useProfileData.ts` with app-specific key cleanup (15m) — `📄 docs/BUG_REPORT.md:BUG-NEW-001`
+- [x] **T-269** BUG-NEW-002: Delete orphaned `OfflineIndicator.tsx` (dead code, never imported) (5m) — `📄 docs/BUG_REPORT.md:BUG-NEW-002`
+- [x] **T-270** BUG-NEW-003: Add `_bin_emptied` to `LocalRecord` type, remove `as any` casts in `localDb.ts` and `syncEngine.ts` (15m) — `📄 docs/BUG_REPORT.md:BUG-NEW-003`
+- [x] **T-271** BUG-NEW-004: Add try-catch to async functions missing error handling in `useLocalData.ts`, `useTransactions.ts`, `App.tsx` (30m) — `📄 docs/BUG_REPORT.md:BUG-NEW-004`
+
+---
+
 ## Remaining — Google Drive Backup (Deferred — requires manual Google Cloud Console setup)
 
 - [ ] **T-153** (Deferred) Create Google Cloud Console project + enable Drive API + OAuth credentials (1h) — `📄 plans/LOCAL_FIRST_ARCHITECTURE.md:§8.1`
