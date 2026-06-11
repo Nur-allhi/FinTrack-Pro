@@ -46,13 +46,21 @@ function sanitizeForPull(record: Record<string, unknown>): Record<string, unknow
   const out = { ...record };
   if (out.deleted_at != null) {
     out._deleted = true;
-    delete out.deleted_at;
   }
+  delete out.deleted_at;
   return out;
 }
 
 let _isSyncing = false;
+let _syncPromise: Promise<SyncResult> | null = null;
 let _syncListeners: ((syncing: boolean) => void)[] = [];
+
+// Clear stale listeners on HMR (dev only)
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    _syncListeners = [];
+  });
+}
 
 export function onSyncStateChange(listener: (syncing: boolean) => void) {
   _syncListeners.push(listener);
@@ -140,29 +148,30 @@ async function markTableSynced(table: SyncTable, ids: string[]): Promise<void> {
     members: () => localDb.markMembersSynced(ids),
     transactions: () => localDb.markTransactionsSynced(ids),
     loans: () => localDb.markLoansSynced(ids),
-    loan_settlements: async () => {},
-    investments: async () => {},
-    investment_returns: async () => {},
-    budgets: async () => {},
-    recurring_transactions: async () => {},
-    groups: async () => {},
+    loan_settlements: () => localDb.markLoanSettlementsSynced(ids),
+    investments: () => localDb.markInvestmentsSynced(ids),
+    investment_returns: () => localDb.markInvestmentReturnsSynced(ids),
+    budgets: () => localDb.markBudgetsSynced(ids),
+    recurring_transactions: () => localDb.markRecurringTransactionsSynced(ids),
+    groups: () => localDb.markGroupsSynced(ids),
   }[table];
   return markers();
 }
 
 async function upsertFromServer(table: SyncTable, records: Record<string, unknown>[]): Promise<void> {
-  const putters = {
-    members: (r: Record<string, unknown>[]) => localDb.putMembers(r as never[]),
-    transactions: (r: Record<string, unknown>[]) => localDb.putTransactions(r as never[]),
-    loans: (r: Record<string, unknown>[]) => localDb.putLoans(r as never[]),
-    loan_settlements: (r: Record<string, unknown>[]) => localDb.putLoanSettlements(r as never[]),
-    investments: (r: Record<string, unknown>[]) => localDb.putInvestments(r as never[]),
-    investment_returns: (r: Record<string, unknown>[]) => localDb.putInvestmentReturns(r as never[]),
-    budgets: (r: Record<string, unknown>[]) => localDb.putBudgets(r as never[]),
-    recurring_transactions: (r: Record<string, unknown>[]) => localDb.putRecurringTransactions(r as never[]),
-    groups: (r: Record<string, unknown>[]) => localDb.putGroups(r as never[]),
-  }[table];
-  return putters(records);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const putters: Record<SyncTable, (r: any[]) => Promise<void>> = {
+    members: (r) => localDb.putMembers(r),
+    transactions: (r) => localDb.putTransactions(r),
+    loans: (r) => localDb.putLoans(r),
+    loan_settlements: (r) => localDb.putLoanSettlements(r),
+    investments: (r) => localDb.putInvestments(r),
+    investment_returns: (r) => localDb.putInvestmentReturns(r),
+    budgets: (r) => localDb.putBudgets(r),
+    recurring_transactions: (r) => localDb.putRecurringTransactions(r),
+    groups: (r) => localDb.putGroups(r),
+  };
+  return putters[table](records);
 }
 
 // Push unsynced local records to server
@@ -182,6 +191,9 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
 
   _syncProgress = { current: 0, total: SYNC_TABLES.length };
   syncState.setState({ progress: _syncProgress });
+
+  // Reset any accounts incorrectly marked as pending BEFORE building FK maps
+  await resetStaleAccountPending();
 
   // Build local_id → server_id maps for FK translation (push direction)
   const localAccounts = await localDb.getAccounts();
@@ -213,9 +225,6 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
   for (const m of localMembers) {
     if (m.server_id != null) memberLocalIdToServerId.set(m.id, m.server_id);
   }
-
-  // Reset any accounts incorrectly marked as pending before building FK maps
-  await resetStaleAccountPending();
 
   // Sanitize: strip local-only fields, map id→client_id, _deleted→deleted_at, translate FKs
   // Records with untranslatable REQUIRED FKs are skipped (stay pending for next cycle).
@@ -308,6 +317,9 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
   });
 
   if (!res.ok) {
+    const errorText = await res.text().catch(() => 'Unknown error');
+    console.error('Push failed:', res.status, errorText);
+    syncState.setState({ state: 'error' });
     return { pushed: 0, conflicts: 0 };
   }
 
@@ -345,7 +357,12 @@ async function pullChanges(): Promise<number> {
   const since = lastSync || '1970-01-01T00:00:00Z';
 
   const res = await authService.apiFetch(`/api/sync/pull?since=${encodeURIComponent(since)}`);
-  if (!res.ok) return 0;
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => 'Unknown error');
+    console.error('Pull failed:', res.status, errorText);
+    syncState.setState({ state: 'error' });
+    return 0;
+  }
 
   const data = await res.json();
   let totalPulled = 0;
@@ -434,6 +451,7 @@ async function pullChanges(): Promise<number> {
       // Both synced — LWW by updated_at
       const serverTime = new Date((r.updated_at as string) || 0).getTime();
       const localTime = new Date(local.updated_at).getTime();
+      if (isNaN(serverTime) || isNaN(localTime)) return false;
       return serverTime > localTime;
     });
 
@@ -455,6 +473,11 @@ async function pullChanges(): Promise<number> {
     await upsertFromServer(table as SyncTable, localRecords2);
     if (table === 'transactions') pulledTransactions = true;
     totalPulled += toUpsert.length;
+
+    // Save timestamp incrementally after each table to survive crashes
+    if (toUpsert.length > 0 && data.pulledAt) {
+      await localDb.setMeta('sync_timestamp', data.pulledAt);
+    }
   }
 
   if (pulledTransactions) {
@@ -472,7 +495,7 @@ async function pullChanges(): Promise<number> {
 
 // Full sync: push then pull
 export async function syncNow(): Promise<SyncResult> {
-  if (_isSyncing) return { pushed: 0, pulled: 0, conflicts: 0 };
+  if (_isSyncing) return _syncPromise || { pushed: 0, pulled: 0, conflicts: 0 };
   if (!navigator.onLine) return { pushed: 0, pulled: 0, conflicts: 0 };
 
   let hasPending = false;
@@ -488,17 +511,21 @@ export async function syncNow(): Promise<SyncResult> {
   }
 
   setSyncing(true);
-  try {
-    const pushResult = await pushUnsynced();
-    const pulled = await pullChanges();
-    await refreshPendingCount();
-    return { pushed: pushResult.pushed, pulled, conflicts: pushResult.conflicts };
-  } catch (err) {
-    console.error('Sync failed:', err);
-    return { pushed: 0, pulled: 0, conflicts: 0 };
-  } finally {
-    setSyncing(false);
-  }
+  _syncPromise = (async () => {
+    try {
+      const pushResult = await pushUnsynced();
+      const pulled = await pullChanges();
+      await refreshPendingCount();
+      return { pushed: pushResult.pushed, pulled, conflicts: pushResult.conflicts };
+    } catch (err) {
+      console.error('Sync failed:', err);
+      return { pushed: 0, pulled: 0, conflicts: 0 };
+    } finally {
+      setSyncing(false);
+      _syncPromise = null;
+    }
+  })();
+  return _syncPromise;
 }
 
 // Push-only sync: flush pending local changes to server (no pull)

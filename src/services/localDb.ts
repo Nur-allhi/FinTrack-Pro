@@ -392,33 +392,39 @@ export const localDb = {
   async getLoanSettlements(): Promise<LocalLoanSettlement[]> { return getAllVisible('loan_settlements'); },
   async putLoanSettlement(record: LocalLoanSettlement): Promise<void> { await put('loan_settlements', record); },
   async putLoanSettlements(records: LocalLoanSettlement[]): Promise<void> { await putAll('loan_settlements', records); },
+  async markLoanSettlementsSynced(ids: string[]): Promise<void> { await markSynced('loan_settlements', ids); },
 
   // Investments
   async getInvestments(): Promise<LocalInvestment[]> { return getAllVisible('investments'); },
   async putInvestment(record: LocalInvestment): Promise<void> { await put('investments', record); },
   async putInvestments(records: LocalInvestment[]): Promise<void> { await putAll('investments', records); },
+  async markInvestmentsSynced(ids: string[]): Promise<void> { await markSynced('investments', ids); },
 
   // Investment Returns
   async getInvestmentReturns(): Promise<LocalInvestmentReturn[]> { return getAllVisible('investment_returns'); },
   async putInvestmentReturn(record: LocalInvestmentReturn): Promise<void> { await put('investment_returns', record); },
   async putInvestmentReturns(records: LocalInvestmentReturn[]): Promise<void> { await putAll('investment_returns', records); },
+  async markInvestmentReturnsSynced(ids: string[]): Promise<void> { await markSynced('investment_returns', ids); },
 
   // Groups
   async getGroups(): Promise<LocalGroup[]> { return getAllVisible('groups'); },
   async putGroup(record: LocalGroup): Promise<void> { await put('groups', record); },
   async putGroups(records: LocalGroup[]): Promise<void> { await putAll('groups', records); },
   async deleteGroup(id: string): Promise<void> { await remove('groups', id); },
+  async markGroupsSynced(ids: string[]): Promise<void> { await markSynced('groups', ids); },
 
   // Budgets
   async getBudgets(): Promise<LocalBudget[]> { return getAllVisible('budgets'); },
   async putBudget(record: LocalBudget): Promise<void> { await put('budgets', record); },
   async putBudgets(records: LocalBudget[]): Promise<void> { await putAll('budgets', records); },
+  async markBudgetsSynced(ids: string[]): Promise<void> { await markSynced('budgets', ids); },
 
   // Recurring Transactions
   async getRecurringTransactions(): Promise<LocalRecurringTransaction[]> { return getAllVisible('recurring_transactions'); },
   async putRecurringTransaction(record: LocalRecurringTransaction): Promise<void> { await put('recurring_transactions', record); },
   async putRecurringTransactions(records: LocalRecurringTransaction[]): Promise<void> { await putAll('recurring_transactions', records); },
   async deleteRecurringTransaction(id: string): Promise<void> { await remove('recurring_transactions', id); },
+  async markRecurringTransactionsSynced(ids: string[]): Promise<void> { await markSynced('recurring_transactions', ids); },
 
   // Metadata
   async getMeta(key: string): Promise<unknown> {
