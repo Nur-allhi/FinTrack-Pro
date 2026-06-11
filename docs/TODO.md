@@ -412,10 +412,31 @@
 ## Phase 19 — Bug Fixes (45 bugs from codebase analysis)
 
 > **Source**: `docs/BUG_REPORT.md`
-> **Branch**: `feat/local-first`
 > **Status**: 0/45 complete
 >
-> **Strategy**: Fix in 8 batches. Groups fix related bugs together. Individual fixes are isolated.
+> ### Branching Strategy
+>
+> ```
+> feat/local-first
+>   └── fix/all-bugs (main bug fixes branch)
+>         ├── fix/batch-1-sync-engine (from fix/all-bugs) → merge back → delete
+>         ├── fix/batch-2-auth-service (from fix/all-bugs) → merge back → delete
+>         ├── fix/batch-3-cascade-deletes (from fix/all-bugs) → merge back → delete
+>         ├── fix/batch-4-logout-auth (from fix/all-bugs) → merge back → delete
+>         ├── fix/batch-5-local-db (from fix/all-bugs) → merge back → delete
+>         ├── fix/batch-6-use-local-data (from fix/all-bugs) → merge back → delete
+>         ├── fix/batch-7-app-state (from fix/all-bugs) → merge back → delete
+>         └── fix/batch-8-individual (from fix/all-bugs) → merge back → delete
+> ```
+>
+> **Workflow per batch**:
+> 1. Create `fix/batch-N-name` from `fix/all-bugs`
+> 2. Fix bugs in that batch
+> 3. Commit with task references
+> 4. Merge back to `fix/all-bugs`
+> 5. Delete `fix/batch-N-name`
+>
+> **After all batches**: Push `fix/all-bugs` → merge into `dev`
 
 ### Batch 1: Sync Engine Core (12 bugs) — CRITICAL + HIGH
 **File**: `src/services/syncEngine.ts`
