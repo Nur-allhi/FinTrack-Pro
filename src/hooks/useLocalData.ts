@@ -18,8 +18,8 @@ function toApiAccount(
   const memberId = r.member_id != null
     ? memberLocalIdToServerId.get(String(r.member_id)) ?? r.member_id
     : null;
-  const memberName = r.member_id != null ? memberNameById.get(r.member_id) : undefined;
-  const parentName = r.parent_id != null ? accountNameById.get(r.parent_id) : undefined;
+  const memberName = r.member_id != null ? memberNameById.get(r.member_id) ?? undefined : undefined;
+  const parentName = r.parent_id != null ? accountNameById.get(r.parent_id) ?? undefined : undefined;
   return {
     id: r.server_id ?? 0,
     _localId: r.id,
@@ -33,6 +33,8 @@ function toApiAccount(
 
 export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => void) {
   const { toast } = useToast();
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
   const [isOnlineState, setIsOnlineState] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<number | null>(getLastSync());
   const [pendingCount, setPendingCount] = useState(0);
@@ -61,21 +63,19 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
   const fetchData = useCallback(async (showToast = false) => {
     if (!authRef.current) {
-      if (showToast) toast("Sign in to sync data.", 'error');
+      if (showToast) toastRef.current("Sign in to sync data.", 'error');
       return;
     }
     if (!isOnline()) {
-      if (showToast) toast("Cannot refresh while offline.", 'error');
+      if (showToast) toastRef.current("Cannot refresh while offline.", 'error');
       return;
     }
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     setDataLoading(true);
     try {
-      const [membersRes, accountsRes] = await Promise.all([
-        authService.apiFetch('/api/members'),
-        authService.apiFetch('/api/accounts'),
-      ]);
+      // Fetch members first, then accounts — accounts depend on member data
+      const membersRes = await authService.apiFetch('/api/members');
 
       // Detect guest mode (403) and show toast
       if (membersRes.status === 403) {
@@ -131,6 +131,8 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         setMembers(await localDb.getMembers());
       }
 
+      // Now fetch accounts — member data is guaranteed to be in localDb
+      const accountsRes = await authService.apiFetch('/api/accounts');
       if (accountsRes.ok) {
         const data = await accountsRes.json();
         // Build map of existing local records by server_id to avoid duplicates
@@ -255,47 +257,43 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       if (showToast) toast("Data refreshed.", 'success');
     } catch (error) {
       console.error("Fetch failed:", error);
-      if (showToast) toast("Failed to refresh data.", 'error');
+      if (showToast) toastRef.current("Failed to refresh data.", 'error');
     } finally {
       fetchingRef.current = false;
       setDataLoading(false);
     }
-  }, [toast]);
+  }, []);
 
-  // Initial load: read local first, then background fetch (runs once when first authenticated)
+  // Initial load + auth transition: read local first, then background fetch
   useEffect(() => {
-    if (!isAuthenticated) return;
-    if (initialLoadDoneRef.current) return;
-    initialLoadDoneRef.current = true;
-
-    loadFromLocal().then(() => {
-      onInitialLoad?.();
-      if (isOnline()) {
-        fetchData();
-      }
-    });
-    // Only when first authenticated. Auth transitions handled by login transition effect below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  // On login transition: clear stale state and fetch fresh data
-  useEffect(() => {
-    if (!isAuthenticated || prevAuthRef.current) {
-      if (!isAuthenticated && prevAuthRef.current) {
+    if (!isAuthenticated) {
+      // On logout: clear state
+      if (prevAuthRef.current) {
         loadedRef.current = false;
         setMembers([]);
         setAccounts([]);
       }
-      prevAuthRef.current = isAuthenticated;
+      prevAuthRef.current = false;
       return;
     }
 
-    loadedRef.current = false;
-    setMembers([]);
-    setAccounts([]);
-    if (isOnline()) fetchData();
+    // On first auth or login transition: load from local, then fetch from server
+    if (!initialLoadDoneRef.current || !prevAuthRef.current) {
+      loadedRef.current = false;
+      setMembers([]);
+      setAccounts([]);
+      initialLoadDoneRef.current = true;
+
+      loadFromLocal().then(() => {
+        onInitialLoad?.();
+        if (isOnline()) {
+          fetchData();
+        }
+      });
+    }
     prevAuthRef.current = isAuthenticated;
-  }, [isAuthenticated, fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // Polling every 30s
   useEffect(() => {
