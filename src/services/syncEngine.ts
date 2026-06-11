@@ -55,6 +55,9 @@ let _isSyncing = false;
 let _syncPromise: Promise<SyncResult> | null = null;
 let _syncListeners: ((syncing: boolean) => void)[] = [];
 
+// Retry queue for records with previously untranslatable FKs
+const _pendingRetry: Map<string, LocalRecord[]> = new Map();
+
 // Clear stale listeners on HMR (dev only)
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
@@ -179,10 +182,18 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
   const records: Record<string, LocalRecord[]> = {};
   let totalUnsynced = 0;
 
+  // Include retry records from previous cycles first
+  for (const [table, retryRecs] of _pendingRetry.entries()) {
+    if (retryRecs.length > 0) {
+      records[table] = [...(records[table] || []), ...retryRecs];
+      totalUnsynced += retryRecs.length;
+    }
+  }
+
   for (const table of SYNC_TABLES) {
     const unsynced = await getUnsyncedForTable(table);
     if (unsynced.length > 0) {
-      records[table] = unsynced;
+      records[table] = [...(records[table] || []), ...unsynced];
       totalUnsynced += unsynced.length;
     }
   }
@@ -227,8 +238,10 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
   }
 
   // Sanitize: strip local-only fields, map id→client_id, _deleted→deleted_at, translate FKs
-  // Records with untranslatable REQUIRED FKs are skipped (stay pending for next cycle).
+  // Records with untranslatable REQUIRED FKs are skipped and added to retry queue.
   const sanitized: Record<string, Record<string, unknown>[]> = {};
+  const skippedRecords: Map<string, LocalRecord[]> = new Map();
+
   for (const [table, recs] of Object.entries(records)) {
     const pushable: Record<string, unknown>[] = [];
     for (const r of recs) {
@@ -299,7 +312,13 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
         }
       }
 
-      if (!skip) pushable.push(base);
+      if (!skip) {
+        pushable.push(base);
+      } else {
+        // Track skipped records for retry queue
+        if (!skippedRecords.has(table)) skippedRecords.set(table, []);
+        skippedRecords.get(table)!.push(r);
+      }
     }
     sanitized[table] = pushable;
   }
@@ -343,6 +362,15 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
         const fallbackIds = (records[table] || []).map(r => r.id);
         await markTableSynced(table as SyncTable, fallbackIds);
       }
+      // Clear retry queue for this table on successful push
+      _pendingRetry.delete(table);
+    }
+  }
+
+  // Add skipped records to retry queue for next cycle
+  for (const [table, skipped] of skippedRecords.entries()) {
+    if (skipped.length > 0) {
+      _pendingRetry.set(table, skipped);
     }
   }
 
@@ -400,30 +428,47 @@ async function pullChanges(): Promise<number> {
     if (!Array.isArray(changes) || changes.length === 0) continue;
 
     // Translate server numeric account refs to local UUIDs, and map deleted_at → _deleted
-    const translated = changes.map((r: Record<string, unknown>) => {
+    // Records with untranslatable required FKs are filtered out (they'll be retried on next pull
+    // once the referenced entity exists locally).
+    const translated: Record<string, unknown>[] = [];
+    for (const r of changes) {
       const sanitized = sanitizeForPull(r);
+      let skip = false;
+
       if (table === 'transactions' && sanitized.account_id != null) {
         const localId = accountIdMap.get(Number(sanitized.account_id));
-        if (localId) return { ...sanitized, account_id: localId };
+        if (localId) {
+          sanitized.account_id = localId;
+        } else {
+          skip = true; // required FK untranslatable
+        }
       }
       if (table === 'loans') {
-        let updated = sanitized;
         if (sanitized.lender_account_id != null) {
           const localId = accountIdMap.get(Number(sanitized.lender_account_id));
-          if (localId) updated = { ...updated, lender_account_id: localId };
+          if (localId) {
+            sanitized.lender_account_id = localId;
+          } else {
+            skip = true; // required FK untranslatable
+          }
         }
         if (sanitized.borrower_account_id != null) {
           const localId = accountIdMap.get(Number(sanitized.borrower_account_id));
-          if (localId) updated = { ...updated, borrower_account_id: localId };
+          if (localId) sanitized.borrower_account_id = localId;
+          else delete sanitized.borrower_account_id; // optional FK, drop it
         }
-        return updated;
       }
       if (table === 'loan_settlements' && sanitized.loan_id != null) {
         const localLoanId = loanIdMap.get(Number(sanitized.loan_id));
-        if (localLoanId) return { ...sanitized, loan_id: localLoanId };
+        if (localLoanId) {
+          sanitized.loan_id = localLoanId;
+        } else {
+          skip = true; // required FK untranslatable
+        }
       }
-      return sanitized;
-    });
+
+      if (!skip) translated.push(sanitized);
+    }
 
     // Filter out records that were permanently deleted (tombstone)
     const notTombstoned: Record<string, unknown>[] = [];
