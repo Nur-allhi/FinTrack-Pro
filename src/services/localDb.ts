@@ -513,7 +513,7 @@ export const localDb = {
   async emptyBin(entityType?: string): Promise<void> {
     const stores: EntityName[] = entityType
       ? [entityType as EntityName]
-      : ['transactions', 'accounts', 'loans', 'members', 'groups'];
+      : ['transactions', 'accounts', 'loans', 'members', 'groups', 'investment_returns', 'budgets', 'recurring_transactions'];
 
     const toEmpty: { store: EntityName; record: LocalRecord }[] = [];
     for (const s of stores) {
@@ -599,22 +599,24 @@ export const localDb = {
     return adjustAccountBalance(accountLocalId, delta);
   },
 
-  async recalculateAllBalances(): Promise<void> {
+  async recalculateAllBalances(accountId?: string): Promise<void> {
     const accounts = await withDB(async (db) => {
       const all = await db.getAll('accounts');
-      return all.filter(r => !r._deleted && r.type !== 'group') as LocalAccount[];
+      return all.filter(r => !r._deleted && r.type !== 'group' && (!accountId || r.id === accountId)) as LocalAccount[];
     });
     const transactions = await getAllVisible<LocalTransaction>('transactions');
     const sums = new Map<string, number>();
     for (const t of transactions) {
       sums.set(t.account_id, (sums.get(t.account_id) || 0) + t.amount);
     }
-    const now = new Date().toISOString();
+    const timestamp = new Date().toISOString();
     const toUpdate: LocalAccount[] = [];
     for (const a of accounts) {
       const sum = sums.get(a.id) || 0;
-      a.current_balance = (a.initial_balance || 0) + sum;
-      a.updated_at = now;
+      const newBalance = (a.initial_balance || 0) + sum;
+      if (a.current_balance === newBalance) continue; // skip unchanged
+      a.current_balance = newBalance;
+      a.updated_at = timestamp;
       toUpdate.push(a);
     }
     if (toUpdate.length > 0) {
