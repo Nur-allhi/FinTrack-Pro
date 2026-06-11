@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **115 completed**, **3 remaining** — Phase 6 (Google Drive setup) next
+> **140 completed**, **48 remaining** — Phase 19 (Bug Fixes) in progress
 >
 > ## Branching Strategy
 >
@@ -406,6 +406,108 @@
 - [x] **T-221** Replace `OfflineIndicator` syncing animation with `SyncToast` in `App.tsx` (30m)
 - [x] **T-222** Add `sync_status` to `Transaction` type + `toUiTransaction` mapping (15m)
 - [x] **T-223** Add sync status icons (pending/synced) beside balance column in `TransactionRow` and `TransactionCard` (30m)
+
+---
+
+## Phase 19 — Bug Fixes (45 bugs from codebase analysis)
+
+> **Source**: `docs/BUG_REPORT.md`
+> **Branch**: `feat/local-first`
+> **Status**: 0/45 complete
+>
+> **Strategy**: Fix in 8 batches. Groups fix related bugs together. Individual fixes are isolated.
+
+### Batch 1: Sync Engine Core (12 bugs) — CRITICAL + HIGH
+**File**: `src/services/syncEngine.ts`
+**Est. time**: 4-6h
+**Risk**: HIGH — core sync logic
+
+- [ ] **T-224** BUG-002: Implement `markTableSynced` for all 6 entity types (1h) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-225** BUG-001: Add promise-based mutex on `_isSyncing` to prevent race conditions (1h) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-226** BUG-003: Fix pull FK translation — skip record or queue for retry instead of silent corruption (1h) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-227** BUG-012: Move `resetStaleAccountPending()` before FK map construction (30m) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-228** BUG-035: Add retry queue for records with untranslatable FKs (1h) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-229** BUG-017/018: Surface push/pull errors to syncState (not silently swallow) (30m) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-230** BUG-021: Replace `as never[]` with proper type narrowing in `upsertFromServer` (30m) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-231** BUG-036: Make sync timestamp update atomic with upsert (30m) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-232** BUG-039: Add NaN guard on `updated_at` comparison in LWW logic (15m) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-233** BUG-009: Strip `deleted_at` from pull records when null (15m) — `📄 docs/BUG_REPORT.md:Group 1`
+- [ ] **T-234** BUG-007: Clear stale listeners on HMR (dev only, low priority) (15m) — `📄 docs/BUG_REPORT.md:Group 1`
+
+### Batch 2: Auth Service (4 bugs) — CRITICAL + HIGH
+**File**: `src/services/authService.ts`
+**Est. time**: 2-3h
+**Risk**: MEDIUM — auth flow
+
+- [ ] **T-235** BUG-016: Fix token refresh retry — re-inject cookies or use refreshed session (1h) — `📄 docs/BUG_REPORT.md:Group 2`
+- [ ] **T-236** BUG-005: Return unsubscribe function from `onAuthStateChange` (30m) — `📄 docs/BUG_REPORT.md:Group 2`
+- [ ] **T-237** BUG-027: Add `credentials: 'same-origin'` to all fetch calls (15m) — `📄 docs/BUG_REPORT.md:Group 2`
+- [ ] **T-238** BUG-037: Show toast when guest mode blocks API calls (15m) — `📄 docs/BUG_REPORT.md:Group 2`
+
+### Batch 3: API Cascade Deletes (3 bugs) — HIGH
+**Files**: `api/db/accounts.ts`, `api/db/loans.ts`, `api/db/groups.ts`
+**Est. time**: 2-3h
+**Risk**: MEDIUM — server-side only
+
+- [ ] **T-239** BUG-030: Cascade soft-delete transactions when account is deleted (1h) — `📄 docs/BUG_REPORT.md:Group 5`
+- [ ] **T-240** BUG-031: Cascade soft-delete transactions + settlements when loan is deleted (1h) — `📄 docs/BUG_REPORT.md:Group 5`
+- [ ] **T-241** BUG-032: Warn user before orphaning child accounts on group delete (30m) — `📄 docs/BUG_REPORT.md:Group 5`
+
+### Batch 4: Logout & Auth Flow (3 bugs) — MEDIUM
+**File**: `src/hooks/useAuth.ts`
+**Est. time**: 1-2h
+**Risk**: LOW — logout edge cases
+
+- [ ] **T-242** BUG-019: Replace `localStorage.clear()` with app-specific key cleanup (30m) — `📄 docs/BUG_REPORT.md:Group 3`
+- [ ] **T-243** BUG-020: Call `stopSyncScheduler()` in `handleLogout` (15m) — `📄 docs/BUG_REPORT.md:Group 3`
+- [ ] **T-244** BUG-038: Set `authStatus` to `'guest'` when server unreachable (not `'authenticated'`) (30m) — `📄 docs/BUG_REPORT.md:Group 3`
+
+### Batch 5: Local DB (5 bugs) — MEDIUM
+**File**: `src/services/localDb.ts`
+**Est. time**: 1-2h
+**Risk**: LOW — local data operations
+
+- [ ] **T-245** BUG-004: Wait for sync to complete before `emptyBin` hard-deletes (30m) — `📄 docs/BUG_REPORT.md:Group 4`
+- [ ] **T-246** BUG-015: Add `investment_returns`, `budgets`, `recurring_transactions` to `emptyBin` (15m) — `📄 docs/BUG_REPORT.md:Group 4`
+- [ ] **T-247** BUG-014: Only notify changed accounts in `recalculateAllBalances` (30m) — `📄 docs/BUG_REPORT.md:Group 4`
+- [ ] **T-248** BUG-010: Rename shadowed `now` variable to avoid confusion (5m) — `📄 docs/BUG_REPORT.md:Group 4`
+- [ ] **T-249** BUG-034: Make `recalculateAllBalances` accept optional account ID filter (30m) — `📄 docs/BUG_REPORT.md:Group 4`
+
+### Batch 6: useLocalData Hook (4 bugs) — MEDIUM
+**File**: `src/hooks/useLocalData.ts`
+**Est. time**: 1-2h
+**Risk**: LOW — data fetching
+
+- [ ] **T-250** BUG-040: Consolidate auth-triggered data fetches into single effect (30m) — `📄 docs/BUG_REPORT.md:Group 6`
+- [ ] **T-251** BUG-013: Ensure member map is built before account upsert in `fetchData` (30m) — `📄 docs/BUG_REPORT.md:Group 6`
+- [ ] **T-252** BUG-011: Add fallback for undefined member_name in `toApiAccount` (15m) — `📄 docs/BUG_REPORT.md:Group 6`
+- [ ] **T-253** BUG-006: Memoize `fetchData` with stable deps to prevent polling recreation (15m) — `📄 docs/BUG_REPORT.md:Group 6`
+
+### Batch 7: App.tsx State (5 bugs) — MEDIUM + HIGH
+**File**: `src/App.tsx`
+**Est. time**: 1-2h
+**Risk**: MEDIUM — UI state
+
+- [ ] **T-254** BUG-028: Remove `window.__localDb` debug exposure (5m) — `📄 docs/BUG_REPORT.md:Group 7`
+- [ ] **T-255** BUG-045: Remove duplicate `syncNow()` call from App.tsx useEffect (15m) — `📄 docs/BUG_REPORT.md:Group 7`
+- [ ] **T-256** BUG-041: Fix `selectedAccountId` type — use `string | null` with `_localId` or handle `0` case (1h) — `📄 docs/BUG_REPORT.md:Group 7`
+- [ ] **T-257** BUG-042: Add NaN guard on `Number(savedAccountId)` from sessionStorage (15m) — `📄 docs/BUG_REPORT.md:Group 7`
+- [ ] **T-258** BUG-044: Clear stale `dashboardFilter` from localStorage on logout (15m) — `📄 docs/BUG_REPORT.md:Group 7`
+
+### Batch 8: Individual Fixes (9 bugs) — MEDIUM + LOW
+**Various files**
+**Est. time**: 2-3h
+**Risk**: LOW — isolated fixes
+
+- [ ] **T-259** BUG-008: Add null/empty check for `userEmail[0]` in Header.tsx (15m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-260** BUG-025: Add CSRF token validation to auth endpoints (1h) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-261** BUG-033: Trigger balance recalc after loan settlement (30m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-262** BUG-029: Add `trust proxy` config for rate limiter behind reverse proxy (15m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-263** BUG-023: Validate `accountId` as number in transactions route (15m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-264** BUG-024: Add `Secure` flag to cookies in production only (15m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-265** BUG-026: Replace naive regex with DOMPurify or proper HTML stripper (30m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-266** BUG-022: Replace type cast with proper type guard in recyclebin route (15m) — `📄 docs/BUG_REPORT.md:Individual`
+- [ ] **T-267** BUG-043: Store setTimeout ref and clear on unmount in Toast.tsx (15m) — `📄 docs/BUG_REPORT.md:Individual`
 
 ---
 
