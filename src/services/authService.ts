@@ -5,6 +5,14 @@ let _initPromise: Promise<SupabaseClient | null> | null = null;
 let _onSessionExpired: (() => void) | null = null;
 let _signedOut = false;
 let _guestMode = false;
+let _csrfToken: string | null = null;
+
+function getCsrfToken(): string | null {
+  if (_csrfToken) return _csrfToken;
+  const match = document.cookie.match(/(?:^|;\s*)csrf-token=([^;]*)/);
+  _csrfToken = match ? match[1] : null;
+  return _csrfToken;
+}
 
 export function setOnSessionExpired(callback: () => void) {
   _onSessionExpired = callback;
@@ -173,13 +181,29 @@ export const authService = {
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string> || {}),
     };
+    const method = (options.method || 'GET').toUpperCase();
+    if (method !== 'GET' && method !== 'HEAD') {
+      const token = getCsrfToken();
+      if (token) headers['x-csrf-token'] = token;
+    }
     const res = await fetch(url, { ...options, headers, credentials: 'same-origin' });
+    if (method === 'GET' || method === 'HEAD') {
+      _csrfToken = null;
+      getCsrfToken();
+    }
     if (res.status === 401) {
       const newToken = await refreshTokenInternal();
       if (newToken) {
-        // Wait for cookie to propagate, then retry with fresh credentials
         await new Promise(r => setTimeout(r, 100));
-        return fetch(url, { ...options, headers, credentials: 'same-origin' });
+        _csrfToken = null;
+        getCsrfToken();
+        const retryHeaders = { ...headers };
+        const retryMethod = (options.method || 'GET').toUpperCase();
+        if (retryMethod !== 'GET' && retryMethod !== 'HEAD') {
+          const token = getCsrfToken();
+          if (token) retryHeaders['x-csrf-token'] = token;
+        }
+        return fetch(url, { ...options, headers: retryHeaders, credentials: 'same-origin' });
       }
       if (!_signedOut) {
         _onSessionExpired?.();
