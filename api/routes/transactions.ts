@@ -19,9 +19,13 @@ router.get("/categories", async (req, res) => {
 
 router.get("/:accountId", async (req, res) => {
   try {
+    const accountId = Number(req.params.accountId);
+    if (isNaN(accountId) || accountId <= 0) {
+      return sendError(res, 400, "Invalid account ID", "VALIDATION_ERROR");
+    }
     const limit = req.query.limit ? Number(req.query.limit) : 500;
     const offset = req.query.offset ? Number(req.query.offset) : undefined;
-    const transactions = await getTransactions(req.params.accountId, req.user!.id, limit, offset);
+    const transactions = await getTransactions(String(accountId), req.user!.id, limit, offset);
     res.json(transactions);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

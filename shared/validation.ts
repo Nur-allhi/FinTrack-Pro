@@ -1,8 +1,13 @@
 import { z } from "zod";
 
-/** Strip HTML tags to prevent stored XSS in non-React contexts (PDFs, emails) */
+/** Strip HTML tags and entities to prevent stored XSS in non-React contexts (PDFs, emails) */
 function sanitizeHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '').trim();
+  return str
+    .replace(/<[^>]*>/g, '')           // Strip HTML tags
+    .replace(/&[a-zA-Z]+;/g, '')       // Strip HTML entities like &amp; &lt;
+    .replace(/&#\d+;/g, '')            // Strip numeric entities like &#60;
+    .replace(/&#x[0-9a-fA-F]+;/g, '')  // Strip hex entities like &#x3C;
+    .trim();
 }
 
 const sanitizedString = () => z.string().transform(sanitizeHtml);

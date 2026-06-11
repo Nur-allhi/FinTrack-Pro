@@ -27,6 +27,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust first proxy (for rate limiter behind reverse proxy)
+if (process.env.TRUST_PROXY === '1') {
+  app.set('trust proxy', 1);
+}
+
 const startup = initDb().catch(e => console.error("Startup error:", e));
 
 app.use(async (_req: Request, _res: Response, next: NextFunction) => {
