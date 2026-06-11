@@ -1142,3 +1142,50 @@ Fixed two issues: (1) account balance not updating when remote transactions are 
 ### Verification
 - `gitnexus detect_changes` — low risk, 4 symbols touched, no affected processes
 - `npm run build` — clean build, no errors
+
+---
+
+## Session 22 — 11 Jun 2026 (Phase 22 — Security Audit Fixes)
+
+> **Branch**: `fix/security-audit`
+> **Tasks**: T-300, T-301, T-302, T-303, T-304, T-305, T-306, T-307, T-308
+> **Status**: completed
+
+### Summary
+Implemented all 9 security audit fixes from `docs/SECURITY_AUDIT.md`. Added helmet middleware, fixed investment_returns authorization gap, fixed Supabase .or() injection in search, added Zod schemas for budgets and recurring, removed /api/auth/config, rate-limited /api/auth/session, added CSRF protection, fixed cookie Secure flag, and added investment ownership checks.
+
+### Changes
+- **T-300**: Installed helmet, added `app.use(helmet())` to middleware chain
+- **T-301**: Added `userId` param to `getInvestmentReturns`/`createInvestmentReturn`, filtered by `user_id`
+- **T-302**: Sanitized search query input with character whitelist before .or() interpolation
+- **T-303**: Created `budgetSchema` and `recurringSchema` in validation.ts, applied to POST routes
+- **T-304**: Removed `/api/auth/config` endpoint, replaced with `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` env vars, updated frontend to use `import.meta.env`
+- **T-305**: Applied `authLimiter` to `/api/auth/session` route
+- **T-306**: Created `api/middleware/csrf.ts` — double-submit cookie pattern, applied to auth POST endpoints and all `/api/*` sub-routers
+- **T-307**: Changed cookie Secure flag from `NODE_ENV === "production"` to `!isLocalhost(req)` check
+- **T-308**: Added `getInvestmentById()` with user_id filter, ownership check in `/:id/returns` GET and POST routes
+
+### Files Changed
+- `api/index.ts` — helmet, CSRF, rate limiting, removed config endpoint
+- `api/middleware/auth.ts` — updated setSessionCookie/clearSessionCookie signatures with req param
+- `api/middleware/csrf.ts` — new file, CSRF double-submit cookie middleware
+- `api/db/investments.ts` — added getInvestmentById, userId filters
+- `api/routes/investments.ts` — investment ownership checks
+- `api/routes/search.ts` — input sanitization
+- `api/routes/budgets.ts` — Zod validation
+- `api/routes/recurring.ts` — Zod validation
+- `shared/validation.ts` — budgetSchema, recurringSchema
+- `src/services/authService.ts` — switched to import.meta.env for Supabase config
+- `src/hooks/useAuth.ts` — changed reachability check to /api/auth/me
+- `.env` — added VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+- `api/middleware/csrf.ts` — new CSRF middleware
+- `api/tests/helpers.ts` — CSRF mock
+- `api/tests/smoke.test.ts` — updated me test expectation
+- `api/tests/auth.test.ts` — updated cookie tests with req param
+- `plans/PHASE_22_SECURITY_AUDIT.md` — plan file
+- `package.json`, `package-lock.json` — added helmet dependency
+
+### Verification
+- `tsc --noEmit` — zero errors in source files
+- `npx vitest run api/tests/` — 37/37 passed
+- `npx vite build` — clean build, no warnings

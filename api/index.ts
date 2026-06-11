@@ -41,7 +41,23 @@ app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-app.use(helmet());
+const supabaseUrl = process.env.SUPABASE_URL || "https://phqjdotfgpuoourbqtmr.supabase.co";
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      connectSrc: ["'self'", supabaseUrl],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(requestIdMiddleware);
 app.use(requestLogger);
 app.use(express.json({ limit: '10mb' }));
