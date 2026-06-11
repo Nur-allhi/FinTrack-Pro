@@ -492,7 +492,7 @@ async function pullChanges(): Promise<number> {
       const local = localMap.get(r.id as number);
       if (!local) return true; // new record, upsert
       if (local.sync_status === 'pending') return false; // local has unpushed changes, skip
-      if ((local as any)._bin_emptied) return false; // user permanently deleted, skip
+      if (local._bin_emptied) return false; // user permanently deleted, skip
       // Both synced — LWW by updated_at
       const serverTime = new Date((r.updated_at as string) || 0).getTime();
       const localTime = new Date(local.updated_at).getTime();

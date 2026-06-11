@@ -3,6 +3,39 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 20 — 11 Jun 2026 (Phase 20 Bug Fixes)
+
+> **Branch**: `fix/all-bugs`
+> **Tasks**: T-268, T-269, T-270, T-271
+> **Status**: completed
+
+### Summary
+Fixed 4 new bugs discovered during Phase 19 verification scan. Also fixed 2 TS regressions in LoanManager.tsx caused by type alignment (Phase 17).
+
+### Changes
+- BUG-NEW-001: `localStorage.clear()` still used in `useProfileData.ts` — replaced with app-specific key removal
+- BUG-NEW-002: `OfflineIndicator.tsx` was dead code (never imported) — deleted
+- BUG-NEW-003: `_bin_emptied` added to `LocalRecord` type, `as any` casts removed from `localDb.ts` and `syncEngine.ts`
+- BUG-NEW-004: Added try-catch to async functions missing error handling in `useLocalData.ts`, `useTransactions.ts`, `App.tsx`
+
+### Files Changed
+- `docs/TODO.md` — added Phase 20, marked tasks complete
+- `docs/BUG_REPORT.md` — added New Findings from verification
+- `src/hooks/useProfileData.ts` — replaced `localStorage.clear()` with app-specific cleanup
+- `src/components/OfflineIndicator.tsx` — deleted (dead code)
+- `src/services/localDb.ts` — added `_bin_emptied` to `LocalRecord`, removed `as any` casts
+- `src/services/syncEngine.ts` — removed `as any` cast for `_bin_emptied`
+- `src/hooks/useLocalData.ts` — wrapped `loadFromLocal` in try-catch
+- `src/hooks/useTransactions.ts` — wrapped `readFromLocal` and `findLocalAccount` in try-catch
+- `src/App.tsx` — added error logging to fire-and-forget API call
+- `src/components/LoanManager.tsx` — fixed `member_name` TS regression on `LocalAccount`
+
+### Verification
+- `tsc --noEmit` ✅ (zero errors)
+- `npm run build` ✅
+- `npm run lint` ✅
+- `npx vitest run` — 36/37 pass (1 pre-existing mock issue in members.test.ts)
+
 ## Session 8 — 09 Jun 2026 (Group Modal, Member Cards, Navigation Polish)
 
 > **Branch**: `feature/ui-ux-polish-improvement`

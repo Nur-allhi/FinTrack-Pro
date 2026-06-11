@@ -165,7 +165,7 @@ export default function App() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    authService.apiFetch('/api/recurring/process', { method: 'POST' }).catch(() => {});
+    authService.apiFetch('/api/recurring/process', { method: 'POST' }).catch((e) => console.error('Recurring process failed:', e));
   }, [isAuthenticated]);
 
   useEffect(() => {

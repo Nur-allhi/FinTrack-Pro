@@ -10,6 +10,7 @@ export interface LocalRecord {
   updated_at: string;
   sync_status: SyncStatus;
   _deleted: boolean;
+  _bin_emptied?: boolean;
   created_at?: string;
 }
 
@@ -476,7 +477,7 @@ export const localDb = {
       for (const { name, label } of stores) {
         const all = await db.getAll(name);
         for (const r of all) {
-          if (r._deleted && !(r as any)._bin_emptied) {
+          if (r._deleted && !r._bin_emptied) {
             const summary = 'name' in r ? (r as { name: string }).name : 'particulars' in r ? (r as { particulars: string }).particulars : label;
             results.push({
               entity_type: name,
@@ -535,7 +536,7 @@ export const localDb = {
     for (const { store: s, record: r } of toEmpty) {
       r.sync_status = 'pending';
       r.updated_at = ts;
-      (r as any)._bin_emptied = true;
+      r._bin_emptied = true;
       await put(s, r);
     }
 
@@ -552,7 +553,7 @@ export const localDb = {
 
     // Hard-delete + tombstone
     for (const { store: s, record: r } of toEmpty) {
-      const sid = (r as any).server_id as number | undefined;
+      const sid = (r as { server_id?: number | null }).server_id ?? undefined;
       if (sid != null) {
         await this.addDeletedId(s, sid);
       }

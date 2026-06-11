@@ -20,6 +20,11 @@ const mockSupabase = vi.hoisted(() => ({
         eq: vi.fn(() => Promise.resolve({ error: null })),
       })),
     })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      })),
+    })),
   })),
 }));
 

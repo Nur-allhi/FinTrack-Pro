@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **184 completed**, **3 remaining** (Google Drive backup deferred)
+> **188 completed**, **3 remaining** (Google Drive backup deferred)
 >
 > ## Branching Strategy
 >
@@ -529,6 +529,21 @@
 - [x] **T-265** BUG-026: Replace naive regex with DOMPurify or proper HTML stripper (30m) — `📄 docs/BUG_REPORT.md:Individual`
 - [x] **T-266** BUG-022: Replace type cast with proper type guard in recyclebin route (15m) — `📄 docs/BUG_REPORT.md:Individual`
 - [x] **T-267** BUG-043: Store setTimeout ref and clear on unmount in Toast.tsx (15m) — `📄 docs/BUG_REPORT.md:Individual`
+
+---
+
+## Phase 20 — Post-Phase 19 Bug Fixes (4 bugs from verification scan) ✅
+
+> **Source**: `docs/BUG_REPORT.md` §New Findings
+> **Branch**: `fix/all-bugs`
+> **Status**: completed — merged into `dev`
+
+### Bugs to Fix
+
+- [x] **T-268** BUG-NEW-001: Replace `localStorage.clear()` in `useProfileData.ts` with app-specific key cleanup (15m) — `📄 docs/BUG_REPORT.md:BUG-NEW-001`
+- [x] **T-269** BUG-NEW-002: Delete orphaned `OfflineIndicator.tsx` (dead code, never imported) (5m) — `📄 docs/BUG_REPORT.md:BUG-NEW-002`
+- [x] **T-270** BUG-NEW-003: Add `_bin_emptied` to `LocalRecord` type, remove `as any` casts in `localDb.ts` and `syncEngine.ts` (15m) — `📄 docs/BUG_REPORT.md:BUG-NEW-003`
+- [x] **T-271** BUG-NEW-004: Add try-catch to async functions missing error handling in `useLocalData.ts`, `useTransactions.ts`, `App.tsx` (30m) — `📄 docs/BUG_REPORT.md:BUG-NEW-004`
 
 ---
 

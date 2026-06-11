@@ -42,45 +42,54 @@ export function useTransactions(account: Account) {
   }, []);
 
   const readFromLocal = useCallback(async (accountLocalId: string) => {
-    if (accountIdRef.current !== account?.id) return;
-    const accounts = await localDb.getAccounts();
-    const acc = accounts.find(a => a.id === accountLocalId);
-    if (!acc) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-    const allTxns = await localDb.getTransactions();
-    const localTxns = allTxns.filter(t => {
-      if (t.account_id === acc.id) return true;
-      if (acc.server_id != null && String(t.account_id) === String(acc.server_id)) return true;
-      return false;
-    });
-    if (accountIdRef.current !== account?.id) return;
-    const uiTxns = localTxns
-      .map(lt => {
-        const ui = toUiTransaction(lt, account.id);
-        if (ui.linked_transaction_id) {
-          const linkedId = String(ui.linked_transaction_id);
-          const linked = allTxns.find(t => t.id === linkedId || (t.server_id != null && String(t.server_id) === linkedId));
-          if (linked) {
-            const linkedAcc = accounts.find(a => a.id === linked.account_id);
-            if (linkedAcc) ui.linked_account_name = linkedAcc.name;
+    try {
+      if (accountIdRef.current !== account?.id) return;
+      const accounts = await localDb.getAccounts();
+      const acc = accounts.find(a => a.id === accountLocalId);
+      if (!acc) {
+        setTransactions([]);
+        setLoading(false);
+        return;
+      }
+      const allTxns = await localDb.getTransactions();
+      const localTxns = allTxns.filter(t => {
+        if (t.account_id === acc.id) return true;
+        if (acc.server_id != null && String(t.account_id) === String(acc.server_id)) return true;
+        return false;
+      });
+      if (accountIdRef.current !== account?.id) return;
+      const uiTxns = localTxns
+        .map(lt => {
+          const ui = toUiTransaction(lt, account.id);
+          if (ui.linked_transaction_id) {
+            const linkedId = String(ui.linked_transaction_id);
+            const linked = allTxns.find(t => t.id === linkedId || (t.server_id != null && String(t.server_id) === linkedId));
+            if (linked) {
+              const linkedAcc = accounts.find(a => a.id === linked.account_id);
+              if (linkedAcc) ui.linked_account_name = linkedAcc.name;
+            }
           }
-        }
-        return ui;
-      })
-      .sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || ''));
-    setTransactions(uiTxns);
-    if (uiTxns.length === 0 && !syncCompletedRef.current) return; // keep loading, wait for initial sync
-    setLoading(false);
+          return ui;
+        })
+        .sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || ''));
+      setTransactions(uiTxns);
+      if (uiTxns.length === 0 && !syncCompletedRef.current) return; // keep loading, wait for initial sync
+      setLoading(false);
+    } catch (e) {
+      console.error('readFromLocal failed:', e);
+      setLoading(false);
+    }
   }, [account?.id]);
 
   useEffect(() => {
     const findLocalAccount = async () => {
-      const accounts = await localDb.getAccounts();
-      const acc = accounts.find(a => a.server_id === account?.id);
-      setLocalAccountId(acc?.id || null);
+      try {
+        const accounts = await localDb.getAccounts();
+        const acc = accounts.find(a => a.server_id === account?.id);
+        setLocalAccountId(acc?.id || null);
+      } catch (e) {
+        console.error('findLocalAccount failed:', e);
+      }
     };
     findLocalAccount();
   }, [account?.id]);

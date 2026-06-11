@@ -73,7 +73,8 @@ export function useProfileData({ currency, accounts, toast, onImportData }: UseP
     try {
       const res = await authService.apiFetch('/api/export/clear-all', { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed');
-      localStorage.clear();
+      localStorage.removeItem('last_sync');
+      localStorage.removeItem('dashboardFilter');
       sessionStorage.clear();
       toast('All data cleared. Reloading...', 'success');
       setTimeout(() => window.location.reload(), 1500);
