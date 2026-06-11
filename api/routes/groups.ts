@@ -45,8 +45,8 @@ router.patch("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    await deleteGroup(req.user!.id, Number(req.params.id));
-    res.json({ success: true });
+    const result = await deleteGroup(req.user!.id, Number(req.params.id));
+    res.json({ success: true, orphanedChildren: result.orphanedChildren });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     logger.error({ requestId: req.requestId, error: message }, "DELETE /api/groups");

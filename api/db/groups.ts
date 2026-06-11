@@ -74,6 +74,24 @@ export async function updateGroup(userId: string, id: number, updates: { name?: 
 export async function deleteGroup(userId: string, id: number) {
   const client = db();
   const now = new Date().toISOString();
-  await client.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
+
+  // Check for child accounts that will be orphaned
+  const { data: children } = await client
+    .from("accounts")
+    .select("id, name")
+    .eq("parent_id", id)
+    .eq("user_id", userId)
+    .is("deleted_at", null);
+  
+  const childCount = (children || []).length;
+
+  // Orphan child accounts (set parent_id to null)
+  if (childCount > 0) {
+    await client.from("accounts").update({ parent_id: null }).eq("parent_id", id).eq("user_id", userId);
+  }
+
+  // Soft-delete the group itself
   await client.from("accounts").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
+
+  return { orphanedChildren: childCount };
 }
