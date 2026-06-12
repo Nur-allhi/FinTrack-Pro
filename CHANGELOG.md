@@ -4,6 +4,8 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-12: Add guest sign-up nudge on session start and before close at src/App.tsx — guests see the nudge on every return (if not permanently dismissed) and a browser leave confirmation when closing the tab; per-session dismissal via sessionStorage prevents mid-session annoyance (completed).
+
 2026-06-10: Include member name in loan group card headers — pair mode shows lender's member, borrower mode shows borrower account's member; prevents confusion when different members have same-name accounts (completed).
 2026-06-10: Remove redundant "Amount" label from mobile loan row — kept the number only, text labels stay on left (completed).
 2026-06-10: Add Member column to loan table/card — shows which member owns the lender account; displayed after Date in desktop table, mobile row, and detail modal (completed).

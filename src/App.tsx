@@ -181,9 +181,25 @@ export default function App() {
     if (isAuthenticated) return;
     const dismissed = await localDb.getMeta('signup_nudge_dismissed');
     if (dismissed) return;
-    const count = await localDb.getTransactionCount();
-    if (count >= 5) setShowSignupNudge(true);
+    if (sessionStorage.getItem('signup_nudge_session_dismissed') === 'true') return;
+    setShowSignupNudge(true);
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (authStatus === 'guest') {
+      void checkSignupNudge();
+    }
+  }, [authStatus, checkSignupNudge]);
+
+  useEffect(() => {
+    if (authStatus !== 'guest') return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [authStatus]);
 
   const handleDataSaved = useCallback(() => {
     void checkSignupNudge();
@@ -329,8 +345,14 @@ export default function App() {
           <SignupNudge
             open={showSignupNudge}
             onSignUp={() => { setShowSignupNudge(false); setAuthPage('signup'); }}
-            onDismiss={() => setShowSignupNudge(false)}
-            onNeverShow={() => setShowSignupNudge(false)}
+            onDismiss={() => {
+              sessionStorage.setItem('signup_nudge_session_dismissed', 'true');
+              setShowSignupNudge(false);
+            }}
+            onNeverShow={() => {
+              sessionStorage.setItem('signup_nudge_session_dismissed', 'true');
+              setShowSignupNudge(false);
+            }}
           />
         </Suspense>
       )}
