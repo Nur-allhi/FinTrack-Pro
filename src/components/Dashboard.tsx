@@ -122,7 +122,7 @@ export default function Dashboard({
 
       <DashboardCharts accounts={accounts} currency={settings.currency} showSpendingChart={settings.showSpendingChart} showBalanceTrend={settings.showBalanceTrend} />
 
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-4 md:space-y-6 mt-3 md:mt-0">
         <div className="flex items-center justify-between gap-3">
           <div className="w-auto md:w-44 shrink-0 min-w-0">
             <Select
