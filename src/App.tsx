@@ -255,26 +255,28 @@ export default function App() {
   };
 
   if (authStatus === 'loading') return <LoadingScreen fullScreen />;
-  if (!isAuthenticated && authPage !== 'login') {
-    return (
-      <Suspense fallback={<LoadingScreen fullScreen />}>
-        {authPage === 'signup' && <Signup onSignup={handleLogin} onBackToLogin={() => setAuthPage('login')} />}
-        {authPage === 'forgot' && <ForgotPassword onBackToLogin={() => setAuthPage('login')} />}
-        {authPage === 'reset' && <ResetPassword onResetComplete={() => setAuthPage('login')} />}
-      </Suspense>
-    );
-  }
-  if (!isAuthenticated && authPage === 'login') {
-    return (
-      <Suspense fallback={<LoadingScreen fullScreen />}>
-        <Login
-          onLogin={handleLogin}
-          onGoToSignup={() => setAuthPage('signup')}
-          onGoToForgotPassword={() => setAuthPage('forgot')}
-          onContinueAsGuest={handleContinueAsGuest}
-        />
-      </Suspense>
-    );
+  if (authStatus !== 'guest') {
+    if (!isAuthenticated && authPage !== 'login') {
+      return (
+        <Suspense fallback={<LoadingScreen fullScreen />}>
+          {authPage === 'signup' && <Signup onSignup={handleLogin} onBackToLogin={() => setAuthPage('login')} />}
+          {authPage === 'forgot' && <ForgotPassword onBackToLogin={() => setAuthPage('login')} />}
+          {authPage === 'reset' && <ResetPassword onResetComplete={() => setAuthPage('login')} />}
+        </Suspense>
+      );
+    }
+    if (!isAuthenticated && authPage === 'login') {
+      return (
+        <Suspense fallback={<LoadingScreen fullScreen />}>
+          <Login
+            onLogin={handleLogin}
+            onGoToSignup={() => setAuthPage('signup')}
+            onGoToForgotPassword={() => setAuthPage('forgot')}
+            onContinueAsGuest={handleContinueAsGuest}
+          />
+        </Suspense>
+      );
+    }
   }
 
   if (dataLoading && members.length === 0 && accounts.length === 0) {
