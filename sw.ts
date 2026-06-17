@@ -6,9 +6,14 @@ import { offlineFallback } from 'workbox-recipes';
 
 declare const self: ServiceWorkerGlobalScope;
 
+const SW_MUTATION_CACHE = 'sw-mutation-queue';
+
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data?.type === 'FLUSH_MUTATION_QUEUE') {
+    event.waitUntil(flushMutationQueue());
   }
 });
 
@@ -16,9 +21,85 @@ self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', () => {
-  self.clients.claim();
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    self.clients.claim();
+    // Clean up old mutation queue cache from previous sessions
+    const cache = await caches.open(SW_MUTATION_CACHE);
+    const keys = await cache.keys();
+    await Promise.all(keys.map(k => cache.delete(k)));
+  })());
 });
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const isPostPutDelete = ['POST', 'PUT', 'DELETE'].includes(request.method);
+  if (request.url.includes('/api/') && isPostPutDelete) {
+    event.respondWith(handleMutationRequest(event));
+  }
+});
+
+async function handleMutationRequest(event: FetchEvent): Promise<Response> {
+  const { request } = event;
+  try {
+    const response = await fetch(request);
+    if (!response.ok && response.status >= 500) {
+      // Server error — queue for retry
+      await queueFailedMutation(request);
+    }
+    return response;
+  } catch {
+    // Network error (offline or DNS failure) — queue for retry
+    await queueFailedMutation(request);
+    return new Response(JSON.stringify({ error: 'Offline' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+async function queueFailedMutation(request: Request): Promise<void> {
+  const cache = await caches.open(SW_MUTATION_CACHE);
+  const clone = request.clone();
+  const body = await clone.text().catch(() => '');
+  const headers: Record<string, string> = {};
+  clone.headers.forEach((value, key) => { headers[key] = value; });
+  const entry = {
+    method: clone.method,
+    url: clone.url,
+    headers,
+    body,
+    queuedAt: Date.now(),
+  };
+  await cache.put(
+    new Request(`/__sw_mutation/${Date.now()}_${Math.random().toString(36).slice(2)}`),
+    new Response(JSON.stringify(entry), { headers: { 'Content-Type': 'application/json' } })
+  );
+}
+
+async function flushMutationQueue(): Promise<void> {
+  const cache = await caches.open(SW_MUTATION_CACHE);
+  const keys = await cache.keys();
+  if (keys.length === 0) return;
+
+  const clients = await self.clients.matchAll({ type: 'window' });
+  if (clients.length === 0) return;
+
+  const entries: Array<{ method: string; url: string; headers: Record<string, string>; body: string; queuedAt: number }> = [];
+  for (const key of keys) {
+    const response = await cache.match(key);
+    if (response) {
+      const entry = await response.json();
+      entries.push(entry);
+    }
+    await cache.delete(key);
+  }
+
+  // Send to client for replay via sync engine
+  for (const client of clients) {
+    client.postMessage({ type: 'MUTATION_QUEUE', entries });
+  }
+}
 
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -48,6 +129,10 @@ self.addEventListener('sync', (event) => {
       }
     })());
   }
+});
+
+self.addEventListener('online', () => {
+  flushMutationQueue();
 });
 
 self.addEventListener('push', (event) => {

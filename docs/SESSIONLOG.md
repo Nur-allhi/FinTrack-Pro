@@ -3,6 +3,42 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 40 — 17 Jun 2026 (Offline Reliability + Background Sync Overhaul)
+
+> **Branch**: `fix/offline-sync-overhaul`
+> **Tasks**: T-001 through T-007
+> **Status**: completed
+
+### Summary
+Implemented the full offline sync overhaul plan. Added auth timeouts to prevent blank screen offline, registered Background Sync with 60s fallback timer, added retry queue with exponential backoff, eliminated duplicate fetchData polling, fixed client_id dedup in fetchData, added periodic balance reconciliation, and implemented SW mutation queue for defense-in-depth.
+
+### Changes
+- **T-001**: Added 3s timeout to `refreshTokenInternal()` in authService, 5s overall timeout to `useAuth.init()` — prevents blank screen when Supabase is unreachable, falls back to guest mode
+- **T-002**: Registered `sync-offline-queue` Background Sync in main.tsx, added 60s fallback timer in syncEngine for browsers without Background Sync (Safari/Firefox), starts/stops with scheduler
+- **T-003**: Added persistent retry state in localDb metadata (`getRetryState`/`setRetryState`/`clearRetryState`), exponential backoff schedule (5s→15s→45s→2min→5min), conflict status after 5 retries. Records in retry window are skipped in pushUnsynced
+- **T-004**: Removed duplicate 30s polling interval, visibilitychange handler, and online fetchData calls from useLocalData (sync engine already handles these). Added `client_id` fallback dedup for members, accounts, and groups in fetchData
+- **T-005**: Added `reconcileBalances()` in syncEngine that runs every 5th sync cycle and on visibilitychange, calls `recalculateAllBalances()`
+- **T-006**: Added SW fetch event handler for failed POST/PUT/DELETE `/api/` requests, stores failures in `sw-mutation-queue` cache, flushes on `online` event via postMessage to client
+- **T-007**: TypeScript (clean except pre-existing members.test.ts error), vite build (passes), docs updated
+
+### Files Changed
+- `src/services/authService.ts` — 3s timeout on refreshSession
+- `src/hooks/useAuth.ts` — 5s overall timeout on init, guest fallback
+- `src/main.tsx` — Background Sync registration, SW mutation queue handler
+- `src/services/syncEngine.ts` — fallback timer, retry queue, balance reconciliation
+- `src/services/localDb.ts` — retry helpers (getRetryState/setRetryState/clearRetryState), putRecord
+- `src/hooks/useLocalData.ts` — removed duplicate polling/visibility/online fetchData triggers, client_id dedup
+- `sw.ts` — mutation queue (failed POST/PUT/DELETE interception, cache storage, online replay)
+- `docs/TODO.md` — all 7 tasks marked complete
+- `CHANGELOG.md` — added entry
+- `docs/SESSIONLOG.md` — added this session entry
+
+### Verification
+- `npx tsc --noEmit` — clean (pre-existing error in api/tests/members.test.ts only)
+- `npx vite build` — successful
+
+---
+
 ## Session 39 — 17 Jun 2026 (Branch Cleanup)
 
 > **Branch**: `chore/branch-cleanup`

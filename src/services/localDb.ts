@@ -613,6 +613,22 @@ export const localDb = {
     return adjustAccountBalance(accountLocalId, delta);
   },
 
+  async getRetryState(recordId: string): Promise<{ retryCount: number; nextRetryAt: number } | null> {
+    const val = await this.getMeta(`retry:${recordId}`);
+    if (val && typeof val === 'object' && 'retryCount' in val && 'nextRetryAt' in val) {
+      return val as { retryCount: number; nextRetryAt: number };
+    }
+    return null;
+  },
+
+  async setRetryState(recordId: string, retryCount: number, nextRetryAt: number): Promise<void> {
+    await this.setMeta(`retry:${recordId}`, { retryCount, nextRetryAt });
+  },
+
+  async clearRetryState(recordId: string): Promise<void> {
+    await withDB(async (db) => db.delete('metadata', `retry:${recordId}`));
+  },
+
   async recalculateAllBalances(accountId?: string): Promise<void> {
     const accounts = await withDB(async (db) => {
       const all = await db.getAll('accounts');
@@ -641,5 +657,10 @@ export const localDb = {
 
   async markPushed(store: EntityName, mappings: { client_id: string; server_id: number }[]): Promise<void> {
     return markPushed(store, mappings);
+  },
+
+  // Generic put for use by sync engine retry logic
+  async putRecord<T extends LocalRecord>(store: EntityName, record: T): Promise<void> {
+    await put(store, record);
   },
 };

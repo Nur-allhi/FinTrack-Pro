@@ -40,54 +40,75 @@ export function useAuth() {
 
       initPendingCount();
 
-      // Try to refresh token from Supabase session first (works offline too)
-      try {
-        const token = await authService.refreshToken();
-        if (token) {
-          const meRes = await fetch('/api/auth/me');
-          if (meRes.ok) {
-            const d = await meRes.json();
-            if (d.user?.email) setUserEmail(d.user.email);
-            setGuestMode(false);
-            setAuthStatus('authenticated');
+      // Race auth initialization against a 5s overall timeout
+      const timedOut = await new Promise<boolean>(resolve => {
+        const timer = setTimeout(() => resolve(true), 5000);
+        (async () => {
+          try {
+            // Try to refresh token from Supabase session first (works offline too)
+            const token = await authService.refreshToken();
+            if (token) {
+              const meRes = await fetch('/api/auth/me');
+              if (meRes.ok) {
+                const d = await meRes.json();
+                if (d.user?.email) setUserEmail(d.user.email);
+                setGuestMode(false);
+                setAuthStatus('authenticated');
+                clearTimeout(timer);
+                resolve(false);
+                return;
+              }
+              // Token returned but /api/auth/me failed — token may be stale.
+              await new Promise(r => setTimeout(r, 400));
+              const meRes2 = await fetch('/api/auth/me');
+              if (meRes2.ok) {
+                const d = await meRes2.json();
+                if (d.user?.email) setUserEmail(d.user.email);
+                setGuestMode(false);
+                setAuthStatus('authenticated');
+                clearTimeout(timer);
+                resolve(false);
+                return;
+              }
+            }
+          } catch {}
+
+          // Token refresh failed or no token — check server reachability
+          const online = await isServerReachable();
+          if (!online) {
+            setAuthStatus('guest');
+            clearTimeout(timer);
+            resolve(false);
             return;
           }
-          // Token returned but /api/auth/me failed — token may be stale.
-          // Wait briefly for Supabase auto-refresh, then retry before falling through.
-          await new Promise(r => setTimeout(r, 400));
-          const meRes2 = await fetch('/api/auth/me');
-          if (meRes2.ok) {
-            const d = await meRes2.json();
-            if (d.user?.email) setUserEmail(d.user.email);
-            setGuestMode(false);
-            setAuthStatus('authenticated');
-            return;
+
+          try {
+            const res = await fetch('/api/auth/me');
+            if (res.ok) {
+              setGuestMode(false);
+              const d = await res.json();
+              if (d.user?.email) setUserEmail(d.user.email);
+              setAuthStatus('authenticated');
+            } else {
+              setGuestMode(true);
+              localDb.getOrCreateGuestId().catch(() => {});
+              setAuthStatus('guest');
+            }
+          } catch {
+            setGuestMode(true);
+            localDb.getOrCreateGuestId().catch(() => {});
+            setAuthStatus('guest');
           }
-        }
-      } catch {}
+          clearTimeout(timer);
+          resolve(false);
+        })().catch(() => {
+          clearTimeout(timer);
+          resolve(false);
+        });
+      });
 
-      // Token refresh failed — check server reachability before giving up
-      const online = await isServerReachable();
-      if (!online) {
-        // Server unreachable but token might still be valid — keep loading briefly
-        // The Login component will attempt its own refresh
-        setAuthStatus('guest');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          setGuestMode(false);
-          const d = await res.json();
-          if (d.user?.email) setUserEmail(d.user.email);
-          setAuthStatus('authenticated');
-        } else {
-          setGuestMode(true);
-          localDb.getOrCreateGuestId().catch(() => {});
-          setAuthStatus('guest');
-        }
-      } catch {
+      if (timedOut) {
+        console.warn('[useAuth] init timed out after 5s — falling back to guest mode');
         setGuestMode(true);
         localDb.getOrCreateGuestId().catch(() => {});
         setAuthStatus('guest');

@@ -44,6 +44,7 @@ export default React.memo(function TransactionCard({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -12 }}
+        layout
         transition={{ type: 'tween', duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         onClick={onToggleExpand}
         style={{ willChange: 'transform, opacity' }}
@@ -76,7 +77,7 @@ export default React.memo(function TransactionCard({
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                 style={{ willChange: 'transform, opacity' }}
                 className="overflow-hidden"
               >
@@ -90,24 +91,40 @@ export default React.memo(function TransactionCard({
                       {tx.sync_status === 'synced' && <CheckCircle2 className="w-3 h-3 text-semantic-up" aria-label="Synced" />}
                       Balance: <AnimatedBalance value={tx.runningBalance} currency={currency} className="font-mono font-bold text-xs" />
                     </span>
-                  <div className="flex items-center gap-1">
-                    {deletingId === tx.id ? (
-                      <>
-                        <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="px-3 py-1 bg-semantic-down text-white rounded-pill text-[10px] font-bold">Delete</button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="px-3 py-1 bg-canvas border border-hairline rounded-pill text-[10px] font-bold">Cancel</button>
-                      </>
-                    ) : (
-                      <>
-                        <button onClick={(e) => { e.stopPropagation(); onEdit(tx as Transaction); }} className="p-1 text-muted hover:text-primary transition-colors" title="Edit">
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }} className="p-1 text-muted hover:text-semantic-down transition-colors" title="Delete">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    )}
+                    <div className="flex items-center justify-end">
+                      <AnimatePresence mode="wait" initial={false}>
+                        {deletingId === tx.id ? (
+                          <motion.div
+                            key="delete-confirm"
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.6 }}
+                            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                            className="flex items-center gap-1.5 origin-right"
+                          >
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="px-3 py-1 bg-semantic-down text-white rounded-pill text-[10px] font-bold whitespace-nowrap">Delete</button>
+                            <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="px-3 py-1 bg-canvas border border-hairline rounded-pill text-[10px] font-bold whitespace-nowrap">Cancel</button>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="delete-icons"
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.6 }}
+                            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                            className="flex items-center gap-1.5 origin-right"
+                          >
+                            <button onClick={(e) => { e.stopPropagation(); onEdit(tx as Transaction); }} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors" title="Delete">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
-                </div>
               </div>
               </motion.div>
             )}

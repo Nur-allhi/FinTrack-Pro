@@ -89,12 +89,13 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
       if (membersRes.ok) {
         const data = await membersRes.json();
-        // Build map of all local records (including soft-deleted) by server_id to avoid re-import
+        // Build maps by server_id and client_id to avoid re-import
         const allMemberRecords = await localDb.getAllRecords<LocalMember>('members');
         const localByServerId = new Map(allMemberRecords.map(m => [m.server_id, m]));
+        const localByClientId = new Map(allMemberRecords.map(m => [m.id, m]));
 
         const toUpsert: LocalMember[] = data.map((m: { id: number; name: string; relationship?: string; client_id?: string; updated_at?: string; deleted_at?: string | null }) => {
-          const existing = localByServerId.get(m.id);
+          const existing = localByServerId.get(m.id) || (m.client_id ? localByClientId.get(m.client_id) : undefined);
           if (existing) {
             return {
               ...existing,
@@ -139,9 +140,10 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       const accountsRes = await authService.apiFetch('/api/accounts');
       if (accountsRes.ok) {
         const data = await accountsRes.json();
-        // Build map of existing local records by server_id to avoid duplicates
+        // Build maps by server_id and client_id to avoid duplicates
         const localAccounts = await localDb.getAccounts();
         const localByServerId = new Map(localAccounts.map(a => [a.server_id, a]));
+        const localByClientId = new Map(localAccounts.map(a => [a.id, a]));
         
         // Build server_id → local_id maps for FK conversion
         const localMembers = await localDb.getMembers();
@@ -160,7 +162,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
           const localMemberId = serverMemberId != null ? memberServerIdToLocalId.get(serverMemberId) ?? null : null;
           const localParentId = serverParentId != null ? accountServerIdToLocalId.get(serverParentId) ?? null : null;
 
-          const existing = localByServerId.get(a.id as number);
+          const existing = localByServerId.get(a.id as number) || (a.client_id ? localByClientId.get(a.client_id as string) : undefined);
           if (existing) {
             return {
               ...existing,
@@ -217,11 +219,12 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         const data = await groupsRes.json();
         const localGroups = await localDb.getGroups();
         const localByServerId = new Map(localGroups.map(g => [g.server_id, g]));
+        const localByClientId = new Map(localGroups.map(g => [g.id, g]));
 
         const toUpsert: LocalGroup[] = data.map((g: Record<string, unknown>) => {
           const serverMemberId = g.member_id as number | null;
 
-          const existing = localByServerId.get(g.id as number);
+          const existing = localByServerId.get(g.id as number) || (g.client_id ? localByClientId.get(g.client_id as string) : undefined);
           const children = (g.children as Array<{ id: number; name: string; type: string; member_name?: string; current_balance: number }>) || [];
           if (existing) {
             return {
@@ -299,38 +302,14 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  // Polling every 30s
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible' && isOnline()) fetchData();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, fetchData]);
-
-  // Visibility change refetch
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && isOnline()) {
-        fetchData();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [isAuthenticated, fetchData]);
-
-  // Online/offline events
+  // Online/offline events — only update state (sync engine handles fetching)
   useEffect(() => {
     const offCleanup = onOffline(() => setIsOnlineState(false));
     const onCleanup = onOnline(async () => {
       setIsOnlineState(true);
-      if (authRef.current) {
-        await fetchData();
-      }
     });
     return () => { offCleanup(); onCleanup(); };
-  }, [isAuthenticated, fetchData]);
+  }, [isAuthenticated]);
 
   // Sync state listener
   useEffect(() => {

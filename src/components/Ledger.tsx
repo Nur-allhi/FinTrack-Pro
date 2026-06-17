@@ -164,7 +164,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
               <AnimatePresence initial={false}>
                 {filteredTxs.map((tx, idx) => (
                   <TransactionRow 
-                    key={tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
+                    key={tx._localId || tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
                     isExpanded={expandedId === tx.id} onToggleExpand={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
                     currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete}
                     onEdit={(t) => onWriteOperation({ type: 'transaction', prefillAccountId: account.id, editTx: t })}
@@ -181,7 +181,7 @@ export default function Ledger({ account, onBack, onWriteOperation, currency }: 
           <AnimatePresence initial={false}>
             {filteredTxs.map((tx, idx) => (
               <TransactionCard 
-                key={tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
+                key={tx._localId || tx.id} tx={tx} isNewDate={!filteredTxs[idx - 1] || filteredTxs[idx - 1].date !== tx.date}
                 isExpanded={expandedId === tx.id} onToggleExpand={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
                 currency={currency} deletingId={deletingId} setDeletingId={setDeletingId} onDelete={handleDelete}
                 onEdit={(t) => onWriteOperation({ type: 'transaction', prefillAccountId: account.id, editTx: t })}

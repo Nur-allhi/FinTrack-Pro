@@ -36,6 +36,7 @@ export interface Account {
 
 export interface Transaction {
   id: number;
+  _localId?: string;
   account_id: number;
   date: string;
   particulars: string;

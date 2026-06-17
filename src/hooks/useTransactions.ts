@@ -9,6 +9,7 @@ import { generateId } from '../utils/ids';
 function toUiTransaction(local: LocalTransaction, accountServerId: number): Transaction {
   return {
     id: local.server_id && typeof local.server_id === 'number' ? local.server_id : 0,
+    _localId: local.id,
     account_id: accountServerId,
     date: local.date,
     particulars: local.particulars,

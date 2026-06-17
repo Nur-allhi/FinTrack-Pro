@@ -24,6 +24,7 @@ interface HeaderProps {
   onToggleDarkMode: () => void;
   userEmail: string;
   onOpenProfile: () => void;
+  isOnline: boolean;
 }
 
 export default function Header({
@@ -36,7 +37,8 @@ export default function Header({
   darkMode,
   onToggleDarkMode,
   userEmail,
-  onOpenProfile
+  onOpenProfile,
+  isOnline
 }: HeaderProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -105,6 +107,10 @@ export default function Header({
         <h2 className="text-base md:text-xl font-normal text-ink tracking-tight">
           {selectedAccountId ? 'Ledger' : activeTabLabel}
         </h2>
+        <div className={cn(
+          "w-2 h-2 rounded-full shrink-0",
+          isOnline ? "bg-semantic-up" : "bg-semantic-down"
+        )} />
       </div>
 
       <div className="flex items-center gap-1 md:gap-2">
