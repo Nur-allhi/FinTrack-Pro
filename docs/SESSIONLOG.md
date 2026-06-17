@@ -3,6 +3,31 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 39 — 17 Jun 2026 (Branch Cleanup)
+
+> **Branch**: `chore/branch-cleanup`
+> **Tasks**: Delete all branches except main and dev, update docs, commit and push
+> **Status**: completed
+
+### Summary
+Deleted all stale branches from local and remote, keeping only `main` and `dev`. Removed 7 local branches (feat/local-first, feature/guest-mode-nudge, feature/onboarding-experience, feature/ui-ux-polish-improvement, fix/all-bugs, fix/security-audit) and 7 remote branches (feat/liquid-glass-nav, feat/local-first, feat/unified-write-modal, feature/guest-mode-nudge, feature/ui-ux-polish-improvement, fix/all-bugs, fix/dashboard-fix). Created BRANCH_CLEANUP.md plan. Updated docs and staged all pending files.
+
+### Changes
+- Deleted 7 local branches (only main and dev remain)
+- Deleted 7 remote branches (only origin/main and origin/dev remain)
+- Added plan at `plans/BRANCH_CLEANUP.md`
+
+### Files Changed
+- `plans/BRANCH_CLEANUP.md` — new plan file
+- `CHANGELOG.md` — added branch cleanup entry
+- `docs/SESSIONLOG.md` — added this session entry
+
+### Verification
+- `git branch` — only chore/branch-cleanup, dev, main locally
+- `git branch -r` — only origin/HEAD, origin/dev, origin/main remotely
+
+---
+
 ## Session 37 — 17 Jun 2026 (Plans Consolidation)
 
 > **Branch**: `main`

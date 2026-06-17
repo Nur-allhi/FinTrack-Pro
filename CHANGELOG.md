@@ -4,6 +4,8 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-17: Delete all stale branches except main and dev — removed 7 local branches (feat/local-first, feature/guest-mode-nudge, feature/onboarding-experience, feature/ui-ux-polish-improvement, fix/all-bugs, fix/security-audit) and 7 remote branches (feat/liquid-glass-nav, feat/local-first, feat/unified-write-modal, feature/guest-mode-nudge, feature/ui-ux-polish-improvement, fix/all-bugs, fix/dashboard-fix). Updated CHANGELOG.md, SESSIONLOG.md, added BRANCH_CLEANUP.md plan. Staged CODEBASE_REVIEW.md and code-reviewer skill (completed).
+
 2026-06-17: Delete 4 stale docs (ERROR.md empty, IMPLEMENTATION_PLAN.md all done, PROJECTPLAN.md all done, TODO.md 226/229 done with 3 deferred indefinitely) and 2 remaining plans (MASTER_PROMPT.md, PROJECT_IMPROVEMENT_FINDINGS.md — Phase 10 already built). docs/ now has 5 active files: AUDIT_REPORT.md, NAVIGATION_IMPROVEMENTS.md, PERFORMANCE_REPORT.md, SESSIONLOG.md, USER_MANUAL.md (completed).
 
 2026-06-17: Consolidate 11 completed plans into plans/COMPLETED_PLANS.md — merged ANIMATION_CHANGES, grouped-loan-cards, linked-transaction-info, LOCAL_FIRST_ARCHITECTURE, MOBILE_NAVIGATION_REDESIGN, OFFLINE_IMPLEMENTATION_PLAN, PHASE_22_SECURITY_AUDIT, sidebar-logo-rebrand, SYNC_IMPROVEMENTS, THREE_LAYER_ALIGNMENT, UNIFIED_WRITE_MODAL into one consolidated file with proper headings and spacing; deleted the 11 individual files; kept MASTER_PROMPT.md and PROJECT_IMPROVEMENT_FINDINGS.md as reference docs (completed).
