@@ -297,6 +297,7 @@ export default function App() {
           }}
           userEmail={userEmail}
           onOpenProfile={openProfile}
+          isOnline={isOnline}
         />
 
         <div ref={scrollRef} className="flex-1 min-h-0 p-4 md:p-8 md:pb-8 pb-20 overflow-y-auto bg-canvas md:bg-transparent">
