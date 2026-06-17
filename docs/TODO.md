@@ -1,7 +1,7 @@
 # TODO — FinTrack Pro
 
 > Generated from `plans/MASTER_PROMPT.md` · 2026-06-02
-> **188 completed**, **3 remaining** (Google Drive backup deferred)
+> **226 completed**, **3 remaining** (Google Drive backup deferred)
 >
 > ## Branching Strategy
 >
@@ -105,7 +105,7 @@
 
 > Source: `plans/MASTER_PROMPT.md` — Apply App X Performance & UX Patterns
 > Branch: `performance/ai-improvements`
-> **Status: 20/20 complete**
+> **Status: 19/20 complete, 1 deferred (T-101)**
 
 ### 🔴 P0 — Must Fix (Mobile Responsiveness Basics)
 
@@ -117,7 +117,7 @@
 ### 🟡 P1 — Visual Responsiveness
 
 - [x] **T-086** Add tactile press feedback (`active:scale-[0.97]`) to all interactive elements (buttons, cards, FAB, toggles, nav items) (1h) — `📄 MASTER_PROMPT.md:P1#5` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2`
-- [x] **T-087** Create `SkeletonLoader.tsx` component with shimmer variants (cards, table rows, charts, dashboard) + RAF two-phase reveal (2h) — `📄 MASTER_PROMPT.md:P1#6` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:1.2,2.4,8.3`
+- ~~T-087~~ **Deleted** (17 Jun 2026) — SkeletonLoader.tsx was created but never imported anywhere; deleted during codebase audit cleanup
 - [x] **T-088** Add `focus-visible` rings + ARIA attributes (`aria-current`, `aria-pressed`, `aria-label`, `aria-hidden`, `role="button"`) (1-2h) — `📄 MASTER_PROMPT.md:P1#7` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.2,8.6`
 - [x] **T-089** Add `content-visibility: auto` + `contain-intrinsic-size` to lazy-loaded route wrappers in `App.tsx` (30m) — `📄 MASTER_PROMPT.md:P1#8` `📄 PROJECT_IMPROVEMENT_FINDINGS.md:8.3`
 

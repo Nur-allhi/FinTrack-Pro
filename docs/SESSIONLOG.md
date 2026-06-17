@@ -3,6 +3,31 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 36 — 17 Jun 2026 (Full Codebase Audit & Docs Cleanup)
+
+> **Branch**: `main`
+> **Tasks**: Full docs/codebase audit, delete stale docs + dead code, update AUDIT_REPORT.md
+> **Status**: completed
+
+### Summary
+Performed comprehensive audit of all 14 docs files and codebase. Deleted 5 stale/historical docs (all bugs they tracked are fixed), deleted `SkeletonLoader.tsx` (dead code, never imported), and rewrote `docs/AUDIT_REPORT.md` with current status. Confirmed 8 files exceed 300 LOC rule.
+
+### Changes
+- **Deleted docs**: `DATA_FLOW_FINDINGS.md`, `LOCAL_FIRST_READ_PATH_FIX.md`, `BUG_REPORT.md`, `OFFLINE_AUDIT.md`, `SECURITY_AUDIT.md` — all bugs/issues resolved
+- **Deleted dead code**: `src/components/SkeletonLoader.tsx` — created in Phase 10 (T-087), never imported
+- **Updated**: `docs/AUDIT_REPORT.md` — refreshed with current phase status, open issues, file sizes, resolution summary
+- **Kept**: `ERROR.md` (user plans to populate), `IMPLEMENTATION_PLAN.md`, `PROJECTPLAN.md`, `TODO.md`, `USER_MANUAL.md`, `NAVIGATION_IMPROVEMENTS.md`, `PERFORMANCE_REPORT.md`
+
+### Verification
+- `tsc --noEmit` — 1 pre-existing error in members.test.ts only
+- Working tree clean after changes
+
+### Next Steps
+- Split 8 files exceeding 300 LOC (syncEngine 818, WriteModal 683, localDb 645, etc.)
+- Fix TS error in `api/tests/members.test.ts:23`
+
+---
+
 ## Session 21 — 11 Jun 2026 (Phase 21 — Offline Usability Fixes)
 
 > **Branch**: `feature/ui-ux-polish-improvement`
