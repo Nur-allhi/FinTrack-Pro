@@ -3,6 +3,72 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 37 — 17 Jun 2026 (Plans Consolidation)
+
+> **Branch**: `main`
+> **Tasks**: Consolidate 11 completed plans into single file, delete individual plan files
+> **Status**: completed
+
+### Summary
+Reviewed all 13 files in `plans/` directory. Verified via git history and codebase that all 11 plan files were fully implemented. Consolidated them into `plans/COMPLETED_PLANS.md` with proper headings, spacing, and section details. Deleted the 11 individual plan files. Kept `MASTER_PROMPT.md` (agent instructions) and `PROJECT_IMPROVEMENT_FINDINGS.md` (reference/analysis doc).
+
+### Changes
+- Created `plans/COMPLETED_PLANS.md` — merged 11 completed plans with table of contents, organized chronologically
+- Deleted 11 individual plan files
+- Plans are now 3 files: COMPLETED_PLANS.md, MASTER_PROMPT.md, PROJECT_IMPROVEMENT_FINDINGS.md
+
+### Plans Consolidated
+1. Sidebar Logo Rebrand (2026-05-30)
+2. Animation Changes (Phase 7)
+3. Mobile Navigation Redesign (Phase 12 + Phase 12b)
+4. Offline Mode Implementation (Phase 21)
+5. Local-First Architecture (all 7 phases)
+6. Phase 22 Security Audit (9/9 tasks)
+7. Grouped Loan Cards
+8. Linked Transaction Info in Ledger
+9. Unified Write Modal (5 bugs fixed, 6 files deleted)
+10. Sync Improvements (immediate push + progress bar + reconcile)
+11. Three-Layer Alignment (17 mismatches fixed)
+
+### Verification
+- `ls plans/` — 3 files remain
+- Git working tree clean
+
+### Next Steps
+- Split 8 files exceeding 300 LOC (syncEngine 818, WriteModal 683, localDb 645, etc.)
+
+---
+
+## Session 38 — 17 Jun 2026 (Docs Cleanup — Delete Stale Files)
+
+> **Branch**: `main`
+> **Tasks**: Delete stale docs, keep only active reference files
+> **Status**: completed
+
+### Summary
+Reviewed all 9 files in `docs/`. Deleted 4 stale files (ERROR.md empty, IMPLEMENTATION_PLAN.md all tasks done, PROJECTPLAN.md all phases done, TODO.md 226/229 with 3 deferred indefinitely). Also deleted MASTER_PROMPT.md and PROJECT_IMPROVEMENT_FINDINGS.md from `plans/` (Phase 10 already built).
+
+### Files Deleted
+- `docs/ERROR.md` — empty, never populated
+- `docs/IMPLEMENTATION_PLAN.md` — 62+ tasks all completed
+- `docs/PROJECTPLAN.md` — all phases checked off
+- `docs/TODO.md` — 226/229 done, 3 deferred indefinitely
+- `plans/MASTER_PROMPT.md` — Phase 10 already built
+- `plans/PROJECT_IMPROVEMENT_FINDINGS.md` — reference doc no longer needed
+
+### Remaining (5 docs)
+- `AUDIT_REPORT.md` — current health status
+- `NAVIGATION_IMPROVEMENTS.md` — nav architecture reference
+- `PERFORMANCE_REPORT.md` — active performance metrics
+- `SESSIONLOG.md` — mandatory session history
+- `USER_MANUAL.md` — end-user docs
+
+### Verification
+- `ls docs/` — 5 files
+- `ls plans/` — 1 file (COMPLETED_PLANS.md)
+
+---
+
 ## Session 36 — 17 Jun 2026 (Full Codebase Audit & Docs Cleanup)
 
 > **Branch**: `main`

@@ -4,6 +4,10 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-17: Delete 4 stale docs (ERROR.md empty, IMPLEMENTATION_PLAN.md all done, PROJECTPLAN.md all done, TODO.md 226/229 done with 3 deferred indefinitely) and 2 remaining plans (MASTER_PROMPT.md, PROJECT_IMPROVEMENT_FINDINGS.md — Phase 10 already built). docs/ now has 5 active files: AUDIT_REPORT.md, NAVIGATION_IMPROVEMENTS.md, PERFORMANCE_REPORT.md, SESSIONLOG.md, USER_MANUAL.md (completed).
+
+2026-06-17: Consolidate 11 completed plans into plans/COMPLETED_PLANS.md — merged ANIMATION_CHANGES, grouped-loan-cards, linked-transaction-info, LOCAL_FIRST_ARCHITECTURE, MOBILE_NAVIGATION_REDESIGN, OFFLINE_IMPLEMENTATION_PLAN, PHASE_22_SECURITY_AUDIT, sidebar-logo-rebrand, SYNC_IMPROVEMENTS, THREE_LAYER_ALIGNMENT, UNIFIED_WRITE_MODAL into one consolidated file with proper headings and spacing; deleted the 11 individual files; kept MASTER_PROMPT.md and PROJECT_IMPROVEMENT_FINDINGS.md as reference docs (completed).
+
 2026-06-10: Include member name in loan group card headers — pair mode shows lender's member, borrower mode shows borrower account's member; prevents confusion when different members have same-name accounts (completed).
 2026-06-10: Remove redundant "Amount" label from mobile loan row — kept the number only, text labels stay on left (completed).
 2026-06-10: Add Member column to loan table/card — shows which member owns the lender account; displayed after Date in desktop table, mobile row, and detail modal (completed).
