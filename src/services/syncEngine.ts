@@ -193,8 +193,18 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
   for (const table of SYNC_TABLES) {
     const unsynced = await getUnsyncedForTable(table);
     if (unsynced.length > 0) {
-      records[table] = [...(records[table] || []), ...unsynced];
-      totalUnsynced += unsynced.length;
+      // Skip records that are still in their retry backoff window
+      const now = Date.now();
+      const filtered: LocalRecord[] = [];
+      for (const r of unsynced) {
+        const retryState = await localDb.getRetryState(r.id);
+        if (retryState && retryState.nextRetryAt > now) continue;
+        filtered.push(r);
+      }
+      if (filtered.length > 0) {
+        records[table] = [...(records[table] || []), ...filtered];
+        totalUnsynced += filtered.length;
+      }
     }
   }
 
@@ -339,6 +349,22 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     const errorText = await res.text().catch(() => 'Unknown error');
     console.error('Push failed:', res.status, errorText);
     syncState.setState({ state: 'error' });
+    // Update retry state for all records that failed to push
+    const retryNow = Date.now();
+    const retryDelays = [5_000, 15_000, 45_000, 120_000, 300_000];
+    for (const [table, recs] of Object.entries(records)) {
+      for (const r of recs) {
+        const existing = await localDb.getRetryState(r.id);
+        const retryCount = (existing?.retryCount || 0) + 1;
+        if (retryCount >= 5) {
+          await localDb.putRecord(table as EntityName, { ...r, sync_status: 'conflict', updated_at: new Date().toISOString() });
+          await localDb.clearRetryState(r.id);
+        } else {
+          const delay = retryDelays[Math.min(retryCount - 1, retryDelays.length - 1)];
+          await localDb.setRetryState(r.id, retryCount, retryNow + delay);
+        }
+      }
+    }
     return { pushed: 0, conflicts: 0 };
   }
 
@@ -354,23 +380,43 @@ async function pushUnsynced(): Promise<{ pushed: number; conflicts: number }> {
     if (!result) continue;
     pushed += result.pushed || 0;
     conflicts += result.conflicts || 0;
-    if (result.pushed > 0) {
-      const ids = result.ids || [];
-      if (ids.length > 0) {
-        await localDb.markPushed(table as EntityName, ids);
-      } else {
-        const fallbackIds = (records[table] || []).map(r => r.id);
-        await markTableSynced(table as SyncTable, fallbackIds);
+      if (result.pushed > 0) {
+        const ids = result.ids || [];
+        if (ids.length > 0) {
+          await localDb.markPushed(table as EntityName, ids);
+          // Clear retry state for each successfully pushed record
+          for (const { client_id } of ids) {
+            await localDb.clearRetryState(client_id);
+          }
+        } else {
+          const fallbackIds = (records[table] || []).map(r => r.id);
+          await markTableSynced(table as SyncTable, fallbackIds);
+          for (const id of fallbackIds) {
+            await localDb.clearRetryState(id);
+          }
+        }
+        // Clear retry queue for this table on successful push
+        _pendingRetry.delete(table);
       }
-      // Clear retry queue for this table on successful push
-      _pendingRetry.delete(table);
-    }
   }
 
   // Add skipped records to retry queue for next cycle
+  const retryNow = Date.now();
+  const retryDelays = [5_000, 15_000, 45_000, 120_000, 300_000];
   for (const [table, skipped] of skippedRecords.entries()) {
     if (skipped.length > 0) {
       _pendingRetry.set(table, skipped);
+      for (const r of skipped) {
+        const existing = await localDb.getRetryState(r.id);
+        const retryCount = (existing?.retryCount || 0) + 1;
+        if (retryCount >= 5) {
+          await localDb.putRecord(table as EntityName, { ...r, sync_status: 'conflict', updated_at: new Date().toISOString() });
+          await localDb.clearRetryState(r.id);
+        } else {
+          const delay = retryDelays[Math.min(retryCount - 1, retryDelays.length - 1)];
+          await localDb.setRetryState(r.id, retryCount, retryNow + delay);
+        }
+      }
     }
   }
 
@@ -538,6 +584,21 @@ async function pullChanges(): Promise<number> {
   return totalPulled;
 }
 
+// Periodic balance reconciliation: runs every 5th sync cycle
+async function reconcileBalances(): Promise<void> {
+  try {
+    const counter = (await localDb.getMeta('reconcile_counter') as number) || 0;
+    if (counter >= 4) {
+      await localDb.recalculateAllBalances();
+      await localDb.setMeta('reconcile_counter', 0);
+    } else {
+      await localDb.setMeta('reconcile_counter', counter + 1);
+    }
+  } catch (e) {
+    console.error('Balance reconciliation failed:', e);
+  }
+}
+
 // Full sync: push then pull
 export async function syncNow(): Promise<SyncResult> {
   if (_isSyncing) return _syncPromise || { pushed: 0, pulled: 0, conflicts: 0 };
@@ -560,6 +621,7 @@ export async function syncNow(): Promise<SyncResult> {
     try {
       const pushResult = await pushUnsynced();
       const pulled = await pullChanges();
+      await reconcileBalances();
       await refreshPendingCount();
       return { pushed: pushResult.pushed, pulled, conflicts: pushResult.conflicts };
     } catch (err) {
@@ -648,6 +710,7 @@ export async function initialSync(): Promise<boolean> {
 // Background sync scheduler
 let _syncInterval: ReturnType<typeof setInterval> | null = null;
 let _reconcileInterval: ReturnType<typeof setInterval> | null = null;
+let _fallbackTimer: ReturnType<typeof setInterval> | null = null;
 let _started = false;
 let _handleVisibility: (() => void) | null = null;
 let _handleOnline: (() => void) | null = null;
@@ -660,6 +723,7 @@ export function startSyncScheduler() {
   _handleVisibility = () => {
     if (document.visibilityState === 'visible') {
       syncNow();
+      reconcileBalances();
     }
   };
   _handleOnline = () => {
@@ -682,6 +746,14 @@ export function startSyncScheduler() {
       syncNow();
     }
   }, 5 * 60 * 1000);
+
+  // Fallback timer for browsers without Background Sync (Safari, Firefox)
+  // Checks and flushes pending records every 60s
+  _fallbackTimer = setInterval(() => {
+    if (navigator.onLine) {
+      flushPending();
+    }
+  }, 60_000);
 }
 
 export function stopSyncScheduler() {
@@ -692,6 +764,10 @@ export function stopSyncScheduler() {
   if (_reconcileInterval) {
     clearInterval(_reconcileInterval);
     _reconcileInterval = null;
+  }
+  if (_fallbackTimer) {
+    clearInterval(_fallbackTimer);
+    _fallbackTimer = null;
   }
   if (_handleVisibility) {
     document.removeEventListener('visibilitychange', _handleVisibility);

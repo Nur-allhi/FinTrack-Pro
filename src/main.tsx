@@ -28,10 +28,25 @@ if ('serviceWorker' in navigator) {
         if (event.data?.type === 'SYNC_OFFLINE_QUEUE') {
           window.dispatchEvent(new CustomEvent('sw-sync-offline'));
         }
+        if (event.data?.type === 'MUTATION_QUEUE') {
+          // Trigger sync engine to flush pending records
+          import('./services/syncEngine').then(m => m.flushPending()).catch(() => {});
+        }
       });
+
+      try {
+        const readyReg = await navigator.serviceWorker.ready;
+        if ('sync' in readyReg) {
+          (readyReg as any).sync.register('sync-offline-queue').catch(() => {});
+        }
+      } catch {}
     } catch {}
   });
 }
+
+window.addEventListener('sw-sync-offline', () => {
+  import('./services/syncEngine').then(m => m.flushPending()).catch(() => {});
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

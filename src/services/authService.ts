@@ -53,16 +53,24 @@ async function getSupabase(): Promise<SupabaseClient | null> {
   return _initPromise;
 }
 
+function timeout<T>(ms: number, fallback: T): Promise<T> {
+  return new Promise(resolve => setTimeout(() => resolve(fallback), ms));
+}
+
 async function refreshTokenInternal(): Promise<string | null> {
   const sb = await getSupabase();
   if (!sb) return null;
   let { data } = await sb.auth.getSession();
   if (data.session?.access_token) {
     try {
-      const { data: refreshed } = await sb.auth.refreshSession();
-      if (refreshed?.session?.access_token) {
-        await setSession(refreshed.session.access_token);
-        return refreshed.session.access_token;
+      const result = await Promise.race([
+        sb.auth.refreshSession(),
+        timeout<{ data: { session: null } } | null>(3000, null),
+      ]);
+      const refreshed = result?.data?.session?.access_token;
+      if (refreshed) {
+        await setSession(refreshed);
+        return refreshed;
       }
     } catch {}
     await setSession(data.session.access_token);

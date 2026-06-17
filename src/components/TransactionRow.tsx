@@ -46,6 +46,7 @@ export default React.memo(function TransactionRow({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
+        layout="position"
         transition={{ type: 'tween', duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         onClick={onToggleExpand}
         style={{ willChange: 'transform, opacity' }}
@@ -89,23 +90,39 @@ export default React.memo(function TransactionRow({
             <AnimatedBalance value={tx.runningBalance} currency={currency} className="text-sm font-bold" />
           </div>
         </td>
-        <td className="px-3 py-2.5 text-right w-20">
-          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {deletingId === tx.id ? (
-              <>
-                <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="px-3 py-1.5 bg-semantic-down text-white rounded-pill text-[10px] font-bold">Delete</button>
-                <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="px-3 py-1.5 bg-canvas border border-hairline rounded-pill text-[10px] font-bold">Cancel</button>
-              </>
-            ) : (
-              <>
-                <button onClick={(e) => { e.stopPropagation(); onEdit(tx as Transaction); }} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit">
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors" title="Delete">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )}
+        <td className="px-3 py-2.5 text-right min-w-[72px]">
+          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <AnimatePresence mode="wait" initial={false}>
+              {deletingId === tx.id ? (
+                <motion.div
+                  key="delete-confirm"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  className="flex items-center gap-1"
+                >
+                  <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="px-3 py-1.5 bg-semantic-down text-white rounded-pill text-[10px] font-bold">Delete</button>
+                  <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="px-3 py-1.5 bg-canvas border border-hairline rounded-pill text-[10px] font-bold">Cancel</button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="delete-icons"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  className="flex items-center gap-1"
+                >
+                  <button onClick={(e) => { e.stopPropagation(); onEdit(tx as Transaction); }} className="p-1.5 text-muted hover:text-primary rounded-full hover:bg-primary/5 transition-colors" title="Edit">
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setDeletingId(tx.id); }} className="p-1.5 text-muted hover:text-semantic-down rounded-full hover:bg-semantic-down/5 transition-colors" title="Delete">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </td>
       </motion.tr>

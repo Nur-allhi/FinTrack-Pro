@@ -4,6 +4,8 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-17: Overhaul offline reliability + background sync — auth timeout (3s refreshSession, 5s init), Background Sync registration + 60s fallback timer, retry queue with exponential backoff (5s→15s→45s→2min→5min, conflict at 5), fetchData cleanup (remove duplicate 30s/visibility/online polling), client_id dedup fix for members/accounts/groups, periodic balance reconciliation every 5 sync cycles, SW mutation queue for failed POST/PUT/DELETE. Branch: fix/offline-sync-overhaul (completed).
+
 2026-06-17: Delete all stale branches except main and dev — removed 7 local branches (feat/local-first, feature/guest-mode-nudge, feature/onboarding-experience, feature/ui-ux-polish-improvement, fix/all-bugs, fix/security-audit) and 7 remote branches (feat/liquid-glass-nav, feat/local-first, feat/unified-write-modal, feature/guest-mode-nudge, feature/ui-ux-polish-improvement, fix/all-bugs, fix/dashboard-fix). Updated CHANGELOG.md, SESSIONLOG.md, added BRANCH_CLEANUP.md plan. Staged CODEBASE_REVIEW.md and code-reviewer skill (completed).
 
 2026-06-17: Delete 4 stale docs (ERROR.md empty, IMPLEMENTATION_PLAN.md all done, PROJECTPLAN.md all done, TODO.md 226/229 done with 3 deferred indefinitely) and 2 remaining plans (MASTER_PROMPT.md, PROJECT_IMPROVEMENT_FINDINGS.md — Phase 10 already built). docs/ now has 5 active files: AUDIT_REPORT.md, NAVIGATION_IMPROVEMENTS.md, PERFORMANCE_REPORT.md, SESSIONLOG.md, USER_MANUAL.md (completed).
