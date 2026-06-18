@@ -91,7 +91,7 @@ export default function App() {
   const [settings, setSettings] = useState(defaultSettings);
   const prevNavRef = useRef<{ tab: typeof activeTab; accountId: number | null } | null>(null);
 
-  const { isOnline, lastSync, pendingCount, isSyncing, syncProgress, members, accounts, dataLoading, lastUpdate, fetchData, reloadFromLocal } = useLocalData(isAuthenticated);
+  const { isOnline, lastSync, pendingCount, isSyncing, syncProgress, members, accounts, dataLoading, hasLocalData, lastUpdate, fetchData, reloadFromLocal } = useLocalData(isAuthenticated);
   const { visible: navVisible, scrollRef } = useScrollDirection();
   useThemeEffects(settings);
 
@@ -249,16 +249,21 @@ export default function App() {
     );
   }
   if (!isAuthenticated && authPage === 'login') {
-    return (
-      <Suspense fallback={<LoadingScreen fullScreen />}>
-        <Login
-          onLogin={handleLogin}
-          onGoToSignup={() => setAuthPage('signup')}
-          onGoToForgotPassword={() => setAuthPage('forgot')}
-          onContinueAsGuest={handleContinueAsGuest}
-        />
-      </Suspense>
-    );
+    // Offline guest with local data — skip login, render app from IndexedDB
+    if (authStatus === 'guest' && !navigator.onLine && hasLocalData) {
+      // fall through to main layout below
+    } else {
+      return (
+        <Suspense fallback={<LoadingScreen fullScreen />}>
+          <Login
+            onLogin={handleLogin}
+            onGoToSignup={() => setAuthPage('signup')}
+            onGoToForgotPassword={() => setAuthPage('forgot')}
+            onContinueAsGuest={handleContinueAsGuest}
+          />
+        </Suspense>
+      );
+    }
   }
 
   if (dataLoading && members.length === 0 && accounts.length === 0) {

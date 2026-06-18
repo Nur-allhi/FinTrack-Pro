@@ -3,6 +3,63 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 42 — 18 Jun 2026 (Error Normalization, PWA Double-Load, Offline Noise Fix)
+
+> **Branch**: `fix/offline-sync-overhaul`
+> **Tasks**: T-017, T-018
+> **Status**: completed
+
+### Summary
+Fixed 3 issues: (1) PWA double-load on first visit — captured `isUpdate` at `register()` time (before `clients.claim()`), added `willReplace` guard, handled `reg.installing` race. (2) "Unknown error" in API logs — added `asError()` helper wrapping plain Supabase error objects into proper `Error` instances, applied across all `api/db/` and `api/routes/` files. (3) AbortError noise when offline — fixed `withTimeout` orphan promise rejections, added reachability cache to `fetchWithTimeout` (30s cooldown on AbortError), added `requireDbReachable` middleware returning fast 503 on all 11 data GET routes.
+
+### Changes
+- **T-017**: PWA double-load fix — capture `isUpdate` at register time, `willReplace` guard, `reg.installing` race handling
+- **T-018**: API error normalization — `asError()` helper in `queries.ts`, applied to all 50+ `throw error` patterns
+- **T-019**: AbortError noise fix — `withTimeout` swallows orphan rejections via `promise.then(undefined, () => {})`
+- **T-020**: Reachability cache — `fetchWithTimeout` calls `markDbFailure()` on AbortError, `markDbSuccess()` on success, 30s cooldown
+- **T-021**: `requireDbReachable` middleware — added to all 11 GET route handlers (members, accounts, groups, recurring, transactions, budgets, investments, recyclebin, search, loans, export) for instant 503 when DB unreachable
+
+### Files Changed
+- `src/main.tsx` — PWA double-load fix
+- `api/db/queries.ts` — `asError()` helper
+- `api/db/*.ts` (14 files) — `asError()` wrapping on all throw patterns
+- `api/routes/*.ts` (14 files) — `asError()` imports + `requireDbReachable` middleware on GET routes
+- `api/db.ts` — `withTimeout` orphan fix, reachability cache, `requireDbReachable` middleware
+
+### Verification
+- `npx tsc --noEmit` — clean (pre-existing error in api/tests/members.test.ts only)
+
+---
+
+## Session 41 — 18 Jun 2026 (Fix Blank Screen When Offline)
+
+> **Branch**: `fix/offline-sync-overhaul`
+> **Tasks**: T-001, T-002, T-003, T-004
+> **Status**: completed
+
+### Summary
+Fixed the blank screen when offline by implementing 3 changes: (1) offline auth fast path that skips the 5s server timeout when offline + cached Supabase session exists, (2) offline guest data loading in useLocalData that loads from IndexedDB regardless of auth status with a hasLocalData flag and 3s loading timeout, (3) App.tsx bypasses the Login page when offline + guest + local data exists, rendering the app directly from IndexedDB.
+
+### Changes
+- **T-001**: Added offline fast path in `useAuth.init()` — checks `navigator.onLine` first; if offline + cached Supabase session → sets `authenticated` immediately; if offline + no session → sets `guest` immediately. Eliminates the 3-5s timeout delay and prevents authenticated users from being downgraded to guest when offline.
+- **T-002**: Modified `useLocalData` — (a) preserves members/accounts state on auth→guest transition when offline, (b) adds offline guest loading effect that reads from IndexedDB even when not authenticated, (c) adds `hasLocalData` return flag for App.tsx decision, (d) adds 3s loading timeout to prevent permanent loading screen.
+- **T-003**: Modified `App.tsx` — before rendering Login page, checks `authStatus === 'guest' && !navigator.onLine && hasLocalData`; if true, falls through to main app layout rendering data from IndexedDB.
+- **T-004**: TypeScript (clean except pre-existing members.test.ts error), vite build (successful).
+
+### Files Changed
+- `src/hooks/useAuth.ts` — offline fast path in `init()` before server checks
+- `src/hooks/useLocalData.ts` — offline guest loading, hasLocalData, 3s timeout, preserve state on offline auth→guest
+- `src/App.tsx` — bypass Login page for offline guests with data
+- `docs/TODO.md` — tasks T-001–T-004 marked complete
+- `CHANGELOG.md` — added entry
+- `docs/SESSIONLOG.md` — added this session entry
+
+### Verification
+- `npx tsc --noEmit` — clean (pre-existing error in api/tests/members.test.ts only)
+- `npx vite build` — successful
+
+---
+
 ## Session 40 — 17 Jun 2026 (Offline Reliability + Background Sync Overhaul)
 
 > **Branch**: `fix/offline-sync-overhaul`

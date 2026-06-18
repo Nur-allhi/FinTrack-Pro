@@ -5,6 +5,8 @@ import { syncState, isOnline, onOnline, onOffline, getLastSync, setLastSync as s
 import { generateId } from '../utils/ids';
 import { useToast } from '../components/Toast';
 
+const LOADING_TIMEOUT = 3000;
+
 function toApiMember(r: LocalMember) {
   return { id: r.server_id ?? 0, name: r.name, relationship: r.relationship };
 }
@@ -43,6 +45,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   const [members, setMembers] = useState<LocalMember[]>([]);
   const [accounts, setAccounts] = useState<LocalAccount[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
+  const [hasLocalData, setHasLocalData] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const loadedRef = useRef(false);
   const fetchingRef = useRef(false);
@@ -264,6 +267,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       if (showToast) toast("Data refreshed.", 'success');
     } catch (error) {
       console.error("Fetch failed:", error);
+      setIsOnlineState(false);
       if (showToast) toastRef.current("Failed to refresh data.", 'error');
     } finally {
       fetchingRef.current = false;
@@ -274,11 +278,13 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
   // Initial load + auth transition: read local first, then background fetch
   useEffect(() => {
     if (!isAuthenticated) {
-      // On logout: clear state
+      // On logout: clear state unless offline (preserve for offline guests)
       if (prevAuthRef.current) {
         loadedRef.current = false;
-        setMembers([]);
-        setAccounts([]);
+        if (navigator.onLine) {
+          setMembers([]);
+          setAccounts([]);
+        }
       }
       prevAuthRef.current = false;
       return;
@@ -302,14 +308,54 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  // Online/offline events — only update state (sync engine handles fetching)
+  // Offline guest data loading — load from IndexedDB regardless of auth
+  useEffect(() => {
+    if (navigator.onLine || isAuthenticated) return;
+    if (loadedRef.current) return;
+
+    loadedRef.current = true;
+    setDataLoading(true);
+
+    const timer = setTimeout(() => setDataLoading(false), LOADING_TIMEOUT);
+
+    (async () => {
+      try {
+        const [localMembers, localAccounts] = await Promise.all([
+          localDb.getMembers(),
+          localDb.getAccounts(),
+        ]);
+        setMembers(localMembers);
+        setAccounts(localAccounts);
+        setHasLocalData(localMembers.length > 0 || localAccounts.length > 0);
+      } catch (e) {
+        console.error('Offline guest load failed:', e);
+      } finally {
+        setDataLoading(false);
+        clearTimeout(timer);
+        onInitialLoad?.();
+      }
+    })();
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  // Online/offline events — registered once on mount, never re-registered
   useEffect(() => {
     const offCleanup = onOffline(() => setIsOnlineState(false));
     const onCleanup = onOnline(async () => {
-      setIsOnlineState(true);
+      // Verify the server is actually reachable before marking online
+      try {
+        const res = await fetch('/api/auth/me', { signal: AbortSignal.timeout(3000) });
+        if (res.ok || res.status === 401) {
+          setIsOnlineState(true);
+        }
+      } catch {
+        // Server unreachable — stay offline
+      }
     });
     return () => { offCleanup(); onCleanup(); };
-  }, [isAuthenticated]);
+  }, []);
 
   // Sync state listener
   useEffect(() => {
@@ -383,6 +429,7 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
     localMembers: members,
     localAccounts: accounts,
     dataLoading,
+    hasLocalData,
     lastUpdate,
     fetchData,
     reloadFromLocal: loadFromLocal,

@@ -1,5 +1,5 @@
 import { db } from "../db.js";
-import { insertOne, updateOne } from "./queries.js";
+import { insertOne, updateOne, asError } from "./queries.js";
 
 interface AccountRow {
   id: number; name: string; type: string; parent_id?: number | null;
@@ -20,7 +20,7 @@ export async function getGroups(userId: string) {
     .eq("user_id", userId)
     .is("deleted_at", null)
     .order("name");
-  if (error) throw error;
+  if (error) throw asError(error);
 
   const { data: children, error: cError } = await client
     .from("accounts")
@@ -28,10 +28,10 @@ export async function getGroups(userId: string) {
     .eq("user_id", userId)
     .is("deleted_at", null)
     .not("parent_id", "is", null);
-  if (cError) throw cError;
+  if (cError) throw asError(cError);
 
   const { data: allTx, error: txErr } = await client.from("transactions").select("account_id, amount").eq("user_id", userId).is("deleted_at", null);
-  if (txErr) throw txErr;
+  if (txErr) throw asError(txErr);
 
   const balances: Record<number, number> = {};
   for (const tx of (allTx || []) as TxRow[]) {

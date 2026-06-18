@@ -38,9 +38,45 @@ export function useAuth() {
         return;
       }
 
+      // Try cached Supabase session first — works offline or when server can't reach Supabase
       initPendingCount();
+      try {
+        const session = await authService.getSession();
+        if (session?.access_token) {
+          let trusted = false;
+          try {
+            // Must use authService.setSession to reset _signedOut (set during signOut)
+            await authService.setSession(session.access_token);
+            const meRes = await fetch('/api/auth/me');
+            if (meRes.ok) {
+              const d = await meRes.json();
+              if (d.user?.email) setUserEmail(d.user.email);
+              trusted = true;
+            } else if (meRes.status === 401 && !navigator.onLine) {
+              trusted = true;
+            } else if (meRes.status >= 500) {
+              trusted = true;
+            }
+          } catch {
+            trusted = true;
+          }
+          if (trusted) {
+            setGuestMode(false);
+            setAuthStatus('authenticated');
+            return;
+          }
+        }
+      } catch {}
 
-      // Race auth initialization against a 5s overall timeout
+      // No cached session — offline fast path (skip server checks)
+      if (!navigator.onLine) {
+        setGuestMode(true);
+        localDb.getOrCreateGuestId().catch(() => {});
+        setAuthStatus('guest');
+        return;
+      }
+
+      // Online — race auth initialization against a 5s overall timeout
       const timedOut = await new Promise<boolean>(resolve => {
         const timer = setTimeout(() => resolve(true), 5000);
         (async () => {
@@ -119,6 +155,9 @@ export function useAuth() {
 
   useEffect(() => {
     setOnSessionExpired(() => {
+      if (!navigator.onLine) return; // Don't expire session when offline — trust cached
+      setGuestMode(true);
+      localDb.getOrCreateGuestId().catch(() => {});
       setAuthStatus('guest');
       toast("Session expired. Please sign in again.", 'error');
     });

@@ -1,5 +1,5 @@
 import { db } from "../db.js";
-import { softDeleteOne } from "./queries.js";
+import { softDeleteOne, asError } from "./queries.js";
 import type { Transaction } from "../../shared/types.js";
 
 interface SupabaseTransactionRow {
@@ -44,7 +44,7 @@ export async function getCategories(userId: string) {
     .is("deleted_at", null)
     .neq("category", "")
     .neq("category", null);
-  if (error) throw error;
+  if (error) throw asError(error);
   const cats = (data || []).map((t: CategoryRow) => t.category).filter(Boolean);
   return [...new Set(cats)].sort();
 }
@@ -60,7 +60,7 @@ export async function getTransactions(accountId: string, userId: string, limit?:
     .order("id", { ascending: false });
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
   const { data: transactions, error: txError } = await query;
-  if (txError) throw txError;
+  if (txError) throw asError(txError);
   if (!transactions || transactions.length === 0) return [];
 
   const linkedIds = (transactions as SupabaseTransactionRow[])
@@ -93,7 +93,7 @@ export async function createTransaction(userId: string, data: {
   const { data: result, error } = await db().from("transactions").insert([{
     ...data, type: data.type || 'normal', user_id: userId
   }]).select().single();
-  if (error) throw error;
+  if (error) throw asError(error);
   return result;
 }
 
@@ -203,7 +203,7 @@ export async function updateTransaction(userId: string, id: number, updates: {
   if (fetchError) {
     const pgError = fetchError as { code?: string };
     if (pgError.code === 'PGRST116') return { success: true };
-    throw fetchError;
+    throw asError(fetchError);
   }
 
   const dbUpdate: Record<string, string | number | null> = {};
@@ -214,7 +214,7 @@ export async function updateTransaction(userId: string, id: number, updates: {
   if (updates.summary !== undefined) dbUpdate.summary = updates.summary;
 
   const { error } = await db().from("transactions").update(dbUpdate).eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 
   if (transaction && transaction.linked_transaction_id) {
     const linkedUpdate: Record<string, string | number | null> = { ...dbUpdate };
@@ -236,7 +236,7 @@ export async function deleteTransaction(userId: string, id: number) {
   if (fetchError) {
     const pgError = fetchError as { code?: string };
     if (pgError.code === 'PGRST116') return { success: true };
-    throw fetchError;
+    throw asError(fetchError);
   }
 
   const now = new Date().toISOString();
@@ -244,7 +244,7 @@ export async function deleteTransaction(userId: string, id: number) {
     await db().from("transactions").update({ deleted_at: now }).eq("id", transaction.linked_transaction_id).eq("user_id", userId);
   }
   const { error: delError } = await db().from("transactions").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
-  if (delError) throw delError;
+  if (delError) throw asError(delError);
   return { success: true };
 }
 
@@ -254,5 +254,5 @@ export async function renameCategory(userId: string, oldName: string, newName: s
     .update({ category: newName })
     .eq("category", oldName)
     .eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }

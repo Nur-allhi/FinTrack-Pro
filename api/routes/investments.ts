@@ -3,10 +3,11 @@ import { getInvestments, getInvestmentById, createInvestment, getInvestmentRetur
 import { investmentSchema, investmentReturnSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
+import { requireDbReachable } from "../db.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const data = await getInvestments(req.user!.id);
     res.json(data);
@@ -17,7 +18,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id/returns", async (req, res) => {
+router.get("/:id/returns", requireDbReachable, async (req, res) => {
   try {
     const investment = await getInvestmentById(Number(req.params.id), req.user!.id);
     if (!investment) return sendError(res, 404, "Investment not found", "NOT_FOUND");

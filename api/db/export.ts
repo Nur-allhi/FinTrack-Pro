@@ -1,4 +1,5 @@
 import { db } from "../db.js";
+import { asError } from "./queries.js";
 import type { Member, Account, Transaction, Investment, InvestmentReturn } from "../../shared/types.js";
 
 export async function exportAllData(userId: string) {
@@ -32,7 +33,7 @@ export async function importAllData(userId: string, data: {
     p_investments: JSON.stringify(data.investments || []),
     p_investment_returns: JSON.stringify(data.investmentReturns || []),
   });
-  if (error) throw error;
+  if (error) throw asError(error);
   return { success: true };
 }
 

@@ -4,6 +4,11 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-18: Fix PWA double-load at src/main.tsx — captures isUpdate at register() time before clients.claim(), handles reg.installing race (completed).
+2026-06-18: Fix "Unknown error" in API logs at api/db/queries.ts, api/db/*.ts, api/routes/*.ts — added asError() helper wrapping plain Supabase error objects into Error instances (completed).
+2026-06-18: Fix AbortError noise when offline at api/db.ts — withTimeout swallows orphan promise rejections, fetchWithTimeout tracks DB reachability, requireDbReachable middleware returns fast 503 on all 11 data GET routes (completed).
+2026-06-18: Fix blank screen when offline (PWA) — offline auth fast path in useAuth (skips 5s timeout when offline + cached session), offline guest data loading in useLocalData (loads from IndexedDB regardless of auth, adds hasLocalData flag + 3s loading timeout), App.tsx renders app for offline guests with local data (bypasses Login page when offline + data exists). Branch: fix/offline-sync-overhaul (completed).
+
 2026-06-17: Overhaul offline reliability + background sync — auth timeout (3s refreshSession, 5s init), Background Sync registration + 60s fallback timer, retry queue with exponential backoff (5s→15s→45s→2min→5min, conflict at 5), fetchData cleanup (remove duplicate 30s/visibility/online polling), client_id dedup fix for members/accounts/groups, periodic balance reconciliation every 5 sync cycles, SW mutation queue for failed POST/PUT/DELETE. Branch: fix/offline-sync-overhaul (completed).
 
 2026-06-17: Delete all stale branches except main and dev — removed 7 local branches (feat/local-first, feature/guest-mode-nudge, feature/onboarding-experience, feature/ui-ux-polish-improvement, fix/all-bugs, fix/security-audit) and 7 remote branches (feat/liquid-glass-nav, feat/local-first, feat/unified-write-modal, feature/guest-mode-nudge, feature/ui-ux-polish-improvement, fix/all-bugs, fix/dashboard-fix). Updated CHANGELOG.md, SESSIONLOG.md, added BRANCH_CLEANUP.md plan. Staged CODEBASE_REVIEW.md and code-reviewer skill (completed).

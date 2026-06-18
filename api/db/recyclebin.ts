@@ -1,5 +1,5 @@
 import { db } from "../db.js";
-import { restoreOne, permanentDeleteOne } from "./queries.js";
+import { restoreOne, permanentDeleteOne, asError } from "./queries.js";
 
 export type RecycleBinEntityType = "transactions" | "accounts" | "loans" | "members";
 
@@ -28,7 +28,7 @@ export async function getDeletedItems(userId: string, type?: RecycleBinEntityTyp
       .eq("user_id", userId)
       .not("deleted_at", "is", null)
       .order("deleted_at", { ascending: false });
-    if (error) throw error;
+    if (error) throw asError(error);
 
     for (const row of (data || []) as DeletedRow[]) {
       results.push({
@@ -76,7 +76,7 @@ export async function emptyRecycleBin(userId: string, type?: RecycleBinEntityTyp
       .select("id")
       .eq("user_id", userId)
       .not("deleted_at", "is", null);
-    if (error) throw error;
+    if (error) throw asError(error);
     for (const row of (data || []) as { id: number }[]) {
       await permanentDeleteOne(table, userId, row.id);
     }

@@ -13,6 +13,12 @@ export function applyPagination<T extends { range: (start: number, end: number) 
   return query;
 }
 
+export function asError(err: unknown): Error {
+  if (err instanceof Error) return err;
+  const message = err && typeof err === 'object' && 'message' in err ? String((err as { message: unknown }).message) : 'Database error';
+  return new Error(message);
+}
+
 export async function selectMany<T>(
   table: string,
   columns: string,
@@ -36,7 +42,7 @@ export async function selectMany<T>(
     query = query.range(start, start + opts.limit - 1);
   }
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw asError(error);
   return (data || []) as T[];
 }
 
@@ -55,7 +61,7 @@ export async function selectOne<T>(
     .single();
   if (error) {
     if ((error as { code?: string }).code === "PGRST116") return null;
-    throw error;
+    throw asError(error);
   }
   return data as T;
 }
@@ -63,7 +69,7 @@ export async function selectOne<T>(
 export async function insertOne<T>(table: string, data: Record<string, unknown>): Promise<T> {
   const client = db();
   const { data: result, error } = await client.from(table).insert([data]).select().single();
-  if (error) throw error;
+  if (error) throw asError(error);
   return result as T;
 }
 
@@ -75,13 +81,13 @@ export async function updateOne(
 ): Promise<void> {
   const client = db();
   const { error } = await client.from(table).update(updates).eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }
 
 export async function deleteOne(table: string, userId: string, id: number): Promise<void> {
   const client = db();
   const { error } = await client.from(table).delete().eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }
 
 export async function softDeleteOne(table: string, userId: string, id: number): Promise<void> {
@@ -91,7 +97,7 @@ export async function softDeleteOne(table: string, userId: string, id: number): 
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }
 
 export async function restoreOne(table: string, userId: string, id: number): Promise<void> {
@@ -101,7 +107,7 @@ export async function restoreOne(table: string, userId: string, id: number): Pro
     .update({ deleted_at: null })
     .eq("id", id)
     .eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }
 
 export async function permanentDeleteOne(table: string, userId: string, id: number): Promise<void> {
@@ -111,7 +117,7 @@ export async function permanentDeleteOne(table: string, userId: string, id: numb
     .delete()
     .eq("id", id)
     .eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }
 
 const SOFT_DELETE_TABLES = new Set(["transactions", "accounts", "loans", "members"]);

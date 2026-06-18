@@ -3,10 +3,11 @@ import { getMembers, createMember, deleteMember } from "../db/index.js";
 import { memberSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
+import { requireDbReachable } from "../db.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const data = await getMembers(req.user!.id);
     res.json(data);
