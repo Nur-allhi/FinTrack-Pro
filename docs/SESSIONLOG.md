@@ -389,6 +389,35 @@ Made group cards clickable to open a modal showing the group's accounts, where e
 
 ---
 
+## Session 43 — 18 Jun 2026 (Fix Group Children Lost During Sync Pull)
+
+> **Branch**: `fix/group-children-lost-on-sync`
+> **Tasks**: T-001
+> **Status**: completed
+
+### Summary
+Fixed bug where accounts assigned to groups via `parent_id` stopped appearing as group children. Three root causes:
+
+1. **Broken FK translation for `parent_id`** (primary cause): `parent_id` on accounts references a GROUP server ID, but the FK translation in `fetchData()` and `pullChanges()` only looked up `accountServerIdToLocalId` (which only has account entries). Since groups are stored in a separate `groups` store, the lookup always failed and `parent_id` was set to null.
+2. **`fetchData()` is never called on initial auth load** (removed in Session 41), so `GET /api/groups` (which computes children) is never reached automatically.
+3. **Background sync/pull stores groups as raw accounts records** without computed fields (`children`, `child_count`, `accumulated_balance`).
+
+### Changes
+- **useLocalData.ts:fetchData()** — Added `groupServerIdToLocalId` map (built from `localDb.getGroups()`) and use it as fallback for `parent_id` FK translation. This fixes existing accounts losing their `parent_id` after `fetchData()` runs.
+- **syncEngine.ts:pullChanges()** (post-loop accounts upsert) — Same fix: added `groupServerIdToLocalId` map for `parent_id` FK translation during sync pull.
+- **syncEngine.ts:recomputeGroupChildren()** — New exported function that rebuilds each group's children array from local accounts by matching `parent_id`. Also added `groupLocalIdToServerId` map to handle `parent_id` values that are group local UUIDs.
+- **syncEngine.ts:pullChanges()** — Calls `recomputeGroupChildren()` at end of every pull cycle.
+- **useLocalData.ts:loadFromLocal()** — Calls `recomputeGroupChildren()` after loading local data.
+
+### Files Changed
+- `src/services/syncEngine.ts` — FK translation fix + `recomputeGroupChildren()`
+- `src/hooks/useLocalData.ts` — FK translation fix + `recomputeGroupChildren()` call in `loadFromLocal()`
+
+### Verification
+- `npx tsc --noEmit` — clean
+
+---
+
 ## Quick Reference — Last Session
 
 > **Session 32** — 8 June 2026 (Fix Edit Transaction Creates Duplicate Entry)

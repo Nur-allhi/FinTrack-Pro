@@ -40,3 +40,14 @@
 - [x] **T-019** Fix AbortError orphans in withTimeout — swallow loser promise rejections in Promise.race — `📄 api/db.ts`
 - [x] **T-020** Add reachability cache to fetchWithTimeout — 30s cooldown on AbortError, markDbFailure/markDbSuccess — `📄 api/db.ts`
 - [x] **T-021** Add requireDbReachable middleware to all 11 data GET routes — instant 503 when DB unreachable — `📄 api/routes/*.ts`
+
+---
+
+# TODO — Fix Group Children Lost During Sync Pull
+
+> **Plan**: `plans/FIX_GROUP_CHILDREN_LOST_ON_SYNC.md`
+> **Branch**: `fix/group-children-lost-on-sync`
+
+---
+
+- [x] **T-001** Preserve group computed fields (children, child_count, accumulated_balance, member_name) during sync pull in `syncEngine.ts` — prevents data loss when sync/pull returns raw accounts records without computed group children

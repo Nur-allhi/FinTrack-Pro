@@ -4,6 +4,7 @@ All the changes made to FinTrack Pro, written in plain English.
 
 ---
 
+2026-06-18: Fix group children lost during sync pull at src/services/syncEngine.ts, src/hooks/useLocalData.ts — added recomputeGroupChildren() that rebuilds group children from local accounts by parent_id; wired into pullChanges() and loadFromLocal(). Branch: fix/group-children-lost-on-sync (completed).
 2026-06-18: Address data flow concerns — Concern 3: visibility change handler optimized to pull-only (syncEngine.ts), removed redundant 5-minute reconcile interval. Concern 2: removed duplicate fetchData() on initial auth load (useLocalData.ts), added orphan purge to pullChanges() for members and accounts (syncEngine.ts). Concern 1: added getConflictCount/getConflictRecords/resolveConflict to localDb.ts, wired conflictCount into SyncStatus with auto-refresh, added AlertTriangle icon for conflict status in TransactionRow/TransactionCard, added conflict resolution tab with Keep mine/Accept server buttons to RecycleBin. Branch: fix/data-flow-concerns (completed).
 2026-06-18: Fix PWA double-load at src/main.tsx — captures isUpdate at register() time before clients.claim(), handles reg.installing race (completed).
 2026-06-18: Fix "Unknown error" in API logs at api/db/queries.ts, api/db/*.ts, api/routes/*.ts — added asError() helper wrapping plain Supabase error objects into Error instances (completed).

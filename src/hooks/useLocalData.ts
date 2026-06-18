@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { localDb, LocalMember, LocalAccount, LocalGroup, LocalTransaction } from '../services/localDb';
 import { authService } from '../services/authService';
-import { syncState, isOnline, onOnline, onOffline, getLastSync, setLastSync as setLastSyncStamp, initPendingCount } from '../services/syncEngine';
+import { syncState, isOnline, onOnline, onOffline, getLastSync, setLastSync as setLastSyncStamp, initPendingCount, recomputeGroupChildren } from '../services/syncEngine';
 import { generateId } from '../utils/ids';
 import { useToast } from '../components/Toast';
 
@@ -62,6 +62,9 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
       ]);
       setMembers(localMembers);
       setAccounts(localAccounts);
+      // Recompute group children from local accounts so groups show correct children
+      // without needing a server fetchData() call.
+      await recomputeGroupChildren();
     } catch (e) {
       console.error('loadFromLocal failed:', e);
     }
@@ -158,12 +161,19 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
         for (const a of localAccounts) {
           if (a.server_id != null) accountServerIdToLocalId.set(a.server_id, a.id);
         }
+        // Build group server_id → local_id map for parent_id FK translation
+        // (parent_id references a group in the groups store, not an account)
+        const localGroups = await localDb.getGroups();
+        const groupServerIdToLocalId = new Map<number, string>();
+        for (const g of localGroups) {
+          if (g.server_id != null) groupServerIdToLocalId.set(g.server_id, g.id);
+        }
 
         const toUpsert: LocalAccount[] = data.map((a: Record<string, unknown>) => {
           const serverMemberId = a.member_id as number | null;
           const serverParentId = a.parent_id as number | null;
           const localMemberId = serverMemberId != null ? memberServerIdToLocalId.get(serverMemberId) ?? null : null;
-          const localParentId = serverParentId != null ? accountServerIdToLocalId.get(serverParentId) ?? null : null;
+          const localParentId = serverParentId != null ? (accountServerIdToLocalId.get(serverParentId) ?? groupServerIdToLocalId.get(serverParentId) ?? null) : null;
 
           const existing = localByServerId.get(a.id as number) || (a.client_id ? localByClientId.get(a.client_id as string) : undefined);
           if (existing) {

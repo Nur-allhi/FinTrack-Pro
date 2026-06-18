@@ -653,6 +653,13 @@ async function pullChanges(): Promise<number> {
     for (const a of allLocalAccounts) {
       if (a.server_id != null) accountServerIdToLocalId.set(a.server_id, a.id);
     }
+    // Build group server_id → local_id map for parent_id FK translation
+    // (parent_id references a group in the groups store, not an account)
+    const allLocalGroups = await localDb.getAllRecords('groups') as Array<import('./localDb').LocalGroup & { server_id?: number | null }>;
+    const groupServerIdToLocalId = new Map<number, string>();
+    for (const g of allLocalGroups) {
+      if (g.server_id != null) groupServerIdToLocalId.set(g.server_id, g.id);
+    }
 
     const accountsToUpsert: LocalAccount[] = [];
     for (const r of data.changes.accounts) {
@@ -668,7 +675,7 @@ async function pullChanges(): Promise<number> {
       const serverMemberId = sanitized.member_id as number | null;
       const serverParentId = sanitized.parent_id as number | null;
       const localMemberId = serverMemberId != null ? (memberServerIdToLocalId.get(serverMemberId) ?? null) : null;
-      const localParentId = serverParentId != null ? (accountServerIdToLocalId.get(serverParentId) ?? null) : null;
+      const localParentId = serverParentId != null ? (accountServerIdToLocalId.get(serverParentId) ?? groupServerIdToLocalId.get(serverParentId) ?? null) : null;
 
       accountsToUpsert.push({
         id: existing?.id || crypto.randomUUID(),
@@ -728,9 +735,83 @@ async function pullChanges(): Promise<number> {
     await localDb.setMeta('sync_timestamp', data.pulledAt || new Date().toISOString());
   }
 
+  // Recompute group children from local accounts — the sync/pull endpoint only returns raw
+  // accounts records without computed fields (children, child_count, accumulated_balance).
+  await recomputeGroupChildren();
+
   _syncProgress = null;
   syncState.setState({ progress: null });
   return totalPulled;
+}
+
+/** Rebuild each group's children array from local accounts by matching parent_id. */
+export async function recomputeGroupChildren(): Promise<void> {
+  try {
+    const [allGroups, allAccounts] = await Promise.all([
+      localDb.getAllRecords<import('./localDb').LocalGroup>('groups'),
+      localDb.getAllRecords<import('./localDb').LocalAccount>('accounts'),
+    ]);
+
+    const activeGroups = allGroups.filter(g => !g._deleted);
+    const childAccounts = allAccounts.filter(a => !a._deleted && a.type !== 'group');
+
+    // Account local UUID ↔ server_id maps for FK resolution
+    const accountLocalIdToServerId = new Map<string, number>();
+    for (const a of childAccounts) {
+      if (a.server_id != null) accountLocalIdToServerId.set(a.id, a.server_id);
+    }
+
+    // Group local UUID → server_id map: parent_id on accounts can be a group's local UUID
+    const groupLocalIdToServerId = new Map<string, number>();
+    for (const g of activeGroups) {
+      if (g.server_id != null) groupLocalIdToServerId.set(g.id, g.server_id);
+    }
+
+    // Member name lookup for children member_name
+    const allMembers = await localDb.getAllRecords<import('./localDb').LocalMember>('members');
+    const memberNameById = new Map<string | number, string>();
+    for (const m of allMembers) {
+      if (!m._deleted) {
+        memberNameById.set(m.id, m.name);
+        if (m.server_id != null) memberNameById.set(m.server_id, m.name);
+      }
+    }
+
+    for (const group of activeGroups) {
+      if (group.server_id == null) continue;
+
+      const children: import('./localDb').LocalGroupChild[] = [];
+      for (const a of childAccounts) {
+        if (a.parent_id == null) continue;
+        const matchesServerId = a.parent_id === group.server_id;
+        const matchesStringId = a.parent_id === String(group.server_id);
+        const mapsToAccountLocalId = accountLocalIdToServerId.get(String(a.parent_id)) === group.server_id;
+        const mapsToGroupLocalId = groupLocalIdToServerId.get(String(a.parent_id)) === group.server_id;
+        if (!matchesServerId && !matchesStringId && !mapsToAccountLocalId && !mapsToGroupLocalId) continue;
+        children.push({
+          id: a.server_id ?? 0,
+          name: a.name,
+          type: a.type,
+          member_name: a.member_id != null ? memberNameById.get(a.member_id) : undefined,
+          current_balance: a.current_balance || 0,
+        });
+      }
+
+      const childCount = children.length;
+      const accumulatedBalance = children.reduce((sum, c) => sum + c.current_balance, 0);
+
+      if (group.child_count !== childCount || group.accumulated_balance !== accumulatedBalance) {
+        await localDb.putGroup({
+          ...group,
+          child_count: childCount,
+          accumulated_balance: accumulatedBalance,
+          children,
+        });
+      }
+    }
+  } catch (e) {
+    console.error('recomputeGroupChildren failed:', e);
+  }
 }
 
 // Periodic balance reconciliation: runs every 5th sync cycle
