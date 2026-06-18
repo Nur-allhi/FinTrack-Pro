@@ -1,14 +1,11 @@
-# TODO — Offline Reliability + Background Sync Overhaul
+# TODO — Fix Blank Screen When Offline (PWA)
 
-> **Plan**: `plans/OFFLINE_SYNC_OVERHAUL.md`
+> **Plan**: `plans/OFFLINE_BLANK_SCREEN_FIX.md`
 > **Branch**: `fix/offline-sync-overhaul`
 
 ---
 
-- [x] **T-001** Auth timeout — add 3s timeout to `refreshSession()`, 5s to `init()` — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-1`
-- [x] **T-002** Register Background Sync + 60s fallback timer — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-2`
-- [x] **T-003** Retry queue with exponential backoff — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-3`
-- [x] **T-004** FetchData cleanup + `client_id` dedup fix — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-4`
-- [x] **T-005** Periodic balance reconciliation — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-5`
-- [x] **T-006** SW mutation queue for failed POST/PUT/DELETE — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-6`
-- [x] **T-007** Verify (tests, lint, typecheck) + update docs — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-7`
+- [ ] **T-001** Offline auth fast path — skip server checks when offline, trust cached session — `📄 plans/OFFLINE_BLANK_SCREEN_FIX.md:§Step-1`
+- [ ] **T-002** Offline guest data loading in `useLocalData` — load from IndexedDB regardless of auth; add `hasLocalData` flag; add 3s loading timeout — `📄 plans/OFFLINE_BLANK_SCREEN_FIX.md:§Step-2`
+- [ ] **T-003** Render app for offline guests with local data in `App.tsx` — bypass Login page when offline + data exists — `📄 plans/OFFLINE_BLANK_SCREEN_FIX.md:§Step-3`
+- [ ] **T-004** Verify (lint, typecheck, manual offline scenarios) — `📄 plans/OFFLINE_BLANK_SCREEN_FIX.md:§Step-4`
