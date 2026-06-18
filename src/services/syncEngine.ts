@@ -475,6 +475,48 @@ async function pullChanges(): Promise<number> {
     }
   }
 
+  // Upsert accounts before SYNC loop so accountIdMap has server_id→local_id entries
+  // for transaction/loan FK translation. A full upsert (with member FK resolution)
+  // runs again after the loop once members are available.
+  if (data.changes?.accounts && Array.isArray(data.changes.accounts) && data.changes.accounts.length > 0) {
+    const existingAccts = await localDb.getAllRecords('accounts') as Array<LocalAccount & { server_id?: number | null }>;
+    const existingBySid = new Map(existingAccts.map(a => [a.server_id, a]));
+    const toUpsert: LocalAccount[] = [];
+    for (const r of data.changes.accounts) {
+      const sanitized = sanitizeForPull(r);
+      const sid = sanitized.id as number | undefined;
+      if (sid == null) continue;
+      if (await localDb.isDeletedId('accounts', sid)) continue;
+      const existing = existingBySid.get(sid);
+      if (existing && existing.sync_status === 'pending') continue;
+      toUpsert.push({
+        id: existing?.id || crypto.randomUUID(),
+        server_id: sid,
+        name: sanitized.name as string,
+        type: (sanitized.type as LocalAccount['type']) || 'cash',
+        member_id: existing?.member_id ?? null,
+        parent_id: existing?.parent_id ?? null,
+        color: (sanitized.color as string) || existing?.color || '#A78BFA',
+        archived: (sanitized.archived as number) ?? existing?.archived ?? 0,
+        initial_balance: (sanitized.initial_balance as number) ?? existing?.initial_balance ?? 0,
+        current_balance: existing?.current_balance ?? (sanitized.current_balance as number) ?? 0,
+        currency: (sanitized.currency as string) || existing?.currency || 'USD',
+        updated_at: (sanitized.updated_at as string) || existing?.updated_at || new Date().toISOString(),
+        sync_status: existing?.sync_status === 'pending' ? 'pending' : 'synced',
+        _deleted: sanitized._deleted === true,
+      });
+    }
+    if (toUpsert.length > 0) {
+      await localDb.putAccounts(toUpsert);
+      // Rebuild accountIdMap so SYNC loop can translate transaction/loan FK refs
+      const freshAccounts = await localDb.getAccounts();
+      accountIdMap.clear();
+      for (const a of freshAccounts) {
+        if (a.server_id != null) accountIdMap.set(a.server_id, a.id);
+      }
+    }
+  }
+
   for (const [i, table] of SYNC_TABLES.entries()) {
     _syncProgress = { current: i + 1, total: SYNC_TABLES.length };
     syncState.setState({ progress: _syncProgress });
@@ -587,12 +629,11 @@ async function pullChanges(): Promise<number> {
     }
   }
 
-  // Process non-group accounts from pull response (accounts are not in SYNC_TABLES)
+  // Post-loop accounts upsert: correct member_id FK refs now that members are in localDb
   if (data.changes?.accounts && Array.isArray(data.changes.accounts) && data.changes.accounts.length > 0) {
     const allLocalAccounts = await localDb.getAllRecords('accounts') as Array<LocalAccount & { server_id?: number | null }>;
     const localAccountsByServerId = new Map(allLocalAccounts.map(a => [a.server_id, a]));
 
-    // Build FK translation maps
     const allLocalMembers = await localDb.getAllRecords('members') as Array<LocalMember & { server_id?: number | null }>;
     const memberServerIdToLocalId = new Map<number, string>();
     for (const m of allLocalMembers) {
@@ -609,21 +650,17 @@ async function pullChanges(): Promise<number> {
       const sid = sanitized.id as number | undefined;
       if (sid == null) continue;
 
-      // Skip tombstoned records
       if (await localDb.isDeletedId('accounts', sid)) continue;
 
       const existing = localAccountsByServerId.get(sid);
-
-      // Skip if local has pending changes
       if (existing && existing.sync_status === 'pending') continue;
 
-      // Translate FK refs
       const serverMemberId = sanitized.member_id as number | null;
       const serverParentId = sanitized.parent_id as number | null;
       const localMemberId = serverMemberId != null ? (memberServerIdToLocalId.get(serverMemberId) ?? null) : null;
       const localParentId = serverParentId != null ? (accountServerIdToLocalId.get(serverParentId) ?? null) : null;
 
-      const record: LocalAccount = {
+      accountsToUpsert.push({
         id: existing?.id || crypto.randomUUID(),
         server_id: sid,
         name: sanitized.name as string,
@@ -638,9 +675,7 @@ async function pullChanges(): Promise<number> {
         updated_at: (sanitized.updated_at as string) || existing?.updated_at || new Date().toISOString(),
         sync_status: existing?.sync_status === 'pending' ? 'pending' : 'synced',
         _deleted: sanitized._deleted === true,
-      };
-
-      accountsToUpsert.push(record);
+      });
     }
 
     if (accountsToUpsert.length > 0) {
