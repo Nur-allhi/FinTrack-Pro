@@ -1,14 +1,23 @@
-# TODO — Offline Reliability + Background Sync Overhaul
+# TODO — Address Data Flow Concerns
 
-> **Plan**: `plans/OFFLINE_SYNC_OVERHAUL.md`
-> **Branch**: `fix/offline-sync-overhaul`
+> **Plan**: `plans/DATA_FLOW_CONCERNS.md`
+> **Branch**: `fix/data-flow-concerns`
 
 ---
 
-- [x] **T-001** Auth timeout — add 3s timeout to `refreshSession()`, 5s to `init()` — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-1`
-- [x] **T-002** Register Background Sync + 60s fallback timer — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-2`
-- [x] **T-003** Retry queue with exponential backoff — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-3`
-- [x] **T-004** FetchData cleanup + `client_id` dedup fix — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-4`
-- [x] **T-005** Periodic balance reconciliation — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-5`
-- [x] **T-006** SW mutation queue for failed POST/PUT/DELETE — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-6`
-- [x] **T-007** Verify (tests, lint, typecheck) + update docs — `📄 plans/OFFLINE_SYNC_OVERHAUL.md:§Step-7`
+## Concern 3 — Visibility change triggers unnecessary push (Low)
+
+- [x] **T-301** Change visibility handler to `pullChanges()` + keep `reconcileBalances()` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-3`
+- [x] **T-302** Remove redundant 5-minute `_reconcileInterval` from sync scheduler — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-3`
+
+## Concern 2 — `fetchData()` redundant with sync pull (Low)
+
+- [x] **T-201** Remove auto `fetchData()` call from initial load effect in `useLocalData.ts` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-2`
+- [x] **T-202** Add orphan purge pass to `pullChanges()` in `syncEngine.ts` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-2`
+
+## Concern 1 — Conflict stalemate (Medium)
+
+- [x] **T-101** Add `getConflictCount()`, `getConflictRecords()`, `resolveConflict()` to `localDb.ts` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-1`
+- [x] **T-102** Add `conflictCount` to `SyncStatus`, wire `refreshConflictCount()` into auto-refresh in `syncEngine.ts` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-1`
+- [x] **T-103** Add conflict icon (`AlertTriangle`) to `TransactionRow.tsx` / `TransactionCard.tsx` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-1`
+- [x] **T-104** Add conflict resolution UI tabs + actions to `RecycleBin.tsx` — `📄 plans/DATA_FLOW_CONCERNS.md:§Concern-1`

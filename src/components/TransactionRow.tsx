@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Edit2, Trash2, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Transaction } from '../types';
@@ -86,6 +86,9 @@ export default React.memo(function TransactionRow({
             )}
             {tx.sync_status === 'synced' && (
               <CheckCircle2 className="w-3 h-3 text-semantic-up shrink-0" aria-label="Synced" />
+            )}
+            {tx.sync_status === 'conflict' && (
+              <AlertTriangle className="w-3 h-3 text-semantic-down shrink-0" aria-label="Sync conflict — needs review" />
             )}
             <AnimatedBalance value={tx.runningBalance} currency={currency} className="text-sm font-bold" />
           </div>

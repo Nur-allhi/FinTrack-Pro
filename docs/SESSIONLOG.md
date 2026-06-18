@@ -3,6 +3,41 @@
 > Cumulative record of all development sessions.
 > **AI agents: Read this file at the start of every session to understand project context.**
 
+## Session 41 — 18 Jun 2026 (Data Flow Concerns Resolution)
+
+> **Branch**: `fix/data-flow-concerns`
+> **Tasks**: T-301, T-302, T-201, T-202, T-101, T-102, T-103, T-104
+> **Status**: completed
+
+### Summary
+Resolved all three data flow concerns from DATA_FLOW_CONCERNS.md. Visibility change handler now does pull-only (no redundant push). Removed duplicate 5-minute reconcile interval. Removed duplicate fetchData() on initial auth load — sync engine handles it. Added orphan purge to pullChanges() for members/accounts. Resolved the conflict stalemate dead end by adding conflict query methods, wiring conflictCount into SyncStatus with auto-refresh, showing AlertTriangle icon on conflict transactions, and adding a full conflict resolution UI with "Keep mine" / "Accept server" buttons in the RecycleBin.
+
+### Changes
+- **T-301**: Visibility handler changed from `syncNow()` to `pullChanges()` — prevents unnecessary push on tab focus
+- **T-302**: Removed `_reconcileInterval` (5-min redundant timer) and its cleanup — 30s interval already handles reconciliation every 5th cycle
+- **T-201**: Removed auto `fetchData()` call from initial auth load in `useLocalData.ts` — sync engine's `syncNow()` already pulls data
+- **T-202**: Added orphan purge to `pullChanges()` for members and accounts — soft-deletes local records whose server_ids are absent from pull response
+- **T-101**: Added `getConflictCount()`, `getConflictRecords()`, `resolveConflict(entityType, localId, resolution)` to `localDb.ts`
+- **T-102**: Added `conflictCount` to `SyncStatus` type, `refreshConflictCount()`, `initConflictCount()`, wired into auto-refresh subscriptions and sync cycle
+- **T-103**: Added `AlertTriangle` icon for `sync_status === 'conflict'` in `TransactionRow.tsx` and `TransactionCard.tsx`
+- **T-104**: Extended `RecycleBin.tsx` with "Deleted Items" / "Sync Conflicts" tab toggle, conflict list with resolution buttons
+
+### Files Changed
+- `src/services/syncEngine.ts` — visibility handler, removed reconcile interval, orphan purge, conflictCount wiring
+- `src/hooks/useLocalData.ts` — removed auto fetchData from initial load
+- `src/services/localDb.ts` — conflict query methods, resolveConflict
+- `src/components/TransactionRow.tsx` — AlertTriangle icon for conflict
+- `src/components/TransactionCard.tsx` — AlertTriangle icon for conflict
+- `src/components/RecycleBin.tsx` — conflict tab with resolution UI
+- `docs/TODO.md` — all 8 tasks marked complete
+- `CHANGELOG.md` — added entry
+
+### Verification
+- `npx tsc --noEmit` — clean (pre-existing error in members.test.ts only)
+- `npx vite build` — successful
+
+---
+
 ## Session 40 — 17 Jun 2026 (Offline Reliability + Background Sync Overhaul)
 
 > **Branch**: `fix/offline-sync-overhaul`

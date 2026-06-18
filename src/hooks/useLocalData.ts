@@ -293,9 +293,6 @@ export function useLocalData(isAuthenticated: boolean, onInitialLoad?: () => voi
 
       loadFromLocal().then(() => {
         onInitialLoad?.();
-        if (isOnline()) {
-          fetchData();
-        }
       });
     }
     prevAuthRef.current = isAuthenticated;

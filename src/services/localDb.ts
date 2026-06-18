@@ -663,4 +663,54 @@ export const localDb = {
   async putRecord<T extends LocalRecord>(store: EntityName, record: T): Promise<void> {
     await put(store, record);
   },
+
+  // Conflict resolution
+  async getConflictCount(): Promise<number> {
+    const stores: EntityName[] = [
+      'members', 'transactions', 'loans',
+      'loan_settlements', 'investments', 'investment_returns',
+      'budgets', 'recurring_transactions', 'groups',
+    ];
+    let count = 0;
+    for (const s of stores) {
+      const all = await getAllRecords(s);
+      count += all.filter(r => r.sync_status === 'conflict').length;
+    }
+    return count;
+  },
+
+  async getConflictRecords(): Promise<Array<{ entity_type: string; record: LocalRecord; summary: string }>> {
+    const stores: { name: EntityName; getSummary: (r: LocalRecord) => string }[] = [
+      { name: 'transactions', getSummary: (r) => `Transaction: ${(r as LocalTransaction).particulars} - $${(r as LocalTransaction).amount}` },
+      { name: 'accounts', getSummary: (r) => `Account: ${(r as LocalAccount).name}` },
+      { name: 'loans', getSummary: (r) => `Loan: ${(r as LocalLoan).particulars} - $${(r as LocalLoan).amount}` },
+      { name: 'members', getSummary: (r) => `Member: ${(r as LocalMember).name}` },
+      { name: 'groups', getSummary: (r) => `Group: ${(r as LocalGroup).name}` },
+      { name: 'budgets', getSummary: (r) => `Budget: ${(r as LocalBudget).category} - $${(r as LocalBudget).amount}` },
+      { name: 'recurring_transactions', getSummary: (r) => `Recurring: ${(r as LocalRecurringTransaction).particulars} - $${(r as LocalRecurringTransaction).amount}` },
+      { name: 'investments', getSummary: (r) => `Investment: $${(r as LocalInvestment).principal}` },
+      { name: 'loan_settlements', getSummary: (r) => `Settlement: $${(r as LocalLoanSettlement).amount}` },
+      { name: 'investment_returns', getSummary: (r) => `Return: $${(r as LocalInvestmentReturn).amount}` },
+    ];
+    const results: Array<{ entity_type: string; record: LocalRecord; summary: string }> = [];
+    for (const { name, getSummary } of stores) {
+      const all = await getAllRecords(name);
+      for (const r of all) {
+        if (r.sync_status === 'conflict') {
+          results.push({ entity_type: name, record: r, summary: getSummary(r) });
+        }
+      }
+    }
+    return results.sort((a, b) => new Date(b.record.updated_at).getTime() - new Date(a.record.updated_at).getTime());
+  },
+
+  async resolveConflict(entityType: EntityName, localId: string, resolution: 'keep_local' | 'keep_server'): Promise<void> {
+    const record = await withDB(async (db) => db.get(entityType, localId));
+    if (!record) return;
+    if (resolution === 'keep_local') {
+      await put(entityType, { ...record, sync_status: 'pending', updated_at: now() });
+    } else {
+      await put(entityType, { ...record, _deleted: true, sync_status: 'pending', updated_at: now() });
+    }
+  },
 };
