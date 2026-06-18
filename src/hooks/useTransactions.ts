@@ -38,11 +38,8 @@ export function useTransactions(account: Account) {
 
   useEffect(() => {
     const unsub = syncState.subscribe(s => {
-      if (initialSyncRef.current) {
-        initialSyncRef.current = false;
-        return;
-      }
       if (s.state === 'idle') syncCompletedRef.current = true;
+      initialSyncRef.current = false;
     });
     return unsub;
   }, []);

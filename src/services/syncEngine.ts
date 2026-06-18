@@ -1,4 +1,4 @@
-import { localDb, LocalRecord, EntityName, LocalTransaction, LocalLoan, LocalInvestment, LocalMember } from './localDb';
+import { localDb, LocalRecord, EntityName, LocalTransaction, LocalLoan, LocalInvestment, LocalMember, LocalAccount } from './localDb';
 import { authService } from './authService';
 import { isLocalOnly } from '../../shared/schema';
 
@@ -465,6 +465,57 @@ async function pullChanges(): Promise<number> {
   }
 
   let pulledTransactions = false;
+  const seenMemberIds = new Set<number>();
+  const seenAccountIds = new Set<number>();
+
+  // Collect account IDs from pull response for orphan purge
+  if (data.changes?.accounts) {
+    for (const a of data.changes.accounts) {
+      if (a.id != null) seenAccountIds.add(a.id as number);
+    }
+  }
+
+  // Upsert accounts before SYNC loop so accountIdMap has server_id→local_id entries
+  // for transaction/loan FK translation. A full upsert (with member FK resolution)
+  // runs again after the loop once members are available.
+  if (data.changes?.accounts && Array.isArray(data.changes.accounts) && data.changes.accounts.length > 0) {
+    const existingAccts = await localDb.getAllRecords('accounts') as Array<LocalAccount & { server_id?: number | null }>;
+    const existingBySid = new Map(existingAccts.map(a => [a.server_id, a]));
+    const toUpsert: LocalAccount[] = [];
+    for (const r of data.changes.accounts) {
+      const sanitized = sanitizeForPull(r);
+      const sid = sanitized.id as number | undefined;
+      if (sid == null) continue;
+      if (await localDb.isDeletedId('accounts', sid)) continue;
+      const existing = existingBySid.get(sid);
+      if (existing && existing.sync_status === 'pending') continue;
+      toUpsert.push({
+        id: existing?.id || crypto.randomUUID(),
+        server_id: sid,
+        name: sanitized.name as string,
+        type: (sanitized.type as LocalAccount['type']) || 'cash',
+        member_id: existing?.member_id ?? null,
+        parent_id: existing?.parent_id ?? null,
+        color: (sanitized.color as string) || existing?.color || '#A78BFA',
+        archived: (sanitized.archived as number) ?? existing?.archived ?? 0,
+        initial_balance: (sanitized.initial_balance as number) ?? existing?.initial_balance ?? 0,
+        current_balance: existing?.current_balance ?? (sanitized.current_balance as number) ?? 0,
+        currency: (sanitized.currency as string) || existing?.currency || 'USD',
+        updated_at: (sanitized.updated_at as string) || existing?.updated_at || new Date().toISOString(),
+        sync_status: existing?.sync_status === 'pending' ? 'pending' : 'synced',
+        _deleted: sanitized._deleted === true,
+      });
+    }
+    if (toUpsert.length > 0) {
+      await localDb.putAccounts(toUpsert);
+      // Rebuild accountIdMap so SYNC loop can translate transaction/loan FK refs
+      const freshAccounts = await localDb.getAccounts();
+      accountIdMap.clear();
+      for (const a of freshAccounts) {
+        if (a.server_id != null) accountIdMap.set(a.server_id, a.id);
+      }
+    }
+  }
 
   for (const [i, table] of SYNC_TABLES.entries()) {
     _syncProgress = { current: i + 1, total: SYNC_TABLES.length };
@@ -472,6 +523,13 @@ async function pullChanges(): Promise<number> {
 
     const changes = data.changes?.[table];
     if (!Array.isArray(changes) || changes.length === 0) continue;
+
+    // Collect server IDs for orphan purge
+    if (table === 'members') {
+      for (const r of changes) {
+        if (r.id != null) seenMemberIds.add(r.id as number);
+      }
+    }
 
     // Translate server numeric account refs to local UUIDs, and map deleted_at → _deleted
     // Records with untranslatable required FKs are filtered out (they'll be retried on next pull
@@ -571,6 +629,87 @@ async function pullChanges(): Promise<number> {
     }
   }
 
+  // Post-loop accounts upsert: correct member_id FK refs now that members are in localDb
+  if (data.changes?.accounts && Array.isArray(data.changes.accounts) && data.changes.accounts.length > 0) {
+    const allLocalAccounts = await localDb.getAllRecords('accounts') as Array<LocalAccount & { server_id?: number | null }>;
+    const localAccountsByServerId = new Map(allLocalAccounts.map(a => [a.server_id, a]));
+
+    const allLocalMembers = await localDb.getAllRecords('members') as Array<LocalMember & { server_id?: number | null }>;
+    const memberServerIdToLocalId = new Map<number, string>();
+    for (const m of allLocalMembers) {
+      if (m.server_id != null) memberServerIdToLocalId.set(m.server_id, m.id);
+    }
+    const accountServerIdToLocalId = new Map<number, string>();
+    for (const a of allLocalAccounts) {
+      if (a.server_id != null) accountServerIdToLocalId.set(a.server_id, a.id);
+    }
+
+    const accountsToUpsert: LocalAccount[] = [];
+    for (const r of data.changes.accounts) {
+      const sanitized = sanitizeForPull(r);
+      const sid = sanitized.id as number | undefined;
+      if (sid == null) continue;
+
+      if (await localDb.isDeletedId('accounts', sid)) continue;
+
+      const existing = localAccountsByServerId.get(sid);
+      if (existing && existing.sync_status === 'pending') continue;
+
+      const serverMemberId = sanitized.member_id as number | null;
+      const serverParentId = sanitized.parent_id as number | null;
+      const localMemberId = serverMemberId != null ? (memberServerIdToLocalId.get(serverMemberId) ?? null) : null;
+      const localParentId = serverParentId != null ? (accountServerIdToLocalId.get(serverParentId) ?? null) : null;
+
+      accountsToUpsert.push({
+        id: existing?.id || crypto.randomUUID(),
+        server_id: sid,
+        name: sanitized.name as string,
+        type: (sanitized.type as LocalAccount['type']) || 'cash',
+        member_id: localMemberId ?? existing?.member_id ?? null,
+        parent_id: localParentId ?? existing?.parent_id ?? null,
+        color: (sanitized.color as string) || existing?.color || '#A78BFA',
+        archived: (sanitized.archived as number) ?? existing?.archived ?? 0,
+        initial_balance: (sanitized.initial_balance as number) ?? existing?.initial_balance ?? 0,
+        current_balance: existing?.current_balance ?? (sanitized.current_balance as number) ?? 0,
+        currency: (sanitized.currency as string) || existing?.currency || 'USD',
+        updated_at: (sanitized.updated_at as string) || existing?.updated_at || new Date().toISOString(),
+        sync_status: existing?.sync_status === 'pending' ? 'pending' : 'synced',
+        _deleted: sanitized._deleted === true,
+      });
+    }
+
+    if (accountsToUpsert.length > 0) {
+      await localDb.putAccounts(accountsToUpsert);
+      totalPulled += accountsToUpsert.length;
+    }
+  }
+
+  // Orphan purge: soft-delete local records whose server_id no longer exists
+  if (seenMemberIds.size > 0) {
+    const allLocalMembers = await localDb.getAllRecords('members') as LocalMember[];
+    const peerAccounts = await localDb.getAccounts();
+    for (const m of allLocalMembers) {
+      if (m.server_id != null && !seenMemberIds.has(m.server_id) && m.sync_status !== 'pending') {
+        const hasAccounts = peerAccounts.some(a => a.member_id === m.server_id || a.member_id === m.id);
+        if (hasAccounts) {
+          await localDb.putMember({ ...m, _deleted: true, sync_status: 'pending' as const, updated_at: new Date().toISOString() });
+        } else {
+          await localDb.deleteMember(m.id);
+        }
+      }
+    }
+  }
+
+  if (seenAccountIds.size > 0) {
+    const allLocalAccounts = await localDb.getAccounts();
+    const orphanedAccountIds = allLocalAccounts
+      .filter(a => a.server_id != null && !seenAccountIds.has(a.server_id) && a.sync_status !== 'pending')
+      .map(a => a.id);
+    if (orphanedAccountIds.length) {
+      await Promise.all(orphanedAccountIds.map(id => localDb.deleteAccount(id)));
+    }
+  }
+
   if (pulledTransactions) {
     await localDb.recalculateAllBalances();
   }
@@ -613,6 +752,7 @@ export async function syncNow(): Promise<SyncResult> {
   if (!hasPending) {
     const pulled = await pullChanges();
     await refreshPendingCount();
+    await refreshConflictCount();
     return { pushed: 0, pulled, conflicts: 0 };
   }
 
@@ -623,6 +763,7 @@ export async function syncNow(): Promise<SyncResult> {
       const pulled = await pullChanges();
       await reconcileBalances();
       await refreshPendingCount();
+      await refreshConflictCount();
       return { pushed: pushResult.pushed, pulled, conflicts: pushResult.conflicts };
     } catch (err) {
       console.error('Sync failed:', err);
@@ -709,7 +850,6 @@ export async function initialSync(): Promise<boolean> {
 
 // Background sync scheduler
 let _syncInterval: ReturnType<typeof setInterval> | null = null;
-let _reconcileInterval: ReturnType<typeof setInterval> | null = null;
 let _fallbackTimer: ReturnType<typeof setInterval> | null = null;
 let _started = false;
 let _handleVisibility: (() => void) | null = null;
@@ -722,7 +862,7 @@ export function startSyncScheduler() {
 
   _handleVisibility = () => {
     if (document.visibilityState === 'visible') {
-      syncNow();
+      pullChanges();
       reconcileBalances();
     }
   };
@@ -741,12 +881,6 @@ export function startSyncScheduler() {
     }
   }, 30_000);
 
-  _reconcileInterval = setInterval(() => {
-    if (navigator.onLine) {
-      syncNow();
-    }
-  }, 5 * 60 * 1000);
-
   // Fallback timer for browsers without Background Sync (Safari, Firefox)
   // Checks and flushes pending records every 60s
   _fallbackTimer = setInterval(() => {
@@ -760,10 +894,6 @@ export function stopSyncScheduler() {
   if (_syncInterval) {
     clearInterval(_syncInterval);
     _syncInterval = null;
-  }
-  if (_reconcileInterval) {
-    clearInterval(_reconcileInterval);
-    _reconcileInterval = null;
   }
   if (_fallbackTimer) {
     clearInterval(_fallbackTimer);
@@ -795,6 +925,7 @@ export type SyncStatus = {
   state: 'idle' | 'syncing' | 'error';
   lastSyncAt: number | null;
   pendingCount: number;
+  conflictCount: number;
   progress: SyncProgress | null;
 };
 
@@ -807,6 +938,7 @@ let _syncUIState: SyncStatus = {
     return stored ? Number(stored) : null;
   })(),
   pendingCount: 0,
+  conflictCount: 0,
   progress: null,
 };
 const _syncUIListeners: Set<SyncStateListener> = new Set();
@@ -864,11 +996,21 @@ async function resetStaleAccountPending() {
   }
 }
 
+export async function initConflictCount() {
+  try {
+    const count = await localDb.getConflictCount();
+    syncState.setState({ conflictCount: count });
+  } catch (e) {
+    console.error('Failed to init conflict count:', e);
+  }
+}
+
 export async function initPendingCount() {
   try {
     await resetStaleAccountPending();
     const count = await localDb.getUnsyncedCount();
     syncState.setState({ pendingCount: count });
+    await initConflictCount();
   } catch (e) {
     console.error('Failed to init pending count:', e);
   }
@@ -883,6 +1025,15 @@ export async function refreshPendingCount() {
   }
 }
 
+export async function refreshConflictCount() {
+  try {
+    const count = await localDb.getConflictCount();
+    syncState.setState({ conflictCount: count });
+  } catch (e) {
+    console.error('Failed to refresh conflict count:', e);
+  }
+}
+
 export function startPendingCountAutoRefresh() {
   const stores = [
     'members', 'transactions', 'loans',
@@ -890,5 +1041,6 @@ export function startPendingCountAutoRefresh() {
     'budgets', 'recurring_transactions', 'groups',
   ] as const;
   const unsubs = stores.map(store => localDb.onChange(store, refreshPendingCount));
-  return () => { unsubs.forEach(u => u()); };
+  const conflictUnsubs = stores.map(store => localDb.onChange(store, refreshConflictCount));
+  return () => { unsubs.forEach(u => u()); conflictUnsubs.forEach(u => u()); };
 }
