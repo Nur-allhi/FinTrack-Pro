@@ -1,5 +1,5 @@
 import { db } from "../db.js";
-import { selectMany, insertOne } from "./queries.js";
+import { selectMany, insertOne, asError } from "./queries.js";
 import type { Investment, InvestmentReturn } from "../../shared/types.js";
 
 interface InvestmentRow {
@@ -14,7 +14,7 @@ export async function getInvestmentById(id: number, userId: string) {
     .eq("id", id)
     .eq("user_id", userId)
     .single();
-  if (error) throw error;
+  if (error) throw asError(error);
   return data as Investment | null;
 }
 
@@ -34,7 +34,7 @@ export async function getInvestmentReturns(investmentId: number, userId: string)
     .eq("investment_id", investmentId)
     .eq("user_id", userId)
     .order("date", { ascending: false });
-  if (error) throw error;
+  if (error) throw asError(error);
   return (data || []) as InvestmentReturn[];
 }
 
@@ -44,6 +44,6 @@ export async function createInvestmentReturn(investmentId: number, userId: strin
     .insert([{ investment_id: investmentId, user_id: userId, date, amount, percentage }])
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw asError(error);
   return data as InvestmentReturn;
 }

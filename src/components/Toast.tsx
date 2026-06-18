@@ -65,6 +65,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         syncingToastId = addToast('Syncing...', 'info');
       }
 
+      if (s.state === 'error' && wasSyncing.current) {
+        wasSyncing.current = false;
+        if (syncingToastId != null) {
+          removeToast(syncingToastId);
+          syncingToastId = null;
+        }
+        addToast('Sync failed', 'error');
+      }
+
       if (s.state === 'idle' && wasSyncing.current) {
         wasSyncing.current = false;
         if (syncingToastId != null) {

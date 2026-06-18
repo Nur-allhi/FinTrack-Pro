@@ -2,6 +2,7 @@ import express from "express";
 import { getDeletedItems, restoreItem, permanentDeleteItem, emptyRecycleBin, type RecycleBinEntityType } from "../db/recyclebin.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
+import { requireDbReachable } from "../db.js";
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ function isValidType(t: string): t is RecycleBinEntityType {
   return VALID_TYPES.includes(t as RecycleBinEntityType);
 }
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const type = req.query.type as string | undefined;
     if (type && !isValidType(type)) {

@@ -1,4 +1,5 @@
 import { db } from "../db.js";
+import { asError } from "./queries.js";
 import type { Loan } from "../../shared/types.js";
 
 interface LoanRow {
@@ -32,7 +33,7 @@ export async function getLoans(userId: string, limit?: number, offset?: number) 
     .order("date_given", { ascending: false });
   if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw asError(error);
 
   const rows = data as LoanRow[];
   const accountIds = new Set<number>();
@@ -75,7 +76,7 @@ export async function createLoan(userId: string, data: {
   }
 
   const { data: loan, error: loanErr } = await db().from("loans").insert([insertData]).select().single();
-  if (loanErr) throw loanErr;
+  if (loanErr) throw asError(loanErr);
 
   const { data: lenderAcc } = await db()
     .from("accounts")
@@ -130,7 +131,7 @@ export async function updateLoan(userId: string, id: number, updates: {
   if (updates.status === 'settled') dbUpdate.settled_date = new Date().toISOString().split('T')[0];
 
   const { error } = await db().from("loans").update(dbUpdate).eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
   return { success: true };
 }
 
@@ -141,7 +142,7 @@ export async function settleLoan(userId: string, loanId: number, settleAmount?: 
     .eq("id", loanId)
     .eq("user_id", userId)
     .single();
-  if (fetchErr) throw fetchErr;
+  if (fetchErr) throw asError(fetchErr);
   const loanRow = loan as LoanRow | null;
   if (!loanRow) return { notFound: true };
   if (loanRow.status === 'settled') return { alreadySettled: true };
@@ -173,7 +174,7 @@ async function settlePersonLoan(loan: LoanRow, amount: number, userId: string) {
     category: 'Loan Settlement', amount: amount, type: 'loan_settle',
     user_id: userId
   }]).select().single();
-  if (txErr) throw txErr;
+  if (txErr) throw asError(txErr);
 
   await db().from("loan_settlements").insert([{
     loan_id: loan.id, amount, date: today,
@@ -259,9 +260,9 @@ export async function deleteLoan(userId: string, id: number) {
   // The transactions are identified by type='loan' or type='loan_settle' for this user.
   // A more precise approach would require joining through loan_settlements, but this
   // covers the common case. If needed, we can refine this later.
-  if (txErr) throw txErr;
+  if (txErr) throw asError(txErr);
 
   // Soft-delete the loan itself
   const { error } = await db().from("loans").update({ deleted_at: now }).eq("id", id).eq("user_id", userId);
-  if (error) throw error;
+  if (error) throw asError(error);
 }

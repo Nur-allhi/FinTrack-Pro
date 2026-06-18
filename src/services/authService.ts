@@ -22,6 +22,10 @@ export function setGuestMode(enabled: boolean) {
   _guestMode = enabled;
 }
 
+export function getGuestMode(): boolean {
+  return _guestMode;
+}
+
 async function getSupabase(): Promise<SupabaseClient | null> {
   if (_supabase) return _supabase;
   if (_initPromise) return _initPromise;
@@ -35,12 +39,12 @@ async function getSupabase(): Promise<SupabaseClient | null> {
         return null;
       }
       _supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        auth: { persistSession: true, autoRefreshToken: false, detectSessionInUrl: true }
       });
-      _supabase.auth.onAuthStateChange((event) => {
-        if (event === 'SIGNED_OUT' && !_signedOut) {
-          _onSessionExpired?.();
-        }
+      _supabase.auth.onAuthStateChange((_event) => {
+        // Session expiry is handled by apiFetch's 401 handler.
+        // Ignoring Supabase's SIGNED_OUT here because it fires on every init
+        // when the stored token is expired, racing with the cached-session fast path.
       });
       return _supabase;
     } catch (err) {
@@ -73,8 +77,8 @@ async function refreshTokenInternal(): Promise<string | null> {
         return refreshed;
       }
     } catch {}
-    await setSession(data.session.access_token);
-    return data.session.access_token;
+    // Refresh failed — cached token might be expired. Return null so
+    // apiFetch can trigger _onSessionExpired instead of retrying with a stale token.
   }
   return null;
 }

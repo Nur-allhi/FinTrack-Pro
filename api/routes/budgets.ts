@@ -1,12 +1,13 @@
 import express from "express";
-import { db } from "../db.js";
+import { db, requireDbReachable } from "../db.js";
+import { asError } from "../db/queries.js";
 import { budgetSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const month = (req.query.month as string) || new Date().toISOString().slice(0, 7);
     const { data, error } = await db()
@@ -15,7 +16,7 @@ router.get("/", async (req, res) => {
       .eq("user_id", req.user!.id)
       .eq("month", month)
       .order("category");
-    if (error) throw error;
+    if (error) throw asError(error);
     res.json(data || []);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -34,7 +35,7 @@ router.post("/", async (req, res) => {
       .upsert({ user_id: req.user!.id, category, amount, month }, { onConflict: "user_id,category,month" })
       .select()
       .single();
-    if (error) throw error;
+    if (error) throw asError(error);
     res.json(data);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -50,7 +51,7 @@ router.delete("/:id", async (req, res) => {
       .delete()
       .eq("id", Number(req.params.id))
       .eq("user_id", req.user!.id);
-    if (error) throw error;
+    if (error) throw asError(error);
     res.json({ success: true });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";

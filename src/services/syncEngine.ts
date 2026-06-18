@@ -73,7 +73,17 @@ export function onSyncStateChange(listener: (syncing: boolean) => void) {
 function setSyncing(v: boolean) {
   _isSyncing = v;
   _syncListeners.forEach(l => l(v));
-  syncState.setState({ state: v ? 'syncing' : 'idle', progress: v ? _syncProgress : null });
+  if (v) {
+    syncState.setState({ state: 'syncing', progress: _syncProgress });
+  } else {
+    // Preserve error state — don't overwrite with 'idle' when sync failed
+    const current = syncState.get();
+    if (current.state !== 'error') {
+      syncState.setState({ state: 'idle', progress: null });
+    } else {
+      syncState.setState({ progress: null });
+    }
+  }
 }
 
 export function isSyncing() {

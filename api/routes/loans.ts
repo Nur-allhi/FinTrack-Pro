@@ -3,10 +3,11 @@ import { getLoans, createLoan, updateLoan, settleLoan, deleteLoan } from "../db/
 import { loanSchema, loanUpdateSchema, loanSettleSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
+import { requireDbReachable } from "../db.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const limit = req.query.limit ? Number(req.query.limit) : undefined;
     const offset = req.query.offset ? Number(req.query.offset) : undefined;

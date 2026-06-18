@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import helmet from "helmet";
 import { fileURLToPath } from "url";
-import { initDb, supabase } from "./db.js";
+import { initDb, supabase, withTimeout } from "./db.js";
 import { requireAuth, setSessionCookie, clearSessionCookie } from "./middleware/auth.js";
 import { csrfProtection } from "./middleware/csrf.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
@@ -76,7 +76,7 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
     if (!access_token) {
       return res.status(400).json({ error: "access_token is required" });
     }
-    const { data, error } = await supabase.auth.getUser(access_token);
+    const { data, error } = await withTimeout(supabase.auth.getUser(access_token), 3000);
     if (error) {
       return res.status(401).json({ error: error.message });
     }
@@ -99,13 +99,20 @@ app.post("/api/auth/session", authLimiter, async (req, res) => {
     if (!access_token) {
       return res.status(400).json({ error: "access_token is required" });
     }
-    const { data, error } = await supabase.auth.getUser(access_token);
-    if (error) {
-      clearSessionCookie(req, res);
-      return res.status(401).json({ error: error.message });
+    let userEmail: string | undefined;
+    try {
+      const { data, error } = await withTimeout(supabase.auth.getUser(access_token), 3000);
+      if (error) {
+        clearSessionCookie(req, res);
+        return res.status(401).json({ error: error.message });
+      }
+      userEmail = data.user.email;
+    } catch {
+      // Supabase unreachable — trust the token, set cookie anyway
+      // (actual auth verification will happen on first real API call)
     }
     setSessionCookie(req, res, access_token);
-    res.json({ success: true, user: { id: data.user.id, email: data.user.email } });
+    res.json({ success: true, user: { id: 'offline', email: userEmail || '' } });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error("POST /api/auth/session error:", err);

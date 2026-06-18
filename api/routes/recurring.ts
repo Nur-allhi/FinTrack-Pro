@@ -1,19 +1,20 @@
 import express from "express";
-import { db } from "../db.js";
+import { db, requireDbReachable } from "../db.js";
+import { asError } from "../db/queries.js";
 import { recurringSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const { data, error } = await db()
       .from("recurring_transactions")
       .select("*, accounts(name)")
       .eq("user_id", req.user!.id)
       .order("next_date");
-    if (error) throw error;
+    if (error) throw asError(error);
     const results = (data || []).map((r: Record<string, unknown>) => ({
       ...r,
       account_name: Array.isArray(r.accounts) ? (r.accounts as { name: string }[])[0]?.name : (r.accounts as { name?: string })?.name,
@@ -36,7 +37,7 @@ router.post("/", async (req, res) => {
       .insert({ user_id: req.user!.id, account_id, particulars, category, amount, frequency, next_date })
       .select()
       .single();
-    if (error) throw error;
+    if (error) throw asError(error);
     res.json(data);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -55,7 +56,7 @@ router.patch("/:id", async (req, res) => {
       .eq("user_id", req.user!.id)
       .select()
       .single();
-    if (error) throw error;
+    if (error) throw asError(error);
     res.json(data);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -71,7 +72,7 @@ router.delete("/:id", async (req, res) => {
       .delete()
       .eq("id", Number(req.params.id))
       .eq("user_id", req.user!.id);
-    if (error) throw error;
+    if (error) throw asError(error);
     res.json({ success: true });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -80,7 +81,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/process", async (req, res) => {
+router.post("/process", requireDbReachable, async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const { data: due, error: fetchErr } = await db()
@@ -89,7 +90,7 @@ router.post("/process", async (req, res) => {
       .eq("user_id", req.user!.id)
       .eq("active", true)
       .lte("next_date", today);
-    if (fetchErr) throw fetchErr;
+    if (fetchErr) throw asError(fetchErr);
 
     let processed = 0;
     for (const rec of due || []) {

@@ -1,5 +1,5 @@
 import express from "express";
-import { db } from "../db.js";
+import { db, withTimeout } from "../db.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
@@ -49,8 +49,16 @@ router.post("/push", async (req, res) => {
       return sendError(res, 400, "records object required", "VALIDATION_ERROR");
     }
 
-    const results: Record<string, { pushed: number; conflicts: number; ids: { client_id: string; server_id: number }[] }> = {};
     const client = db();
+    // Check Supabase reachability before processing records
+    try {
+      await withTimeout(client.from('members').select('id', { count: 'exact', head: true }).limit(0), 3000);
+    } catch {
+      logger.warn({ requestId: req.requestId }, "sync push skipped — database unreachable");
+      return res.status(503).json({ success: false, error: 'Database unreachable' });
+    }
+
+    const results: Record<string, { pushed: number; conflicts: number; ids: { client_id: string; server_id: number }[] }> = {};
 
     for (const table of SYNC_TABLES) {
       const tableRecords = records[table];
@@ -166,21 +174,34 @@ router.get("/pull", async (req, res) => {
     const sinceTimestamp = since || '1970-01-01T00:00:00Z';
 
     const client = db();
+    // Check Supabase reachability before querying tables
+    try {
+      await withTimeout(client.from('members').select('id', { count: 'exact', head: true }).limit(0), 3000);
+    } catch {
+      logger.warn({ requestId: req.requestId }, "sync pull skipped — database unreachable");
+      return res.status(503).json({ success: false, error: 'Database unreachable', changes: {}, pulledAt: new Date().toISOString() });
+    }
+
     const changes: Record<SyncTable, unknown[]> = {} as Record<SyncTable, unknown[]>;
 
     for (const table of SYNC_TABLES) {
-      const { data, error } = await client
-        .from(table)
-        .select('*')
-        .eq('user_id', userId)
-        .gt('updated_at', sinceTimestamp)
-        .order('updated_at', { ascending: true });
+      try {
+        const { data, error } = await client
+          .from(table)
+          .select('*')
+          .eq('user_id', userId)
+          .gt('updated_at', sinceTimestamp)
+          .order('updated_at', { ascending: true });
 
-      if (error) {
-        logger.error({ requestId: req.requestId, error: error.message, table }, "sync pull");
+        if (error) {
+          logger.warn({ requestId: req.requestId, error: error.message, table }, "sync pull table error");
+          continue;
+        }
+        changes[table] = data || [];
+      } catch (err) {
+        logger.warn({ requestId: req.requestId, error: err instanceof Error ? err.message : String(err), table }, "sync pull network error");
         continue;
       }
-      changes[table] = data || [];
     }
 
     // Log sync operation
@@ -207,6 +228,14 @@ router.post("/initial", async (req, res) => {
   try {
     const userId = req.user!.id;
     const client = db();
+    // Check Supabase reachability
+    try {
+      await withTimeout(client.from('members').select('id', { count: 'exact', head: true }).limit(0), 3000);
+    } catch {
+      logger.warn({ requestId: req.requestId }, "sync initial skipped — database unreachable");
+      return res.status(503).json({ success: false, error: 'Database unreachable', data: {}, pulledAt: new Date().toISOString() });
+    }
+
     const data: Record<SyncTable, unknown[]> = {} as Record<SyncTable, unknown[]>;
 
     for (const table of SYNC_TABLES) {
@@ -217,7 +246,7 @@ router.post("/initial", async (req, res) => {
         .order('id', { ascending: true });
 
       if (error) {
-        logger.error({ requestId: req.requestId, error: error.message, table }, "sync initial");
+        logger.warn({ requestId: req.requestId, error: error.message, table }, "sync initial table error");
         continue;
       }
       data[table] = rows || [];

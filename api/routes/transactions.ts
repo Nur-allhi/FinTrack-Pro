@@ -3,10 +3,11 @@ import { getCategories, getTransactions, createTransaction, updateTransaction, d
 import { transactionSchema, transactionUpdateSchema, categoryRenameSchema, validate } from "../../shared/validation.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
+import { requireDbReachable } from "../db.js";
 
 const router = express.Router();
 
-router.get("/categories", async (req, res) => {
+router.get("/categories", requireDbReachable, async (req, res) => {
   try {
     const categories = await getCategories(req.user!.id);
     res.json(categories);
@@ -17,7 +18,7 @@ router.get("/categories", async (req, res) => {
   }
 });
 
-router.get("/:accountId", async (req, res) => {
+router.get("/:accountId", requireDbReachable, async (req, res) => {
   try {
     const accountId = Number(req.params.accountId);
     if (isNaN(accountId) || accountId <= 0) {

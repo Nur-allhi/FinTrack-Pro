@@ -8,20 +8,30 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      if (reg.active && !navigator.serviceWorker.controller) {
+      const isUpdate = !!navigator.serviceWorker.controller;
+
+      if (reg.active && !isUpdate) {
         reg.active.postMessage({ type: 'SKIP_WAITING' });
       }
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            newWorker.postMessage({ type: 'SKIP_WAITING' });
+
+      const onWorkerStateChange = (worker: ServiceWorker | null, willReplace: boolean) => {
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && willReplace) {
+            worker.postMessage({ type: 'SKIP_WAITING' });
           }
-          if (newWorker.state === 'activated') {
+          if (worker.state === 'activated' && willReplace) {
             window.location.reload();
           }
         });
+      };
+
+      if (reg.installing) {
+        onWorkerStateChange(reg.installing, isUpdate);
+      }
+
+      reg.addEventListener('updatefound', () => {
+        onWorkerStateChange(reg.installing, !!navigator.serviceWorker.controller);
       });
 
       navigator.serviceWorker.addEventListener('message', (event) => {

@@ -1,5 +1,5 @@
 import express from "express";
-import { db } from "../db.js";
+import { db, requireDbReachable } from "../db.js";
 import { sendError } from "../middleware/error.js";
 import { logger } from "../logger.js";
 
@@ -15,7 +15,7 @@ interface SearchResult {
   accountId?: number;
 }
 
-router.get("/", async (req, res) => {
+router.get("/", requireDbReachable, async (req, res) => {
   try {
     const q = (req.query.q as string || '').trim();
     if (!q || q.length < 2) {

@@ -1,4 +1,5 @@
 import { db } from "../db.js";
+import { asError } from "./queries.js";
 
 interface AccountWithMembers {
   name: string;
@@ -23,14 +24,14 @@ export async function createTransfer(userId: string, data: {
     account_id: data.from_account_id, date: data.date, particulars: debitParticulars,
     category: 'Transfer', amount: -data.amount, type: 'transfer', user_id: userId
   }]).select().single();
-  if (dError) throw dError;
+  if (dError) throw asError(dError);
 
   const { data: credit, error: cError } = await db().from("transactions").insert([{
     account_id: data.to_account_id, date: data.date, particulars: creditParticulars,
     category: 'Transfer', amount: data.amount, type: 'transfer', linked_transaction_id: debit.id,
     user_id: userId
   }]).select().single();
-  if (cError) throw cError;
+  if (cError) throw asError(cError);
 
   await db().from("transactions").update({ linked_transaction_id: credit.id }).eq("id", debit.id).eq("user_id", userId);
   return { debitId: debit.id, creditId: credit.id };
